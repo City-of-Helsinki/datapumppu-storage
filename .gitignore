@@ -1,0 +1,7 @@
+.vs/
+.vscode/
+Storage/bin/
+Storage/obj/
+Storage/Storage.csproj.user
+StorageServiceUnitTests/bin/
+StorageServiceUnitTests/obj/

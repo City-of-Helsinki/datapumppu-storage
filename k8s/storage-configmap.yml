@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-configmap
+  namespace: datapumppu
+data:
+  ServiceBusQueueName: <Servicebus Queue Name>

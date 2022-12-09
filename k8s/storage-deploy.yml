@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-deployment
+  namespace: datapumppu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storage-deployment
+  template:
+    metadata:
+      labels:
+        app: storage-deployment
+    spec:
+      containers:
+        - name: storage
+          image: acrdatapumppudevwesteurope.azurecr.io/storage:latest
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 80
+          env:
+            - name: Database__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: storage-secret
+                  key: DatabaseConnectionString
+            - name: ServiceBus__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: storage-secret
+                  key: ServiceBusConnectionString
+            - name: ServiceBus__QueueName
+              valueFrom:
+                configMapKeyRef:
+                  name: storage-configmap
+                  key: ServiceBusQueueName
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 80
+            periodSeconds: 3
+            timeoutSeconds: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage-service
+spec:
+  selector:
+    app: storage-deployment
+  ports:
+    - port: 80
+      targetPort: 80
