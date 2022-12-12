@@ -3,7 +3,6 @@ using Storage.Events;
 using Storage.Providers;
 using Storage.Repositories;
 using Storage.Repositories.Providers;
-using Azure.Identity;
 
 namespace Storage
 {
@@ -53,13 +52,6 @@ namespace Storage
 
 
             builder.Services.AddHostedService<EventObserver>();
-
-            if (builder.Environment.IsProduction())
-            {
-                builder.Configuration.AddAzureKeyVault(
-                    new Uri($"https://{builder.Configuration["KeyVaultName"]}.vault.azure.net/"),
-                    new DefaultAzureCredential());
-            }
 
             var app = builder.Build();
 
