@@ -8,6 +8,8 @@
 
         public string Name { get; set; }
 
+        public int MeetingSequenceNumber { get; set; }
+
         public string Location { get; set; }
 
         public string? MeetingTitleFI { get; set; }

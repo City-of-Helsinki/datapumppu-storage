@@ -2,6 +2,7 @@
     meeting_id VARCHAR(64),
     name VARCHAR(256),
     meeting_date TIMESTAMP,
+    sequence_number INT,
     location VARCHAR(256),
     meeting_title_fi VARCHAR(512),
     meeting_title_sv VARCHAR(512),
@@ -14,8 +15,6 @@
 
 CREATE INDEX meetings_started_ended_idx 
 ON meetings (meeting_started, meeting_ended);
-
-create unique index idx_t_id_a on t (id, a);
 
 CREATE TABLE agenda_items (
 	meeting_id VARCHAR(64),
