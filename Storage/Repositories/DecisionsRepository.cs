@@ -1,6 +1,7 @@
 ﻿using Storage.Repositories.Models;
 using System.Data;
 using Dapper;
+using Storage.Repositories.Providers;
 
 namespace Storage.Repositories
 {
@@ -13,21 +14,38 @@ namespace Storage.Repositories
         Task UpsertDecisionPdfs(List<DecisionAttachment> decisionPdfs, IDbConnection connection, IDbTransaction transaction);
 
         Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
+
+        Task<List<Decision>> FetchDecisionsByMeetingId(string id);
     }
 
     public class DecisionsRepository: IDecisionsRepository
     {
         private readonly ILogger<DecisionsRepository> _logger;
+        private readonly IDatabaseConnectionFactory _connectionFactory;
 
-        public DecisionsRepository(ILogger<DecisionsRepository> logger)
+        public DecisionsRepository(ILogger<DecisionsRepository> logger, IDatabaseConnectionFactory connectionFactory)
         {
             _logger = logger;
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<List<Decision>> FetchDecisionsByMeetingId(string id)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var sqlQuery = @"
+                SELECT * FROM decisions
+                WHERE meeting_id = @id;
+            ";
+            var result = (await connection.QueryAsync<Decision>(sqlQuery, new { @id })).ToList();
+
+            return result;
         }
 
         public Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decisions");
-            var sqlQuery = @"INSERT INTO decisions (native_id, title, case_id_label, case_id, section, html, history_html, motion, classification_code, classification_title) values(
+            var sqlQuery = @"INSERT INTO decisions (meeting_id, native_id, title, case_id_label, case_id, section, html, history_html, motion, classification_code, classification_title) values(
+                @meetingId,
                 @nativeId,
                 @title,
                 @caseIdLabel,
@@ -54,6 +72,7 @@ namespace Storage.Repositories
 
             return connection.ExecuteAsync(sqlQuery, decisions.Select(item => new
             {
+                meetingId = item.MeetingID,
                 nativeId = item.NativeId,
                 title = item.Title,
                 caseIdLabel = item.CaseIDLabel,

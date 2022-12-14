@@ -2,6 +2,8 @@
 {
     public class Decision
     {
+        public string MeetingID { get; set; }
+
         public string NativeId { get; set; }
 
         public string? Title { get; set; }

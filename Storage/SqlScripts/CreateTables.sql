@@ -2,7 +2,7 @@
     meeting_id VARCHAR(64),
     name VARCHAR(256),
     meeting_date TIMESTAMP,
-    sequence_number INT,
+    meeting_sequence_number INT,
     location VARCHAR(256),
     meeting_title_fi VARCHAR(512),
     meeting_title_sv VARCHAR(512),
@@ -76,6 +76,8 @@ CREATE TABLE votes (
 );
 
 CREATE TABLE decisions (
+	meeting_id VARCHAR(64),
+    CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id),
     native_id VARCHAR(64),
     title VARCHAR(512),
     case_id_label VARCHAR(64),
