@@ -16,6 +16,9 @@ namespace Storage
 
             builder.Services.AddControllers();
 
+            builder.Services.AddHealthChecks()
+                .AddSqlServer(builder.Configuration["Database:ConnectionString"]);
+
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
 
             builder.Services.AddScoped<IMeetingsRepository, MeetingsRepository>();
@@ -55,9 +58,17 @@ namespace Storage
 
             var app = builder.Build();
 
+            app.UseRouting();
+
             // Configure the HTTP request pipeline.
 
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/healthz");
+                endpoints.MapHealthChecks("/readiness");
+            });
 
             app.MapControllers();
 
