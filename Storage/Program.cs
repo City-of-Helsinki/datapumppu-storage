@@ -53,8 +53,8 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-
-            builder.Services.AddHostedService<EventObserver>();
+            // EventObserver disabled for now (ServiceBus)
+            // builder.Services.AddHostedService<EventObserver>();
 
             var app = builder.Build();
 
