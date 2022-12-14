@@ -2,6 +2,8 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
+
+LABEL io.openshift.expose-services="8080:http"
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://*:8080
 
