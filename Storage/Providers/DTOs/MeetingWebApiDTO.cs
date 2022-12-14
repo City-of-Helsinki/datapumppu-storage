@@ -28,6 +28,6 @@ namespace Storage.Providers.DTOs
 
         public List<AgendaItemDTO>? Agendas { get; set; }
 
-        public List<DecisionDTO>? Decisions { get; set; }
+        public List<DecisionWebApiDTO>? Decisions { get; set; }
     }
 }

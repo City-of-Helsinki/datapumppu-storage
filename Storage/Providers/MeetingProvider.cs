@@ -55,9 +55,16 @@ namespace Storage.Providers
             var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID);
             var meetingWebApiDTO = MapMeetingToDTO(meeting);
             var agendaitemDTOs = MapAgendasToDTO(agendaitems);
-            var decisionDTOs = MapDecisionsToDTO(decisions);
+            var decisionDtos = new List<DecisionWebApiDTO>();
+
+            foreach(var decision in decisions)
+            {
+                var decisionDTO = MapDecisionToDTO(decision);
+                decisionDtos.Add(decisionDTO);
+            }
+
             meetingWebApiDTO.Agendas = agendaitemDTOs;
-            meetingWebApiDTO.Decisions = decisionDTOs;
+            meetingWebApiDTO.Decisions = decisionDtos;
             return meetingWebApiDTO;
         }
 
@@ -103,14 +110,17 @@ namespace Storage.Providers
             return result;
         }
 
-        private List<DecisionDTO> MapDecisionsToDTO(List<Decision> decisions)
+        private DecisionWebApiDTO MapDecisionToDTO(FullDecision fullDecision)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Decision, DecisionDTO>();
+                cfg.CreateMap<Decision, DecisionWebApiDTO>()
+                    .ForMember(dest => dest.Attachments, opt => opt.MapFrom(_ => fullDecision.Attachments))
+                    .ForMember(dest => dest.Pdf, opt => opt.MapFrom(_ => fullDecision.Pdf))
+                    .ForMember(dest => dest.DecisionHistoryPdf, opt => opt.MapFrom(_ => fullDecision.DecisionHistoryPdf));
             });
             var mapper = config.CreateMapper();
-            var result = decisions.Select(decision => mapper.Map<DecisionDTO>(decision)).ToList();
+            var result = mapper.Map<DecisionWebApiDTO>(fullDecision.Decision);
 
             return result;
         }

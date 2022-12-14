@@ -2,6 +2,8 @@
 using System.Data;
 using Dapper;
 using Storage.Repositories.Providers;
+using Storage.Providers.DTOs;
+using System.Text.Json;
 
 namespace Storage.Repositories
 {
@@ -15,7 +17,7 @@ namespace Storage.Repositories
 
         Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
 
-        Task<List<Decision>> FetchDecisionsByMeetingId(string id);
+        Task<List<FullDecision>> FetchDecisionsByMeetingId(string id);
     }
 
     public class DecisionsRepository: IDecisionsRepository
@@ -29,16 +31,68 @@ namespace Storage.Repositories
             _connectionFactory = connectionFactory;
         }
 
-        public async Task<List<Decision>> FetchDecisionsByMeetingId(string id)
+        public async Task<List<FullDecision>> FetchDecisionsByMeetingId(string id)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
                 SELECT * FROM decisions
                 WHERE meeting_id = @id;
             ";
-            var result = (await connection.QueryAsync<Decision>(sqlQuery, new { @id })).ToList();
+
+            var decisions = (await connection.QueryAsync<Decision>(sqlQuery, new { @id })).ToList();
+            var result = new List<FullDecision>();
+
+            foreach(var decision in decisions)
+            {
+                var attachments = await FetchDecisionAttachments(decision.NativeId);
+                var pdf = await FetchDecisionPdf(decision.NativeId);
+                var historyPdf = await FetchDecisionHistoryPdf(decision.NativeId);
+
+                var fullDecision = new FullDecision()
+                {
+                    Decision = decision,
+                    Attachments = attachments,
+                    Pdf = pdf,
+                    DecisionHistoryPdf = historyPdf
+                };
+
+                result.Add(fullDecision);
+            }
 
             return result;
+        }
+
+        private async Task<List<DecisionAttachment>> FetchDecisionAttachments(string nativeId)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var sqlQuery = @"
+                SELECT * FROM decision_attachments
+                WHERE decision_id = @nativeId
+            ";
+
+            return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).ToList();
+        }
+
+        private async Task<DecisionAttachment> FetchDecisionPdf(string nativeId)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var sqlQuery = @"
+                SELECT * FROM decision_pdfs
+                WHERE decision_id = @nativeId
+            ";
+
+            return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
+        }
+
+        private async Task<DecisionAttachment?> FetchDecisionHistoryPdf(string nativeId)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var sqlQuery = @"
+                SELECT * FROM decision_history_pdfs
+                WHERE decision_id = @nativeId
+            ";
+        
+            return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
         }
 
         public Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction)
