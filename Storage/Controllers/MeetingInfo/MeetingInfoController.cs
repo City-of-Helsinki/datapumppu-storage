@@ -30,10 +30,17 @@ namespace Storage.Controllers.MeetingInfo
         }
 
         [HttpGet("meeting/{id}")]
-        public async Task<IActionResult> GetMeeting(string id)
+        public async Task<IActionResult> GetMeetingById(string id)
         {
             var meeting = await _meetingProvider.FetchById(id);
 
+            return Ok(meeting);
+        }
+
+        [HttpGet("meeting/{year}/{sequenceNumber}")]
+        public async Task<IActionResult> GetMeeting(string year, string sequenceNumber)
+        {
+            var meeting = await _meetingProvider.FetchMeeting(year, sequenceNumber);
             return Ok(meeting);
         }
 

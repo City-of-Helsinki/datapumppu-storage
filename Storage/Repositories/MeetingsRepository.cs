@@ -17,7 +17,7 @@ namespace Storage.Repositories
 
         Task<Meeting?> FetchNextUpcomingMeeting();
 
-        Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(int Year, int sequenceNumber);
+        Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(string Year, string sequenceNumber);
     }
 
     public class MeetingsRepository : IMeetingsRepository
@@ -59,13 +59,13 @@ namespace Storage.Repositories
             return result.FirstOrDefault();
         }
 
-        public async Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(int year, int sequenceNumber)
+        public async Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(string year, string sequenceNumber)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
-            var date = new DateTime(year, 1, 1, 0, 0, 0);
+            var date = $"{year}-01-01";
             var sqlQuery = @$"
-                SELECT * FROM meetings 
-                WHERE meeting_date >= {date}::date AND sequence_number = {sequenceNumber};
+                SELECT * FROM meetings
+                WHERE meeting_date >= '{date}'::date AND meeting_sequence_number = {sequenceNumber};
             "; 
             var result = (await connection.QueryAsync<Meeting>(sqlQuery)).ToList();
 
@@ -145,7 +145,7 @@ namespace Storage.Repositories
             var sqlQuery = @"update meetings set
                 name = @name,
                 meeting_date = @meetingDate,
-                sequence_number = @meetingSequenceNumber,
+                meeting_sequence_number = @meetingSequenceNumber,
                 location = @location
                 where meeting_id = @meetingId
             ";
