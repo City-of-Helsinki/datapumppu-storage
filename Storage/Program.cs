@@ -17,7 +17,7 @@ namespace Storage
             builder.Services.AddControllers();
 
             builder.Services.AddHealthChecks()
-                .AddSqlServer(builder.Configuration["Database:ConnectionString"]);
+                .AddSqlServer(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
 
