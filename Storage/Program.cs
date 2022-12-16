@@ -16,8 +16,8 @@ namespace Storage
 
             builder.Services.AddControllers();
 
-            builder.Services.AddHealthChecks()
-                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
+            //builder.Services.AddHealthChecks()
+            //    .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
 
