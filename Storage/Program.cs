@@ -2,8 +2,8 @@ using Storage.Actions;
 using Storage.Events;
 using Storage.Providers;
 using Storage.Repositories;
+using Storage.Repositories.Migration;
 using Storage.Repositories.Providers;
-using Azure.Identity;
 
 namespace Storage
 {
@@ -16,6 +16,9 @@ namespace Storage
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddHealthChecks()
+                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
 
@@ -51,21 +54,23 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-
-            builder.Services.AddHostedService<EventObserver>();
-
-            if (builder.Environment.IsProduction())
-            {
-                builder.Configuration.AddAzureKeyVault(
-                    new Uri($"https://{builder.Configuration["KeyVaultName"]}.vault.azure.net/"),
-                    new DefaultAzureCredential());
-            }
+            // EventObserver disabled for now (ServiceBus)
+            // builder.Services.AddHostedService<EventObserver>();
+            builder.Services.AddHostedService<DatabaseMigrationService>();
 
             var app = builder.Build();
+
+            app.UseRouting();
 
             // Configure the HTTP request pipeline.
 
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/healthz");
+                endpoints.MapHealthChecks("/readiness");
+            });
 
             app.MapControllers();
 
