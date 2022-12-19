@@ -2,6 +2,7 @@ using Storage.Actions;
 using Storage.Events;
 using Storage.Providers;
 using Storage.Repositories;
+using Storage.Repositories.Migration;
 using Storage.Repositories.Providers;
 
 namespace Storage
@@ -55,6 +56,7 @@ namespace Storage
 
             // EventObserver disabled for now (ServiceBus)
             // builder.Services.AddHostedService<EventObserver>();
+            builder.Services.AddHostedService<DatabaseMigrationService>();
 
             var app = builder.Build();
 
