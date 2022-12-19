@@ -20,7 +20,7 @@ namespace Storage.Repositories.Providers
         public async Task<NpgsqlConnection> CreateOpenConnection()
         {
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-            var connection = new NpgsqlConnection(_configuration["STORAGE_DB_CONNECTION_STRING"]);
+            var connection = new NpgsqlConnection("Server=vpa-datapumppu.postgres.database.azure.com;Database=third-datapumppu;Port=5432;User Id=villepalo;Password=datapumppustorage17a76_userdev;Ssl Mode=VerifyFull;");
             await connection.OpenAsync();
             return connection;
         }
