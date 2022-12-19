@@ -285,9 +285,7 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
         type_text_fi VARCHAR(64),
         type_text_sv VARCHAR(64)
     );
-
 end if;
-
 end $$;
 
 DO $$
@@ -305,9 +303,7 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
         person_fi VARCHAR(64),
         person_sv VARCHAR(64)
     );
-
 end if;
-
 end $$;
 
 
