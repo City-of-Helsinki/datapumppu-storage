@@ -5,7 +5,7 @@ namespace Storage.Repositories.Providers
 {
     public interface IDatabaseConnectionFactory
     {
-        Task<IDbConnection> CreateOpenConnection();
+        Task<NpgsqlConnection> CreateOpenConnection();
     }
 
     public class DatabaseConnectionFactory : IDatabaseConnectionFactory
@@ -17,7 +17,7 @@ namespace Storage.Repositories.Providers
             _configuration = configuration;
         }
 
-        public async Task<IDbConnection> CreateOpenConnection()
+        public async Task<NpgsqlConnection> CreateOpenConnection()
         {
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
             var connection = new NpgsqlConnection(_configuration["STORAGE_DB_CONNECTION_STRING"]);
