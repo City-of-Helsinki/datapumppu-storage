@@ -312,11 +312,10 @@ DECLARE exec_id uuid = 'b051c198-a012-4b15-bb67-06072f317793';
 BEGIN
 IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
-    insert into database_updates values (exec_id);
-
     ALTER TABLE meetings ADD COLUMN meeting_sequence_number INT;
     ALTER TABLE decisions ADD COLUMN meeting_id VARCHAR(64);
     ALTER TABLE decisions ADD CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id);
+    INSERT INTO database_updates VALUES (exec_id);
 
 end if;
 end $$;

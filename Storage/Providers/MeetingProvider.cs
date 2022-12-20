@@ -55,13 +55,7 @@ namespace Storage.Providers
             var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID);
             var meetingWebApiDTO = MapMeetingToDTO(meeting);
             var agendaitemDTOs = MapAgendasToDTO(agendaitems);
-            var decisionDtos = new List<DecisionWebApiDTO>();
-
-            foreach(var decision in decisions)
-            {
-                var decisionDTO = MapDecisionToDTO(decision);
-                decisionDtos.Add(decisionDTO);
-            }
+            var decisionDtos = decisions.Select(decision => MapDecisionToDTO(decision)).ToList();
 
             meetingWebApiDTO.Agendas = agendaitemDTOs;
             meetingWebApiDTO.Decisions = decisionDtos;
