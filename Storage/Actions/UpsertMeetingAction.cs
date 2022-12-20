@@ -33,8 +33,9 @@ namespace Storage.Actions
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<AgendaItemDTO, AgendaItem>()
-                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => meetingDTO.MeetingID));
-                cfg.CreateMap<DecisionDTO, Decision>();
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID));
+                cfg.CreateMap<DecisionDTO, Decision>()
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID));
                 cfg.CreateMap<MeetingDTO, Meeting>();
             });
             var mapper = config.CreateMapper();
@@ -98,6 +99,6 @@ namespace Storage.Actions
                 _logger.LogError("Transaction failed: " + ex.Message);
                 transaction.Rollback();
             }
-        }
+        } 
     }
 }

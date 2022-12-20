@@ -16,6 +16,8 @@ namespace Storage.Repositories
         Task<Meeting?> FetchMeetingById(string id);
 
         Task<Meeting?> FetchNextUpcomingMeeting();
+
+        Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(string Year, string sequenceNumber);
     }
 
     public class MeetingsRepository : IMeetingsRepository
@@ -52,6 +54,19 @@ namespace Storage.Repositories
                 ORDER BY meeting_date ASC;
             ";          
 
+            var result = (await connection.QueryAsync<Meeting>(sqlQuery)).ToList();
+
+            return result.FirstOrDefault();
+        }
+
+        public async Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(string year, string sequenceNumber)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var date = $"{year}-01-01";
+            var sqlQuery = @$"
+                SELECT * FROM meetings
+                WHERE meeting_date >= '{date}'::date AND meeting_sequence_number = {sequenceNumber};
+            "; 
             var result = (await connection.QueryAsync<Meeting>(sqlQuery)).ToList();
 
             return result.FirstOrDefault();
@@ -130,6 +145,7 @@ namespace Storage.Repositories
             var sqlQuery = @"update meetings set
                 name = @name,
                 meeting_date = @meetingDate,
+                meeting_sequence_number = @meetingSequenceNumber,
                 location = @location
                 where meeting_id = @meetingId
             ";
@@ -140,10 +156,13 @@ namespace Storage.Repositories
         private Task InsertMeeting(Meeting meeting, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing InsertMeeting()");
-            var sqlQuery = @"insert into meetings values (
+            var sqlQuery = @"insert into meetings (meeting_id, name, meeting_date, meeting_sequence_number, location, 
+                meeting_title_fi, meeting_title_sv, meeting_started, meeting_started_eventid, meeting_ended, 
+                meeting_ended_eventid) values (
                 @meetingId,
                 @name,
                 @meetingDate,
+                @meetingSequenceNumber,
                 @location,
                 @meetingTitleFi,
                 @meetingTitleSv,

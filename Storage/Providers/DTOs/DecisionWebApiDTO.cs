@@ -1,6 +1,8 @@
-﻿namespace Storage.Repositories.Models
+﻿using Storage.Repositories.Models;
+
+namespace Storage.Providers.DTOs
 {
-    public class Decision
+    public class DecisionWebApiDTO
     {
         public string MeetingID { get; set; }
 
@@ -23,5 +25,11 @@
         public string? ClassificationCode { get; set; }
 
         public string? ClassificationTitle { get; set; }
+
+        public DecisionAttachment Pdf { get; set; }
+
+        public DecisionAttachment DecisionHistoryPdf { get; set; }
+
+        public List<DecisionAttachment> Attachments { get; set; }
     }
 }

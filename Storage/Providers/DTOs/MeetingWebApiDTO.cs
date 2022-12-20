@@ -1,6 +1,8 @@
-﻿namespace Storage.Repositories.Models
+﻿using Storage.Controllers.MeetingInfo.DTOs;
+
+namespace Storage.Providers.DTOs
 {
-    public class Meeting
+    public class MeetingWebApiDTO
     {
         public DateTime MeetingDate { get; set; }
 
@@ -23,5 +25,9 @@
         public DateTime? Ended { get; set; }
 
         public Guid? MeetingEndedEventID { get; set; }
+
+        public List<AgendaItemDTO>? Agendas { get; set; }
+
+        public List<DecisionWebApiDTO>? Decisions { get; set; }
     }
 }
