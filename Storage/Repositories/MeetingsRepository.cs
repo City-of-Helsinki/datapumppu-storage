@@ -156,7 +156,9 @@ namespace Storage.Repositories
         private Task InsertMeeting(Meeting meeting, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing InsertMeeting()");
-            var sqlQuery = @"insert into meetings values (
+            var sqlQuery = @"insert into meetings (meeting_id, name, meeting_date, meeting_sequence_number, location, 
+                meeting_title_fi, meeting_title_sv, meeting_started, meeting_started_eventid, meeting_ended, 
+                meeting_ended_eventid) values (
                 @meetingId,
                 @name,
                 @meetingDate,
