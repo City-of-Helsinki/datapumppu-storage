@@ -98,7 +98,8 @@ namespace Storage.Repositories
         public Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decisions");
-            var sqlQuery = @"INSERT INTO decisions (meeting_id, native_id, title, case_id_label, case_id, section, html, history_html, motion, classification_code, classification_title) values(
+            var sqlQuery = @"INSERT INTO decisions (meeting_id, native_id, title, case_id_label, case_id, section, 
+                html, history_html, motion, classification_code, classification_title) values(
                 @meetingId,
                 @nativeId,
                 @title,
@@ -144,7 +145,8 @@ namespace Storage.Repositories
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision attachments");
-            var sqlQuery = @"INSERT INTO decision_attachments (decision_id, native_id, title, attachment_number, publicity_class, security_reasons, type, file_uri, language, personal_data, issued) values(
+            var sqlQuery = @"INSERT INTO decision_attachments (decision_id, native_id, title, attachment_number,
+                publicity_class, security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
                 @title,
@@ -189,7 +191,8 @@ namespace Storage.Repositories
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision pdfs");
-            var sqlQuery = @"INSERT INTO decision_pdfs (decision_id, native_id, title, attachment_number, publicity_class, security_reasons, type, file_uri, language, personal_data, issued) values(
+            var sqlQuery = @"INSERT INTO decision_pdfs (decision_id, native_id, title, attachment_number, publicity_class,
+                security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
                 @title,
@@ -236,7 +239,8 @@ namespace Storage.Repositories
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision history pdfs");
-            var sqlQuery = @"INSERT INTO decision_history_pdfs (decision_id, native_id, title, attachment_number, publicity_class, security_reasons, type, file_uri, language, personal_data, issued) values(
+            var sqlQuery = @"INSERT INTO decision_history_pdfs (decision_id, native_id, title, attachment_number, publicity_class, 
+                security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
                 @title,
