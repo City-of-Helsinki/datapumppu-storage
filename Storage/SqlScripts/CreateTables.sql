@@ -15,7 +15,6 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
         meeting_id VARCHAR(64),
         name VARCHAR(256),
         meeting_date TIMESTAMP,
-        meeting_sequence_number INT,
         location VARCHAR(256),
         meeting_title_fi VARCHAR(512),
         meeting_title_sv VARCHAR(512),
@@ -29,17 +28,17 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
     CREATE INDEX meetings_started_ended_idx 
     ON meetings (meeting_started, meeting_ended);
 
-CREATE TABLE agenda_items (
-	meeting_id VARCHAR(64),
-    CONSTRAINT fk__agenda_items__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id),
-    agenda_point INT,
-    section VARCHAR(64),
-    title VARCHAR(512),
-    case_id_label VARCHAR(64),
-    html_content TEXT,
-    html_decision_history TEXT,
-    CONSTRAINT pk__agenda_items__meeting_id PRIMARY KEY (meeting_id, agenda_point, title)
-);
+    CREATE TABLE agenda_items (
+	    meeting_id VARCHAR(64),
+        CONSTRAINT fk__agenda_items__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id),
+        agenda_point INT,
+        section VARCHAR(64),
+        title VARCHAR(512),
+        case_id_label VARCHAR(64),
+        html_content TEXT,
+        html_decision_history TEXT,
+        CONSTRAINT pk__agenda_items__meeting_id PRIMARY KEY (meeting_id, agenda_point, title)
+    );
 
     CREATE INDEX agenda_items_meeting_id_agenda_point_idx
     ON agenda_items (meeting_id, agenda_point);
@@ -84,15 +83,11 @@ CREATE TABLE agenda_items (
 	    CONSTRAINT fk__votes__voting_id__votings__voting_id FOREIGN KEY (voting_id) REFERENCES votings(voting_id),
         vote_id INT GENERATED ALWAYS AS IDENTITY,
         voter_name VARCHAR(64),
-        classification_code VARCHAR(128),
-        classification_title VARCHAR(128),
-        CONSTRAINT pk__decisions__native_id PRIMARY KEY (native_id)
-);
-
+        vote_type INT,
+        CONSTRAINT pk__votes__vote_id primary key (vote_id)
+    );
 
     CREATE TABLE decisions (
-	    meeting_id VARCHAR(64),
-        CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id),
         native_id VARCHAR(64),
         title VARCHAR(512),
         case_id_label VARCHAR(64),
@@ -308,5 +303,20 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
         person_fi VARCHAR(64),
         person_sv VARCHAR(64)
     );
+end if;
+end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'b051c198-a012-4b15-bb67-06072f317793';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    insert into database_updates values (exec_id);
+
+    ALTER TABLE meetings ADD COLUMN meeting_sequence_number INT;
+    ALTER TABLE decisions ADD COLUMN meeting_id VARCHAR(64);
+    ALTER TABLE decisions ADD CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id);
+
 end if;
 end $$;
