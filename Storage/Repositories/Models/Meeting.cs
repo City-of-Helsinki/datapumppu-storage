@@ -16,11 +16,11 @@
 
         public string? MeetingTitleSV { get; set; }
 
-        public DateTime? Started { get; set; }
+        public DateTime? MeetingStarted { get; set; }
 
         public Guid? MeetingStartedEventID { get; set; }
 
-        public DateTime? Ended { get; set; }
+        public DateTime? MeetingEnded { get; set; }
 
         public Guid? MeetingEndedEventID { get; set; }
     }

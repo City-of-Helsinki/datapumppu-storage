@@ -29,7 +29,7 @@ namespace Storage.Actions
                         opt.PreCondition(src => src.EventType == EventType.MeetingStarted);
                         opt.MapFrom(x => eventId);
                     })
-                    .ForMember(dest => dest.Started, opt =>
+                    .ForMember(dest => dest.MeetingStarted, opt =>
                     {
                         opt.PreCondition(src => src.EventType == EventType.MeetingStarted);
                         opt.MapFrom(src => src.Timestamp);
@@ -39,7 +39,7 @@ namespace Storage.Actions
                         opt.PreCondition(src => src.EventType == EventType.MeetingEnded);
                         opt.MapFrom(x => eventId);
                     })
-                    .ForMember(dest => dest.Ended, opt =>
+                    .ForMember(dest => dest.MeetingEnded, opt =>
                     {
                          opt.PreCondition(src => src.EventType == EventType.MeetingEnded);
                          opt.MapFrom(src => src.Timestamp);

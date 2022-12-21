@@ -62,10 +62,11 @@ namespace Storage.Repositories
         public async Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(string year, string sequenceNumber)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
-            var date = $"{year}-01-01";
+            var firstDayOfYear = $"{year}-01-01";
+            var lastDayOfYear = $"{year}-12-31T23:59:59";
             var sqlQuery = @$"
                 SELECT * FROM meetings
-                WHERE meeting_date >= '{date}'::date AND meeting_sequence_number = {sequenceNumber};
+                WHERE meeting_date >= '{firstDayOfYear}'::date AND meeting_date <= '{lastDayOfYear}'::date AND meeting_sequence_number = {sequenceNumber};
             "; 
             var result = (await connection.QueryAsync<Meeting>(sqlQuery)).ToList();
 
@@ -103,7 +104,7 @@ namespace Storage.Repositories
             var sqlQuery = @"update meetings set
                 meeting_title_fi = @meetingTitleFi,
                 meeting_title_sv = @meetingTitleSv,
-                meeting_ended = @ended,
+                meeting_ended = @meetingEnded,
                 meeting_ended_eventid = @meetingEndedEventId
                 where meeting_id = @meetingId
             ";
@@ -117,7 +118,7 @@ namespace Storage.Repositories
             var sqlQuery = @"update meetings set
                 meeting_title_fi = @meetingTitleFi,
                 meeting_title_sv = @meetingTitleSv,
-                meeting_started = @started,
+                meeting_started = @meetingStarted,
                 meeting_started_eventid = @meetingStartedEventId
                 where meeting_id = @meetingId
             ";
@@ -132,7 +133,7 @@ namespace Storage.Repositories
                 @meetingId,
                 @meetingTitleFi,
                 @meetingTitleSv,
-                @started,
+                @meetingStarted,
                 @meetingStartedEventId
             )";
 
@@ -166,9 +167,9 @@ namespace Storage.Repositories
                 @location,
                 @meetingTitleFi,
                 @meetingTitleSv,
-                @started,
+                @meetingStarted,
                 @meetingStartedEventId,
-                @ended,
+                @meetingEnded,
                 @meetingEndedEventId
             )";
 
