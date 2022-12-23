@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Storage.Actions;
 using Storage.Providers;
 using Storage.Controllers.MeetingInfo.DTOs;
+using Storage.Providers.DTOs;
 
 namespace Storage.Controllers.MeetingInfo
 {
@@ -41,6 +42,11 @@ namespace Storage.Controllers.MeetingInfo
         public async Task<IActionResult> GetMeeting(string year, string sequenceNumber)
         {
             var meeting = await _meetingProvider.FetchMeeting(year, sequenceNumber);
+            if(meeting == null)
+            {
+                return Ok(new MeetingWebApiDTO());
+            }
+
             return Ok(meeting);
         }
 
