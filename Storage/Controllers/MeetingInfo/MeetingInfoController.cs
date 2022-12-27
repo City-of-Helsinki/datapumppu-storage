@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Storage.Actions;
 using Storage.Providers;
 using Storage.Controllers.MeetingInfo.DTOs;
-using Storage.Providers.DTOs;
 
 namespace Storage.Controllers.MeetingInfo
 {
