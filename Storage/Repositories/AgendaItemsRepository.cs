@@ -27,7 +27,7 @@ namespace Storage.Repositories
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
-                SELECT meeting_id, agenda_point, section, title, case_id_label, html_content, html_decision_history, language
+                SELECT meeting_id, agenda_point, section, title, case_id_label, html_content Html, html_decision_history DecisionHistoryHtml, language
                 FROM agenda_items
                 WHERE meeting_id = @id AND language = @language
             ";
