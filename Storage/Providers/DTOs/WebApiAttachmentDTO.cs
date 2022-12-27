@@ -10,7 +10,7 @@
 
         public string? PublicityClass { get; set; }
 
-        public string[]? SecurityReasons { get; set; }
+        public string? SecurityReasons { get; set; }
 
         public string? Type { get; set; }
 

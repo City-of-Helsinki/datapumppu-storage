@@ -4,6 +4,7 @@ using Dapper;
 using Storage.Repositories.Providers;
 using Storage.Providers.DTOs;
 using System.Text.Json;
+using Microsoft.Azure.ServiceBus;
 
 namespace Storage.Repositories
 {
@@ -17,7 +18,7 @@ namespace Storage.Repositories
 
         Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
 
-        Task<List<FullDecision>> FetchDecisionsByMeetingId(string id);
+        Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language);
     }
 
     public class DecisionsRepository: IDecisionsRepository
@@ -31,15 +32,15 @@ namespace Storage.Repositories
             _connectionFactory = connectionFactory;
         }
 
-        public async Task<List<FullDecision>> FetchDecisionsByMeetingId(string id)
+        public async Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
                 SELECT * FROM decisions
-                WHERE meeting_id = @id;
+                WHERE meeting_id = @id AND language = @language;
             ";
 
-            var decisions = (await connection.QueryAsync<Decision>(sqlQuery, new { @id })).ToList();
+            var decisions = (await connection.QueryAsync<Decision>(sqlQuery, new { @id, @language })).ToList();
             var result = new List<FullDecision>();
 
             foreach(var decision in decisions)
@@ -99,7 +100,7 @@ namespace Storage.Repositories
         {
             _logger.LogInformation("Upserting decisions");
             var sqlQuery = @"INSERT INTO decisions (meeting_id, native_id, title, case_id_label, case_id, section, 
-                html, history_html, motion, classification_code, classification_title) values(
+                html, history_html, motion, classification_code, classification_title, language) values(
                 @meetingId,
                 @nativeId,
                 @title,
@@ -110,7 +111,8 @@ namespace Storage.Repositories
                 @historyHtml,
                 @motion,
                 @classificationCode,
-                @classificationTitle
+                @classificationTitle,
+                @language
             ) ";
             sqlQuery += @"ON CONFLICT (native_id) DO UPDATE SET 
                 title = @title,
@@ -121,7 +123,8 @@ namespace Storage.Repositories
                 history_html = @historyHtml,
                 motion = @motion,
                 classification_code = @classificationCode,
-                classification_title = @classificationTitle
+                classification_title = @classificationTitle,
+                language = @language
                 WHERE decisions.native_id = @nativeId
             ;";
 
@@ -137,7 +140,8 @@ namespace Storage.Repositories
                 historyHtml = item.DecisionHistoryHtml,
                 motion = item.Motion,
                 classificationCode = item.ClassificationCode,
-                classificationTitle = item.ClassificationTitle
+                classificationTitle = item.ClassificationTitle,
+                language = item.Language
             }), transaction);
         }
 

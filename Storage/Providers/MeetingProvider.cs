@@ -52,7 +52,7 @@ namespace Storage.Providers
                 return null;
             }
             var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID, language);
-            var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID);
+            var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID, language);
             var meetingWebApiDTO = MapMeetingToDTO(meeting);
             var agendaitemDTOs = MapAgendasToDTO(agendaitems);
             var decisionDtos = decisions.Select(decision => MapDecisionToDTO(decision)).ToList();
@@ -109,12 +109,24 @@ namespace Storage.Providers
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Decision, WebApiDecisionDTO>()
-                    .ForMember(dest => dest.Attachments, opt => opt.MapFrom(_ => fullDecision.Attachments))
-                    .ForMember(dest => dest.Pdf, opt => opt.MapFrom(_ => fullDecision.Pdf))
-                    .ForMember(dest => dest.DecisionHistoryPdf, opt => opt.MapFrom(_ => fullDecision.DecisionHistoryPdf));
+                    .ForMember(dest => dest.Attachments, opt => opt.MapFrom(_ => fullDecision.Attachments.Select(attachment => MapAttachmentToDTO(attachment)).ToList()))
+                    .ForMember(dest => dest.Pdf, opt => opt.MapFrom(_ => MapAttachmentToDTO(fullDecision.Pdf)))
+                    .ForMember(dest => dest.DecisionHistoryPdf, opt => opt.MapFrom(_ => MapAttachmentToDTO(fullDecision.DecisionHistoryPdf)));
             });
             var mapper = config.CreateMapper();
             var result = mapper.Map<WebApiDecisionDTO>(fullDecision.Decision);
+
+            return result;
+        }
+
+        private WebApiAttachmentDTO MapAttachmentToDTO(DecisionAttachment attachment)
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<DecisionAttachment, WebApiAttachmentDTO>();
+            });
+            var mapper = config.CreateMapper();
+            var result = mapper.Map<WebApiAttachmentDTO>(attachment);
 
             return result;
         }
