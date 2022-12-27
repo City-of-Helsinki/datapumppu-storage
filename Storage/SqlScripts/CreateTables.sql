@@ -319,3 +319,16 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = 'b8c53363-39db-47bc-85bc-e507faa44f66';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE agenda_items ADD COLUMN language VARCHAR(10);
+    ALTER TABLE agenda_items DROP CONSTRAINT pk__agenda_items__meeting_id;
+    ALTER TABLE agenda_items ADD CONSTRAINT pk__agenda_items__meeting_id UNIQUE (meeting_id, agenda_point, language);
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;

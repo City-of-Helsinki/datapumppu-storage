@@ -12,6 +12,8 @@
 
         public string? Html { get; set; }
 
+        public string? Language { get; set; }
+
         public string? DecisionHistoryHTML { get; set; }
     }
 }

@@ -8,10 +8,10 @@ namespace Storage.Providers
 {
     public interface IMeetingProvider
     {
-        Task<MeetingWebApiDTO?> FetchById(string id);
+        Task<MeetingWebApiDTO?> FetchById(string id, string language);
 
-        Task<MeetingWebApiDTO?> FetchNextUpcomingMeeting();
-        Task<MeetingWebApiDTO?> FetchMeeting(string year, string sequenceNumber);
+        Task<MeetingWebApiDTO?> FetchNextUpcomingMeeting(string language);
+        Task<MeetingWebApiDTO?> FetchMeeting(string year, string sequenceNumber, string language);
     }
 
     public class MeetingProvider : IMeetingProvider
@@ -27,7 +27,7 @@ namespace Storage.Providers
             _decisionsRepository = decisionsRepository;
         }
 
-        public async Task<MeetingWebApiDTO?> FetchById(string id)
+        public async Task<MeetingWebApiDTO?> FetchById(string id, string language)
         {
             // fetch meeting by id
             var meeting = await _meetingsRepository.FetchMeetingById(id);
@@ -35,7 +35,7 @@ namespace Storage.Providers
             {
                 return null;
             }
-            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id);
+            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             // map to DTO
             var meetingDTO = MapMeetingToDTO(meeting);
             var agendaItemDTOs = MapAgendasToDTO(agendaItems);
@@ -44,14 +44,14 @@ namespace Storage.Providers
             return meetingDTO;
         }
 
-        public async Task<MeetingWebApiDTO?> FetchMeeting(string year, string sequenceNumber)
+        public async Task<MeetingWebApiDTO?> FetchMeeting(string year, string sequenceNumber, string language)
         {
             var meeting = await _meetingsRepository.FetchMeetingByYearAndSeuquenceNumber(year, sequenceNumber);
             if (meeting == null)
             {
                 return null;
             }
-            var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID);
+            var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID, language);
             var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID);
             var meetingWebApiDTO = MapMeetingToDTO(meeting);
             var agendaitemDTOs = MapAgendasToDTO(agendaitems);
@@ -62,7 +62,7 @@ namespace Storage.Providers
             return meetingWebApiDTO;
         }
 
-        public async Task<MeetingWebApiDTO?> FetchNextUpcomingMeeting()
+        public async Task<MeetingWebApiDTO?> FetchNextUpcomingMeeting(string language)
         {
             // fetch next upcoming meeting
             var meeting = await _meetingsRepository.FetchNextUpcomingMeeting();
@@ -71,7 +71,7 @@ namespace Storage.Providers
                 return null;
             }
             string id = meeting.MeetingID;
-            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id);
+            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             // map to DTO
             var meetingDTO = MapMeetingToDTO(meeting);
             var agendaItemDTOs = MapAgendasToDTO(agendaItems);

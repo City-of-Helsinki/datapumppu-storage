@@ -31,29 +31,24 @@ namespace Storage.Controllers.MeetingInfo
         }
 
         [HttpGet("meeting/{id}")]
-        public async Task<IActionResult> GetMeetingById(string id)
+        public async Task<IActionResult> GetMeetingById(string id, string language)
         {
-            var meeting = await _meetingProvider.FetchById(id);
+            var meeting = await _meetingProvider.FetchById(id, language);
 
             return Ok(meeting);
         }
 
-        [HttpGet("meeting/{year}/{sequenceNumber}")]
-        public async Task<IActionResult> GetMeeting(string year, string sequenceNumber)
+        [HttpGet("meeting/{year}/{sequenceNumber}/{language}")]
+        public async Task<IActionResult> GetMeeting(string year, string sequenceNumber, string language)
         {
-            var meeting = await _meetingProvider.FetchMeeting(year, sequenceNumber);
-            if(meeting == null)
-            {
-                return Ok(new MeetingWebApiDTO());
-            }
-
+            var meeting = await _meetingProvider.FetchMeeting(year, sequenceNumber, language);
             return Ok(meeting);
         }
 
         [HttpGet("upcoming")]
-        public async Task<IActionResult> GetUpcomingMeeting()
+        public async Task<IActionResult> GetUpcomingMeeting(string language)
         {
-            var meeting = await _meetingProvider.FetchNextUpcomingMeeting();
+            var meeting = await _meetingProvider.FetchNextUpcomingMeeting(language);
 
             return Ok(meeting);
         }
