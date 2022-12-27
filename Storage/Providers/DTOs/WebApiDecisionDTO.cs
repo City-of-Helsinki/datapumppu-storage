@@ -1,8 +1,9 @@
-﻿using Storage.Repositories.Models;
+﻿using Storage.Controllers.MeetingInfo.DTOs;
+using Storage.Repositories.Models;
 
 namespace Storage.Providers.DTOs
 {
-    public class DecisionWebApiDTO
+    public class WebApiDecisionDTO
     {
         public string MeetingID { get; set; }
 
@@ -26,10 +27,10 @@ namespace Storage.Providers.DTOs
 
         public string? ClassificationTitle { get; set; }
 
-        public DecisionAttachment Pdf { get; set; }
+        public WebApiAttachmentDTO Pdf { get; set; }
 
-        public DecisionAttachment DecisionHistoryPdf { get; set; }
+        public WebApiAttachmentDTO DecisionHistoryPdf { get; set; }
 
-        public List<DecisionAttachment> Attachments { get; set; }
+        public List<WebApiAttachmentDTO> Attachments { get; set; }
     }
 }
