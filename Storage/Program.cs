@@ -25,6 +25,7 @@ namespace Storage
             builder.Services.AddScoped<IMeetingsRepository, MeetingsRepository>();
             builder.Services.AddScoped<IAgendaItemsRepository, AgendaItemsRepository>();
             builder.Services.AddScoped<IDecisionsRepository, DecisionsRepository>();
+            builder.Services.AddScoped<IDecisionsReadOnlyRepository, DecisionsRepository>();
             builder.Services.AddScoped<IEventsRepository, EventsRepository>();
             builder.Services.AddScoped<ISpeakingTurnsRepository, SpeakingTurnsRepository>();
             builder.Services.AddScoped<IMeetingSeatsRepository, MeetingSeatsRepository>();
@@ -35,9 +36,12 @@ namespace Storage
             builder.Services.AddScoped<IRollCallRepository, RollCallRepository>();
             builder.Services.AddScoped<IPersonEventsRepository, PersonEventsRepository>();
             builder.Services.AddScoped<IReplyReservationsRepository, ReplyReservationsRepository>();
-            builder.Services.AddScoped<IUpsertMeetingAction, UpsertMeetingAction>();
             builder.Services.AddScoped<IVotingsRepository, VotingsRepository>();
+
             builder.Services.AddScoped<IMeetingProvider, MeetingProvider>();
+            builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
+
+            builder.Services.AddScoped<IUpsertMeetingAction, UpsertMeetingAction>();
             builder.Services.AddScoped<IEventActions, EventActions>();
             builder.Services.AddScoped<IEventAction, InsertEventAction>();
             builder.Services.AddScoped<IEventAction, UpdateMeetingStatusAction>();

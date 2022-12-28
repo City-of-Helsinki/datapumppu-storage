@@ -18,9 +18,9 @@ namespace Storage.Providers
     {
         private readonly IMeetingsRepository _meetingsRepository;
         private readonly IAgendaItemsRepository _agendaItemsRepository;
-        private readonly IDecisionsRepository _decisionsRepository;
+        private readonly IDecisionsReadOnlyRepository _decisionsRepository;
 
-        public MeetingProvider(IMeetingsRepository meetingsRepository, IAgendaItemsRepository agendaItemsRepository, IDecisionsRepository decisionsRepository)
+        public MeetingProvider(IMeetingsRepository meetingsRepository, IAgendaItemsRepository agendaItemsRepository, IDecisionsReadOnlyRepository decisionsRepository)
         {
             _meetingsRepository = meetingsRepository;
             _agendaItemsRepository = agendaItemsRepository;
