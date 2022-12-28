@@ -23,5 +23,7 @@
         public string? ClassificationCode { get; set; }
 
         public string? ClassificationTitle { get; set; }
+
+        public string? Language { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Storage.Providers.DTOs
 {
-    public class MeetingWebApiDTO
+    public class WebApiMeetingDTO
     {
         public DateTime MeetingDate { get; set; }
 
@@ -26,8 +26,8 @@ namespace Storage.Providers.DTOs
 
         public Guid? MeetingEndedEventID { get; set; }
 
-        public List<AgendaItemDTO>? Agendas { get; set; }
+        public List<WebApiAgendaItemDTO>? Agendas { get; set; }
 
-        public List<DecisionWebApiDTO>? Decisions { get; set; }
+        public List<WebApiDecisionDTO>? Decisions { get; set; }
     }
 }

@@ -8,10 +8,10 @@ namespace Storage.Providers
 {
     public interface IMeetingProvider
     {
-        Task<MeetingWebApiDTO?> FetchById(string id);
+        Task<WebApiMeetingDTO?> FetchById(string id, string language);
 
-        Task<MeetingWebApiDTO?> FetchNextUpcomingMeeting();
-        Task<MeetingWebApiDTO?> FetchMeeting(string year, string sequenceNumber);
+        Task<WebApiMeetingDTO?> FetchNextUpcomingMeeting(string language);
+        Task<WebApiMeetingDTO?> FetchMeeting(string year, string sequenceNumber, string language);
     }
 
     public class MeetingProvider : IMeetingProvider
@@ -27,7 +27,7 @@ namespace Storage.Providers
             _decisionsRepository = decisionsRepository;
         }
 
-        public async Task<MeetingWebApiDTO?> FetchById(string id)
+        public async Task<WebApiMeetingDTO?> FetchById(string id, string language)
         {
             // fetch meeting by id
             var meeting = await _meetingsRepository.FetchMeetingById(id);
@@ -35,7 +35,7 @@ namespace Storage.Providers
             {
                 return null;
             }
-            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id);
+            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             // map to DTO
             var meetingDTO = MapMeetingToDTO(meeting);
             var agendaItemDTOs = MapAgendasToDTO(agendaItems);
@@ -44,15 +44,15 @@ namespace Storage.Providers
             return meetingDTO;
         }
 
-        public async Task<MeetingWebApiDTO?> FetchMeeting(string year, string sequenceNumber)
+        public async Task<WebApiMeetingDTO?> FetchMeeting(string year, string sequenceNumber, string language)
         {
             var meeting = await _meetingsRepository.FetchMeetingByYearAndSeuquenceNumber(year, sequenceNumber);
             if (meeting == null)
             {
                 return null;
             }
-            var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID);
-            var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID);
+            var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID, language);
+            var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID, language);
             var meetingWebApiDTO = MapMeetingToDTO(meeting);
             var agendaitemDTOs = MapAgendasToDTO(agendaitems);
             var decisionDtos = decisions.Select(decision => MapDecisionToDTO(decision)).ToList();
@@ -62,7 +62,7 @@ namespace Storage.Providers
             return meetingWebApiDTO;
         }
 
-        public async Task<MeetingWebApiDTO?> FetchNextUpcomingMeeting()
+        public async Task<WebApiMeetingDTO?> FetchNextUpcomingMeeting(string language)
         {
             // fetch next upcoming meeting
             var meeting = await _meetingsRepository.FetchNextUpcomingMeeting();
@@ -71,7 +71,7 @@ namespace Storage.Providers
                 return null;
             }
             string id = meeting.MeetingID;
-            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id);
+            var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             // map to DTO
             var meetingDTO = MapMeetingToDTO(meeting);
             var agendaItemDTOs = MapAgendasToDTO(agendaItems);
@@ -80,41 +80,53 @@ namespace Storage.Providers
             return meetingDTO;
         }
 
-        private MeetingWebApiDTO MapMeetingToDTO(Meeting meeting)
+        private WebApiMeetingDTO MapMeetingToDTO(Meeting meeting)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Meeting, MeetingWebApiDTO>();
+                cfg.CreateMap<Meeting, WebApiMeetingDTO>();
             });
             var mapper = config.CreateMapper();
-            var meetingDTO = mapper.Map<MeetingWebApiDTO>(meeting);
+            var meetingDTO = mapper.Map<WebApiMeetingDTO>(meeting);
 
             return meetingDTO;
         }
 
-        private List<AgendaItemDTO> MapAgendasToDTO(List<AgendaItem> agendaItems)
+        private List<WebApiAgendaItemDTO> MapAgendasToDTO(List<AgendaItem> agendaItems)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<AgendaItem, AgendaItemDTO>();
+                cfg.CreateMap<AgendaItem, WebApiAgendaItemDTO>();
             });
             var mapper = config.CreateMapper();
-            var result = agendaItems.Select(agenda => mapper.Map<AgendaItemDTO>(agenda)).ToList();
+            var result = agendaItems.Select(agenda => mapper.Map<WebApiAgendaItemDTO>(agenda)).ToList();
 
             return result;
         }
 
-        private DecisionWebApiDTO MapDecisionToDTO(FullDecision fullDecision)
+        private WebApiDecisionDTO MapDecisionToDTO(FullDecision fullDecision)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Decision, DecisionWebApiDTO>()
-                    .ForMember(dest => dest.Attachments, opt => opt.MapFrom(_ => fullDecision.Attachments))
-                    .ForMember(dest => dest.Pdf, opt => opt.MapFrom(_ => fullDecision.Pdf))
-                    .ForMember(dest => dest.DecisionHistoryPdf, opt => opt.MapFrom(_ => fullDecision.DecisionHistoryPdf));
+                cfg.CreateMap<Decision, WebApiDecisionDTO>()
+                    .ForMember(dest => dest.Attachments, opt => opt.MapFrom(_ => fullDecision.Attachments.Select(attachment => MapAttachmentToDTO(attachment)).ToList()))
+                    .ForMember(dest => dest.Pdf, opt => opt.MapFrom(_ => MapAttachmentToDTO(fullDecision.Pdf)))
+                    .ForMember(dest => dest.DecisionHistoryPdf, opt => opt.MapFrom(_ => MapAttachmentToDTO(fullDecision.DecisionHistoryPdf)));
             });
             var mapper = config.CreateMapper();
-            var result = mapper.Map<DecisionWebApiDTO>(fullDecision.Decision);
+            var result = mapper.Map<WebApiDecisionDTO>(fullDecision.Decision);
+
+            return result;
+        }
+
+        private WebApiAttachmentDTO MapAttachmentToDTO(DecisionAttachment attachment)
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<DecisionAttachment, WebApiAttachmentDTO>();
+            });
+            var mapper = config.CreateMapper();
+            var result = mapper.Map<WebApiAttachmentDTO>(attachment);
 
             return result;
         }
