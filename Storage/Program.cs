@@ -1,5 +1,6 @@
 using Storage.Actions;
 using Storage.Events;
+using Storage.Mappers;
 using Storage.Providers;
 using Storage.Repositories;
 using Storage.Repositories.Migration;
@@ -40,6 +41,9 @@ namespace Storage
 
             builder.Services.AddScoped<IMeetingProvider, MeetingProvider>();
             builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
+
+            builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
+            
 
             builder.Services.AddScoped<IUpsertMeetingAction, UpsertMeetingAction>();
             builder.Services.AddScoped<IEventActions, EventActions>();
