@@ -23,7 +23,9 @@ namespace Storage.Controllers
         {
             try
             {
+                _logger.LogInformation($"GetDecisions {caseIdLabel}, {language}");
                 var decision = await _decisionProvider.GetDecisision(caseIdLabel, language);
+                _logger.LogInformation($"found items: {decision?.CaseIDLabel}");
                 return new OkObjectResult(decision);
             }
             catch (Exception ex)
