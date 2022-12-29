@@ -333,3 +333,19 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '1ae9e59f-70ef-407b-b89d-04f610ae7568';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    delete from decision_history_pdfs;
+    delete from decision_pdfs;
+    delete from decision_attachments;
+    delete from decisions;
+    
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
