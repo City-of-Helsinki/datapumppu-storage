@@ -17,11 +17,16 @@ namespace Storage.Repositories
         Task UpsertDecisionPdfs(List<DecisionAttachment> decisionPdfs, IDbConnection connection, IDbTransaction transaction);
 
         Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
-
-        Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language);
     }
 
-    public class DecisionsRepository: IDecisionsRepository
+    public interface IDecisionsReadOnlyRepository
+    {
+        Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language);
+
+        Task<FullDecision?> FetchDecisionsByCaseIdLabel(string caseLabelId, string language);
+    }
+
+    public class DecisionsRepository: IDecisionsRepository, IDecisionsReadOnlyRepository
     {
         private readonly ILogger<DecisionsRepository> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
@@ -30,6 +35,33 @@ namespace Storage.Repositories
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
+        }
+
+        public async Task<FullDecision?> FetchDecisionsByCaseIdLabel(string caseLabelId, string language)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var sqlQuery = @"
+                SELECT * FROM decisions
+                WHERE case_id_label = @caseLabelId AND language = @language;
+            ";
+
+            var decision = (await connection.QueryAsync<Decision>(sqlQuery, new { @caseLabelId, @language })).FirstOrDefault();
+            if (decision == null)
+            {
+                return null;
+            }
+
+            var attachments = await FetchDecisionAttachments(decision.NativeId);
+            var pdf = await FetchDecisionPdf(decision.NativeId);
+            var historyPdf = await FetchDecisionHistoryPdf(decision.NativeId);
+
+            return new FullDecision()
+            {
+                Decision = decision,
+                Attachments = attachments,
+                Pdf = pdf,
+                DecisionHistoryPdf = historyPdf
+            };
         }
 
         public async Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language)
