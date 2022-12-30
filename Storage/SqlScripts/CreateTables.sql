@@ -333,3 +333,21 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = 'c586cd82-ea51-46a5-83a4-b37ba054366d';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+    
+    ALTER TABLE votings ALTER COLUMN for_text TYPE TEXT;
+    ALTER TABLE votings ALTER COLUMN against_text TYPE TEXT;
+    ALTER TABLE votings DROP CONSTRAINT pk__votings__voting_id CASCADE;
+    ALTER TABLE votings RENAME COLUMN voting_id TO voting_number;
+    ALTER TABLE votings ADD CONSTRAINT pk__votings__meeting_id__voting_number PRIMARY KEY (meeting_id, voting_number);
+    ALTER TABLE votes ADD COLUMN meeting_id VARCHAR(64);
+    ALTER TABLE votes RENAME COLUMN voting_id TO voting_number;
+    ALTER TABLE votes ADD CONSTRAINT fk__votes__meeting_id__voting_id FOREIGN KEY (meeting_id, voting_number) REFERENCES votings(meeting_id, voting_number);
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;

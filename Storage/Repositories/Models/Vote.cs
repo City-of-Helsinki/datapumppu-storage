@@ -2,7 +2,9 @@
 {
     public class Vote
     {
-        public int VotingID { get; set; }
+        public string MeetingID { get; set; }
+
+        public int VotingNumber { get; set; }
 
         public string VoterName { get; set; }
 

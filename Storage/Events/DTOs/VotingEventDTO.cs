@@ -4,7 +4,7 @@ namespace Storage.Events.DTOs
 {
     public class VotingEventDTO: EventDTO
     {
-        public int VotingID { get; set; }
+        public int VotingNumber { get; set; }
 
         public VotingType VotingType { get; set; }
 
