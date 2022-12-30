@@ -24,9 +24,10 @@ namespace Storage.Actions
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<VotingEventDTO, VotingEvent>()
-                    .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
+                    .ForMember(dest => dest.EventID, opt => opt.MapFrom(_ => eventId));
                 cfg.CreateMap<VoteDTO, Vote>()
-                    .ForMember(dest => dest.VotingID, opt => opt.MapFrom(x => votingEventDto.VotingID));
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => votingEventDto.MeetingID))
+                    .ForMember(dest => dest.VotingNumber, opt => opt.MapFrom(_ => votingEventDto.VotingNumber));
             });
             var mapper = config.CreateMapper();
             var votingEvent = mapper.Map<VotingEvent>(votingEventDto);

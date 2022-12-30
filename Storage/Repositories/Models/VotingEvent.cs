@@ -6,7 +6,7 @@
 
         public Guid EventID { get; set; }
 
-        public int VotingID { get; set; }
+        public int VotingNumber { get; set; }
 
         public DateTime Timestamp { get; set; }
 
