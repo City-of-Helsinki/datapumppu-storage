@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Dapper;
 using Storage.Repositories.Models;
+using Storage.Repositories.Providers;
 
 namespace Storage.Repositories
 {
@@ -10,15 +11,64 @@ namespace Storage.Repositories
         Task InsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
 
         Task SaveVotingResult(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
+
+        Task<VotingEvent?> GetVoting(string meetingId, string caseId);
+
+        Task<List<Vote>> GetVotes(string meetingId, int votingNumber);
     }
 
     public class VotingsRepository : IVotingsRepository
     {
         private readonly ILogger<VotingsRepository> _logger;
+        private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
-        public VotingsRepository(ILogger<VotingsRepository> logger)
+        public VotingsRepository(ILogger<VotingsRepository> logger,
+            IDatabaseConnectionFactory databaseConnectionFactory)
         {
             _logger = logger;
+            _databaseConnectionFactory = databaseConnectionFactory;
+        }
+
+        public async Task<VotingEvent?> GetVoting(string meetingId, string caseId)
+        {
+            _logger.LogInformation("Executing GetVoting()");
+            var sqlQuery = @"
+                select
+                    voting_number,
+                    voting_type_text_fi,
+                    voting_type_text_sv,
+                    votes_for,
+                    votes_against,
+                    votes_empty,
+                    votes_absent,
+                    for_title_fi,
+                    against_title_fi,
+                    for_title_sv,
+                    against_title_sv
+                from votings
+                join meeting_events on votings.voting_ended_eventid = meeting_events.event_id
+                where
+	                meeting_events.meeting_id = @meetingId and meeting_events.case_number = @caseId
+            ";
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+            return (await connection.QueryAsync<VotingEvent>(sqlQuery, new { meetingId, caseId })).FirstOrDefault();
+        }
+
+        public async Task<List<Vote>> GetVotes(string meetingId, int votingNumber)
+        {
+            _logger.LogInformation("Executing GetVotes()");
+            var sqlQuery = @"
+                select
+                    voter_name,
+                    vote_type
+                from
+                    votes
+                where meeting_id = @meetingId and voting_number = @votingNumber";
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+            var votes = await connection.QueryAsync<Vote>(sqlQuery, new { meetingId, votingNumber });
+            return votes?.ToList() ?? new List<Vote>();
         }
 
         public Task InsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
