@@ -48,7 +48,7 @@ namespace Storage.Repositories
                 from votings
                 join meeting_events on votings.voting_ended_eventid = meeting_events.event_id
                 where
-	                meeting_events.meeting_id = @meetingId and meeting_events.case_number = @caseId
+                    meeting_events.meeting_id = @meetingId and meeting_events.case_number = @caseId
             ";
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();

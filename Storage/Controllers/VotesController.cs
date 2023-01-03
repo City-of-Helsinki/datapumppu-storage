@@ -24,13 +24,13 @@ namespace Storage.Controllers
         {
             try
             {
-                _logger.LogInformation($"GetSeats {meetingId}, {caseNumber}");
+                _logger.LogInformation($"GetVotes {meetingId}, {caseNumber}");
                 var voting = await _votesProvider.GetVoting(meetingId, caseNumber);
                 return new OkObjectResult(voting);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetSeats failed");
+                _logger.LogError(ex, "GetVotes failed");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
