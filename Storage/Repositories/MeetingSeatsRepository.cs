@@ -35,19 +35,21 @@ namespace Storage.Repositories
         private Task InsertMeetingSeats(List<MeetingSeat> meetingSeats, int updateId, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing UpsertMeetingSeats()");
-            var sqlQuery = @"insert into meeting_seats (meeting_seat_update_id, seat_id, person_fi, person_sv) values (
+            var sqlQuery = @"insert into meeting_seats (meeting_seat_update_id, seat_id, person, additional_info_fi, additional_info_sv) values (
                 @meetingSeatUpdateId,
                 @seatId,
-                @personFi,
-                @personSv
+                @person,
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, meetingSeats.Select(item => new
             {
                 meetingSeatUpdateId = updateId,
                 seatId = item.SeatID,
-                personFi = item.PersonFI,
-                personSv = item.PersonSV
+                person = item.Person,
+                additionalInfoFi = item.AdditionalInfoFI,
+                additionalInfoSv = item.AdditionalInfoSV
             }), transaction);
         }
 

@@ -366,3 +366,29 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '8e6ae333-1cea-447e-87ab-354c6bdc07df';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+    
+    ALTER TABLE votings RENAME COLUMN voting_type_text TO voting_type_text_fi;
+    ALTER TABLE votings ADD COLUMN voting_type_text_sv VARCHAR(64);
+    ALTER TABLE votings RENAME COLUMN for_text TO for_text_fi;
+    ALTER TABLE votings ADD COLUMN for_text_sv TEXT;
+    ALTER TABLE votings RENAME COLUMN for_title TO for_title_fi;
+    ALTER TABLE votings RENAME COLUMN against_title TO against_title_fi;
+    ALTER TABLE votings ADD COLUMN for_title_sv VARCHAR(64);
+    ALTER TABLE votings ADD COLUMN against_title_sv VARCHAR(64);
+    ALTER TABLE votings RENAME COLUMN against_text TO against_text_fi;
+    ALTER TABLE votings ADD COLUMN against_text_sv TEXT;
+    ALTER TABLE meeting_seats RENAME COLUMN person_fi TO person;
+    ALTER TABLE meeting_seats DROP COLUMN person_sv;
+    ALTER TABLE meeting_seats ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE meeting_seats ADD COLUMN additional_info_sv VARCHAR(64);
+    ALTER TABLE propositions ALTER COLUMN text_fi TYPE TEXT;
+    ALTER TABLE propositions ALTER COLUMN text_sv TYPE TEXT;
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
