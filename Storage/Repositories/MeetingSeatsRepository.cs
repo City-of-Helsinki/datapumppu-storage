@@ -53,8 +53,9 @@ namespace Storage.Repositories
         {
             var sqlQuery = @"
                 select
-                    person_fi,
-                    person_sv,
+                    person,
+                    additional_info_fi,
+                    additional_info_sv,
                     seat_id
                 from
                     meeting_seats
