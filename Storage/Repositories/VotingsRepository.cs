@@ -24,17 +24,23 @@ namespace Storage.Repositories
         public Task InsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing InsertVoting()");
-            var sqlQuery = @"insert into votings (meeting_id, voting_number, voting_started, voting_started_eventid, voting_type, voting_type_text, for_text, for_title, against_text, against_title) values (
+            var sqlQuery = @"insert into votings (meeting_id, voting_number, voting_started, voting_started_eventid, voting_type, voting_type_text_fi, 
+                voting_type_text_sv, for_text_fi, for_text_sv, for_title_fi, for_title_sv, against_text_fi, against_text_sv, against_title_fi, against_title_sv) values (
                 @meetingId,
                 @votingNumber,
                 @timestamp,
                 @eventId,
                 @votingType,
-                @votingTypeText,
-                @forText,
-                @forTitle,
-                @againstText,
-                @againstTitle 
+                @votingTypeTextFi,
+                @votingTypeTextSv,
+                @forTextFi,
+                @forTextSv,
+                @forTitleFi,
+                @forTitleSv,
+                @againstTextFi,
+                @againstTextSv,
+                @againstTitleFi, 
+                @againstTitleSv 
             )";
 
             return connection.ExecuteAsync(sqlQuery, votingEvent, transaction);
@@ -50,35 +56,46 @@ namespace Storage.Repositories
         private Task UpsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("event : " + JsonSerializer.Serialize(votingEvent));
-            var sqlQuery = @"INSERT INTO votings (meeting_id, voting_number, voting_ended, voting_ended_eventid, voting_type, voting_type_text, votes_for, 
-                votes_against, votes_empty, votes_absent, for_text, for_title, against_text, against_title) values(
+            var sqlQuery = @"INSERT INTO votings (meeting_id, voting_number, voting_ended, voting_ended_eventid, voting_type, voting_type_text_fi, 
+                voting_type_text_sv, votes_for, votes_against, votes_empty, votes_absent, for_text_fi, for_text_sv, for_title_fi, for_title_sv, 
+                against_text_fi, against_text_sv, against_title_fi, against_title_sv) values(
                 @meetingId, 
                 @votingNumber,
                 @timestamp,
                 @eventId,
                 @votingType,
-                @votingTypeText,
+                @votingTypeTextFi,
+                @votingTypeTextSv,
                 @votesFor,
                 @votesAgainst,
                 @votesEmpty,
                 @votesAbsent,
-                @forText,
-                @forTitle,
-                @againstText,
-                @againstTitle) ";
+                @forTextFi,
+                @forTextSv,
+                @forTitleFi,
+                @forTitleSv,
+                @againstTextFi,
+                @againstTextSv,
+                @againstTitleFi,
+                @againstTitleSv) ";
             sqlQuery += $@"ON CONFLICT (meeting_id, voting_number) DO UPDATE SET
                 voting_ended = @timestamp,
                 voting_ended_eventid = @eventId,
                 voting_type = @votingType,
-                voting_type_text = @votingTypeText,
+                voting_type_text_fi = @votingTypeTextFi,
+                voting_type_text_sv = @votingTypeTextSv,
                 votes_for = @votesFor,
                 votes_against = @votesAgainst,
                 votes_empty = @votesEmpty,
                 votes_absent = @votesAbsent,
-                for_text = @forText,
-                for_title = @forTitle,
-                against_text = @againstText,
-                against_title = @againstTitle
+                for_text_fi = @forTextFi,
+                for_text_sv = @forTextSv,
+                for_title_fi = @forTitleFi,
+                for_title_sv = @forTitleSv,
+                against_text_fi = @againstTextFi,
+                against_text_sv = @againstTextSv,
+                against_title_fi = @againstTitleFi,
+                against_title_sv = @againstTitleSv
                 where votings.meeting_id = @meetingId AND votings.voting_number = @votingNumber
             ";
 
