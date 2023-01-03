@@ -1,21 +1,71 @@
 ﻿using Dapper;
 using Storage.Repositories.Models;
+using Storage.Repositories.Providers;
 using System.Data;
+using System.Net.WebSockets;
+using System.Transactions;
 
 namespace Storage.Repositories
 {
     public interface IMeetingSeatsRepository
     {
         Task InsertMeetingSeatUpdate(MeetingSeatUpdate meetingSeatUpdate, List<MeetingSeat> meetingSeats, IDbConnection connection, IDbTransaction transaction);
+
+        Task<int> GetUpdateId(string meetingId, string caseNumber);
+
+        Task<List<MeetingSeat>> GetSeats(int updateId);
     }
 
     public class MeetingSeatsRepository : IMeetingSeatsRepository
     {
         private readonly ILogger<MeetingSeatsRepository> _logger;
+        private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
-        public MeetingSeatsRepository(ILogger<MeetingSeatsRepository> logger)
+        public MeetingSeatsRepository(ILogger<MeetingSeatsRepository> logger,
+            IDatabaseConnectionFactory databaseConnectionFactory)
         {
             _logger = logger;
+            _databaseConnectionFactory = databaseConnectionFactory;
+        }
+
+        public async Task<int> GetUpdateId(string meetingId, string caseNumber)
+        {
+            var sqlQuery = @"
+                select
+	                meeting_seat_updates.id,
+	                meeting_seat_updates.attendees_eventid,
+	                meeting_events.case_number
+                from
+                    meeting_seat_updates 
+	            join
+                    meeting_events on meeting_seat_updates.attendees_eventid = meeting_events.event_id
+                where
+                    meeting_seat_updates.meeting_id = @meetingId and meeting_events.case_number = @caseNumber
+                order by
+                    meeting_seat_updates.timestamp desc
+            ";
+
+            using var dbConnection = await _databaseConnectionFactory.CreateOpenConnection();
+            return (await dbConnection.QueryAsync<int>(sqlQuery, new { meetingId, caseNumber })).FirstOrDefault();
+        }
+
+        public async Task<List<MeetingSeat>> GetSeats(int updateId)
+        {
+            var sqlQuery = @"
+                select
+                    person,
+                    additional_info_fi,
+                    additional_info_sv,
+                    seat_id
+                from
+                    meeting_seats
+                where
+                    meeting_seat_update_id = @updateId
+            ";
+
+            using var dbConnection = await _databaseConnectionFactory.CreateOpenConnection();
+            
+            return (await dbConnection.QueryAsync<MeetingSeat>(sqlQuery, new { updateId })).ToList();
         }
 
         public async Task InsertMeetingSeatUpdate(MeetingSeatUpdate meetingSeatUpdate, List<MeetingSeat> meetingSeats, IDbConnection connection, IDbTransaction transaction)

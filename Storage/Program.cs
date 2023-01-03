@@ -38,7 +38,8 @@ namespace Storage
             builder.Services.AddScoped<IPersonEventsRepository, PersonEventsRepository>();
             builder.Services.AddScoped<IReplyReservationsRepository, ReplyReservationsRepository>();
             builder.Services.AddScoped<IVotingsRepository, VotingsRepository>();
-
+            builder.Services.AddScoped<ISeatsProvider, SeatsProvider>();
+            
             builder.Services.AddScoped<IMeetingProvider, MeetingProvider>();
             builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
 
