@@ -43,9 +43,9 @@ namespace Storage
 
             builder.Services.AddScoped<IMeetingProvider, MeetingProvider>();
             builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
+            builder.Services.AddScoped<ISpeakingTurnProvider, SpeakingTurnProvider>();
 
             builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
-            
 
             builder.Services.AddScoped<IUpsertMeetingAction, UpsertMeetingAction>();
             builder.Services.AddScoped<IEventActions, EventActions>();
@@ -65,7 +65,7 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
             // EventObserver disabled for now (ServiceBus)
-            // builder.Services.AddHostedService<EventObserver>();
+            builder.Services.AddHostedService<EventObserver>();
             builder.Services.AddHostedService<DatabaseMigrationService>();
 
             var app = builder.Build();
