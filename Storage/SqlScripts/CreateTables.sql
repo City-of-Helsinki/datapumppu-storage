@@ -388,6 +388,20 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
     ALTER TABLE meeting_seats ADD COLUMN additional_info_sv VARCHAR(64);
     ALTER TABLE propositions ALTER COLUMN text_fi TYPE TEXT;
     ALTER TABLE propositions ALTER COLUMN text_sv TYPE TEXT;
+
+
+end if;
+end $$;
+
+DO $$
+DECLARE exec_id uuid = '0288404c-ff22-4876-b108-b852afcfcd67';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE speaking_turns RENAME COLUMN person_fi TO person;
+    ALTER TABLE speaking_turns ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE speaking_turns ADD COLUMN additional_info_sv VARCHAR(64);
+    ALTER TABLE speaking_turns DROP COLUMN person_sv;
     INSERT INTO database_updates VALUES (exec_id);
 
 end if;
