@@ -99,7 +99,7 @@ namespace Storage.Repositories
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
-                SELECT * FROM decision_attachments
+                SELECT * FROM attachments
                 WHERE decision_id = @nativeId
             ";
 
@@ -110,7 +110,7 @@ namespace Storage.Repositories
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
-                SELECT * FROM decision_pdfs
+                SELECT * FROM pdfs
                 WHERE decision_id = @nativeId
             ";
 
@@ -121,7 +121,7 @@ namespace Storage.Repositories
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
-                SELECT * FROM decision_history_pdfs
+                SELECT * FROM history_pdfs
                 WHERE decision_id = @nativeId
             ";
         
@@ -181,7 +181,7 @@ namespace Storage.Repositories
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision attachments");
-            var sqlQuery = @"INSERT INTO decision_attachments (decision_id, native_id, title, attachment_number,
+            var sqlQuery = @"INSERT INTO attachments (decision_id, native_id, title, attachment_number,
                 publicity_class, security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
@@ -204,7 +204,7 @@ namespace Storage.Repositories
                 language = @language,
                 personal_data = @personalData,
                 issued = @issued
-                WHERE decision_attachments.decision_id = @decisionId and decision_attachments.attachment_number = @attachmentNumber
+                WHERE attachments.decision_id = @decisionId and attachments.attachment_number = @attachmentNumber
             ;";
 
             return connection.ExecuteAsync(sqlQuery, attachments.Select(item => new
@@ -227,7 +227,7 @@ namespace Storage.Repositories
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision pdfs");
-            var sqlQuery = @"INSERT INTO decision_pdfs (decision_id, native_id, title, attachment_number, publicity_class,
+            var sqlQuery = @"INSERT INTO pdfs (decision_id, native_id, title, attachment_number, publicity_class,
                 security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
@@ -252,7 +252,7 @@ namespace Storage.Repositories
                 language = @language,
                 personal_data = @personalData,
                 issued = @issued
-                WHERE decision_pdfs.decision_id = @decisionId
+                WHERE pdfs.decision_id = @decisionId
             ;";
 
             return connection.ExecuteAsync(sqlQuery, decisionPdfs.Select(item => new
@@ -275,7 +275,7 @@ namespace Storage.Repositories
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision history pdfs");
-            var sqlQuery = @"INSERT INTO decision_history_pdfs (decision_id, native_id, title, attachment_number, publicity_class, 
+            var sqlQuery = @"INSERT INTO history_pdfs (decision_id, native_id, title, attachment_number, publicity_class, 
                 security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
@@ -300,7 +300,7 @@ namespace Storage.Repositories
                 language = @language,
                 personal_data = @personalData,
                 issued = @issued
-                WHERE decision_history_pdfs.decision_id = @decisionId
+                WHERE history_pdfs.decision_id = @decisionId
             ;";
 
             return connection.ExecuteAsync(sqlQuery, decisionHistoryPdfs.Select(item => new
