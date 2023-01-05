@@ -66,11 +66,11 @@ namespace Storage.Actions
                 decisionHistoryPdfs ?? new List<DecisionAttachment>());
         }
 
-        private DecisionAttachment MapToDecisionAttachment(DecisionAttachmentDTO attachmentDto, string decisionId)
+        private DecisionAttachment MapToDecisionAttachment(AttachmentDTO attachmentDto, string decisionId)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<DecisionAttachmentDTO, DecisionAttachment>()
+                cfg.CreateMap<AttachmentDTO, DecisionAttachment>()
                     .ForMember(dest => dest.DecisionId, opt => opt.MapFrom(x => decisionId));
             });
             var mapper = config.CreateMapper();

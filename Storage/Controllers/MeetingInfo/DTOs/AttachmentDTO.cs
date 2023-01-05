@@ -1,6 +1,6 @@
 ﻿namespace Storage.Controllers.MeetingInfo.DTOs
 {
-    public class DecisionAttachmentDTO
+    public class AttachmentDTO
     {
         public string? NativeId { get; set; }
 
