@@ -1,6 +1,6 @@
 ﻿namespace Storage.Repositories.Models
 {
-    public class SpeakingTurn
+    public class Statement
     {
         public string MeetingID { get; set; } = string.Empty;
 
@@ -14,7 +14,7 @@
 
         public SpeechType SpeechType { get; set; }
 
-        public int? Duration { get; set; }
+        public int? DurationSeconds { get; set; }
 
         public string? AdditionalInfoFI { get; set; }
 

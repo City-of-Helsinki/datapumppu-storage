@@ -9,22 +9,22 @@ namespace Storage.Providers
 {
     public interface ISpeakingTurnProvider
     {
-        Task<List<WebApiSpeakingTurnDTO>> GetSpeakingTurns(string meetingId, string caseNumber);
+        Task<List<WebApiStatementsDTO>> GetSpeakingTurns(string meetingId, string caseNumber);
     }
 
-    public class SpeakingTurnProvider : ISpeakingTurnProvider
+    public class StatementProvider : ISpeakingTurnProvider
     {
-        private readonly ILogger<SpeakingTurnProvider> _logger;
+        private readonly ILogger<StatementProvider> _logger;
         private readonly ISpeakingTurnsRepository _speakingTurnsRepository;
 
-        public SpeakingTurnProvider(ILogger<SpeakingTurnProvider> logger,
+        public StatementProvider(ILogger<StatementProvider> logger,
             ISpeakingTurnsRepository speakingTurnsRepository)
         {
             _logger = logger;
             _speakingTurnsRepository = speakingTurnsRepository;
         }
 
-        public async Task<List<WebApiSpeakingTurnDTO>> GetSpeakingTurns(string meetingId, string caseNumber)
+        public async Task<List<WebApiStatementsDTO>> GetSpeakingTurns(string meetingId, string caseNumber)
         {
             var speakingTurns = await _speakingTurnsRepository.GetSpeakingTurns(meetingId, caseNumber);
 
@@ -32,14 +32,14 @@ namespace Storage.Providers
 
         }
 
-        private WebApiSpeakingTurnDTO MapToDTO(SpeakingTurn seat)
+        private WebApiStatementsDTO MapToDTO(Statement seat)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<SpeakingTurn, WebApiSpeakingTurnDTO>();
+                cfg.CreateMap<Statement, WebApiStatementsDTO>();
             });
 
-            return config.CreateMapper().Map<WebApiSpeakingTurnDTO>(seat);
+            return config.CreateMapper().Map<WebApiStatementsDTO>(seat);
         }
     }
 }

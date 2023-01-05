@@ -4,13 +4,13 @@ using Storage.Providers;
 namespace Storage.Controllers
 {
     [ApiController]
-    [Route("api/speakingturns/")]
-    public class SpeakingTurnController : ControllerBase
+    [Route("api/statements/")]
+    public class StatementController : ControllerBase
     {
-        private readonly ILogger<SpeakingTurnController> _logger;
+        private readonly ILogger<StatementController> _logger;
         private readonly ISpeakingTurnProvider _speakingTurnProvider;
 
-        public SpeakingTurnController(ILogger<SpeakingTurnController> logger,
+        public StatementController(ILogger<StatementController> logger,
             ISpeakingTurnProvider speakingTurnProvider)
         {
             _logger = logger;

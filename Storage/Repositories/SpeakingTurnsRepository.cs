@@ -9,11 +9,11 @@ namespace Storage.Repositories
     {
         Task InsertSpeakingTurnReservation(SpeakingTurnReservation speakingTurnReservation, IDbConnection connection, IDbTransaction transaction);
 
-        Task InsertStartedSpeakingTurn(StartedSpeakingTurn startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction);
+        Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction);
 
-        Task UpsertSpeakingTurns(List<SpeakingTurn> speakingTurns, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction);
 
-        Task<List<SpeakingTurn>> GetSpeakingTurns(string meetingId, string agendaPoint);
+        Task<List<Statement>> GetSpeakingTurns(string meetingId, string agendaPoint);
     }
 
     public class SpeakingTurnsRepository : ISpeakingTurnsRepository
@@ -29,7 +29,7 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public async Task<List<SpeakingTurn>> GetSpeakingTurns(string meetingId, string agendaPoint)
+        public async Task<List<Statement>> GetSpeakingTurns(string meetingId, string agendaPoint)
         {
             var sqlQuery = @"
                 select
@@ -50,11 +50,11 @@ namespace Storage.Repositories
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
-            return (await connection.QueryAsync<SpeakingTurn>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+            return (await connection.QueryAsync<Statement>(sqlQuery, new { meetingId, agendaPoint })).ToList();
         }
 
 
-        public Task InsertStartedSpeakingTurn(StartedSpeakingTurn startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction)
+        public Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"insert into started_speaking_turns (meeting_id, event_id, timestamp, person_fi, person_sv, speaking_time, speech_timer, start_time, direction, seat_id, speech_type) values (
                 @meetingId, 
@@ -88,7 +88,7 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, speakingTurnReservation, transaction);
         }
 
-        public Task UpsertSpeakingTurns(List<SpeakingTurn> speakingTurns, IDbConnection connection, IDbTransaction transaction)
+        public Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing UpsertSpeakingTurns()");
             var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, additional_info_fi, additional_info_sv) values(
@@ -122,7 +122,7 @@ namespace Storage.Repositories
                 started = item.Started,
                 ended = item.Ended,
                 speechType = item.SpeechType,
-                durationSeconds = item.Duration,
+                durationSeconds = item.DurationSeconds,
                 additionalInfoFi = item.AdditionalInfoFI,
                 additionalInfoSv = item.AdditionalInfoSV
             }), transaction);

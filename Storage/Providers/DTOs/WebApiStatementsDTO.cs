@@ -1,6 +1,6 @@
 ﻿namespace Storage.Controllers.MeetingInfo.DTOs
 {
-    public class WebApiSpeakingTurnDTO
+    public class WebApiStatementsDTO
     {
         public string Person { get; set; } = string.Empty;
 

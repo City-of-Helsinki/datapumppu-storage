@@ -23,11 +23,11 @@ namespace Storage.Actions
             var speakingTurnStartedDto = eventBody.ToObjectFromJson<SpeakingTurnStartedEventDTO>();
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<SpeakingTurnStartedEventDTO, StartedSpeakingTurn>()
+                cfg.CreateMap<SpeakingTurnStartedEventDTO, StartedStatement>()
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
             var mapper = config.CreateMapper();
-            var startedSpeakingTurn = mapper.Map<StartedSpeakingTurn>(speakingTurnStartedDto);
+            var startedSpeakingTurn = mapper.Map<StartedStatement>(speakingTurnStartedDto);
 
             return _speakingTurnsRepository.InsertStartedSpeakingTurn(startedSpeakingTurn, connection, transaction);
         }
