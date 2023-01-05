@@ -366,3 +366,41 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = 'ed9cb657-b6ef-4939-ac0a-40f715f3350f';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE decision_pdfs RENAME TO pdfs;
+    ALTER TABLE pdfs ADD COLUMN meeting_id VARCHAR(64);
+    ALTER TABLE pdfs ADD COLUMN agenda_point INT;
+    ALTER TABLE pdfs ADD COLUMN id INT GENERATED ALWAYS AS IDENTITY;
+    ALTER TABLE pdfs ADD UNIQUE (decision_id);
+    ALTER TABLE pdfs ADD UNIQUE (meeting_id, agenda_point);
+    ALTER TABLE pdfs DROP CONSTRAINT pk__decision_pdfs__decision_id;
+    ALTER TABLE pdfs ADD CONSTRAINT pk__pdfs__id PRIMARY KEY (id);
+
+    ALTER TABLE decision_history_pdfs RENAME TO history_pdfs;
+    ALTER TABLE history_pdfs ADD COLUMN meeting_id VARCHAR(64);
+    ALTER TABLE history_pdfs ADD COLUMN agenda_point INT;
+    ALTER TABLE history_pdfs ADD COLUMN id INT GENERATED ALWAYS AS IDENTITY;
+    ALTER TABLE history_pdfs ADD UNIQUE (decision_id);
+    ALTER TABLE history_pdfs ADD UNIQUE (meeting_id, agenda_point);
+    ALTER TABLE history_pdfs DROP CONSTRAINT pk__decision_history_pdfs__decision_id;
+    ALTER TABLE history_pdfs ADD CONSTRAINT pk__history_pdfs__id PRIMARY KEY (id);
+
+    ALTER TABLE decision_attachments RENAME TO attachments;
+    ALTER TABLE attachments ADD COLUMN meeting_id VARCHAR(64);
+    ALTER TABLE attachments ADD COLUMN agenda_point INT;
+    ALTER TABLE attachments ADD COLUMN id INT GENERATED ALWAYS AS IDENTITY;
+    ALTER TABLE attachments ADD UNIQUE (native_id);
+    ALTER TABLE attachments ADD UNIQUE (meeting_id, agenda_point, attachment_number);
+    ALTER TABLE attachments ADD UNIQUE (decision_id, attachment_number);
+    ALTER TABLE attachments DROP CONSTRAINT pk__decision_attachments__decision_id;
+    ALTER TABLE attachments ADD CONSTRAINT pk__attachments__id PRIMARY KEY (id);
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
