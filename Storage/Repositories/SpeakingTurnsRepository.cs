@@ -34,8 +34,8 @@ namespace Storage.Repositories
             var sqlQuery = @"
                 select
                     person,
-                    startTime,
-                    endTime,
+                    start_time,
+                    end_time,
                     speech_type,
                     duration_seconds,
                     additional_info_fi,
