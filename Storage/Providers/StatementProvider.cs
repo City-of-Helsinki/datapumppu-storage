@@ -7,12 +7,12 @@ using Storage.Repositories.Models;
 
 namespace Storage.Providers
 {
-    public interface ISpeakingTurnProvider
+    public interface IStatementProvider
     {
         Task<List<WebApiStatementsDTO>> GetSpeakingTurns(string meetingId, string caseNumber);
     }
 
-    public class StatementProvider : ISpeakingTurnProvider
+    public class StatementProvider : IStatementProvider
     {
         private readonly ILogger<StatementProvider> _logger;
         private readonly ISpeakingTurnsRepository _speakingTurnsRepository;

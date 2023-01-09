@@ -8,10 +8,10 @@ namespace Storage.Controllers
     public class StatementController : ControllerBase
     {
         private readonly ILogger<StatementController> _logger;
-        private readonly ISpeakingTurnProvider _speakingTurnProvider;
+        private readonly IStatementProvider _speakingTurnProvider;
 
         public StatementController(ILogger<StatementController> logger,
-            ISpeakingTurnProvider speakingTurnProvider)
+            IStatementProvider speakingTurnProvider)
         {
             _logger = logger;
             _speakingTurnProvider = speakingTurnProvider;
