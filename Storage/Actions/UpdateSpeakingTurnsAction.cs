@@ -25,8 +25,12 @@ namespace Storage.Actions
             {
                 cfg.CreateMap<SpeakingTurnDTO, Statement>()
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => speakingTurnsEventDto.MeetingID))
-                    .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
+                    .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId))
+                    .ForMember(dest => dest.Started, opt => opt.MapFrom(src => src.StartTime))
+                    .ForMember(dest => dest.Ended, opt => opt.MapFrom(src => src.EndTime))
+                    .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.Duration));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var speakingTurns = speakingTurnsEventDto.SpeakingTurns.Select(speakingTurnDto => mapper.Map<Statement>(speakingTurnDto)).ToList();
 
