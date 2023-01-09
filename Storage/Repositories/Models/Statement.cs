@@ -8,9 +8,9 @@
 
         public string? Person { get; set; }
 
-        public DateTime? Started { get; set; }
+        public DateTime? StartTime { get; set; }
 
-        public DateTime? Ended { get; set; }
+        public DateTime? EndTime { get; set; }
 
         public SpeechType SpeechType { get; set; }
 
