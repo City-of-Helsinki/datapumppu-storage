@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Storage.Repositories.Models;
+using Storage.Repositories.Providers;
 using System.Data;
 
 namespace Storage.Repositories
@@ -8,21 +9,52 @@ namespace Storage.Repositories
     {
         Task InsertSpeakingTurnReservation(SpeakingTurnReservation speakingTurnReservation, IDbConnection connection, IDbTransaction transaction);
 
-        Task InsertStartedSpeakingTurn(StartedSpeakingTurn startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction);
+        Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction);
 
-        Task UpsertSpeakingTurns(List<SpeakingTurn> speakingTurns, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction);
+
+        Task<List<Statement>> GetSpeakingTurns(string meetingId, string agendaPoint);
     }
 
     public class SpeakingTurnsRepository : ISpeakingTurnsRepository
     {
         private readonly ILogger<SpeakingTurnsRepository> _logger;
+        private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
-        public SpeakingTurnsRepository(ILogger<SpeakingTurnsRepository> logger)
+        public SpeakingTurnsRepository(
+            ILogger<SpeakingTurnsRepository> logger,
+            IDatabaseConnectionFactory databaseConnectionFactory)
         {
             _logger = logger;
+            _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public Task InsertStartedSpeakingTurn(StartedSpeakingTurn startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction)
+        public async Task<List<Statement>> GetSpeakingTurns(string meetingId, string agendaPoint)
+        {
+            var sqlQuery = @"
+                select
+	                person,
+                    started,
+	                ended,
+	                speech_type, 
+	                duration_seconds,
+	                additional_info_fi,
+	                additional_info_sv
+                from
+                    speaking_turns
+                join
+                    meeting_events on speaking_turns.event_id = meeting_events.event_id
+                where
+                    meeting_events.meeting_id = @meetingId and meeting_events.case_number = @agendaPoint
+            ";
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            return (await connection.QueryAsync<Statement>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+        }
+
+
+        public Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"insert into started_speaking_turns (meeting_id, event_id, timestamp, person_fi, person_sv, speaking_time, speech_timer, start_time, direction, seat_id, speech_type) values (
                 @meetingId, 
@@ -56,7 +88,7 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, speakingTurnReservation, transaction);
         }
 
-        public Task UpsertSpeakingTurns(List<SpeakingTurn> speakingTurns, IDbConnection connection, IDbTransaction transaction)
+        public Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing UpsertSpeakingTurns()");
             var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, additional_info_fi, additional_info_sv) values(
@@ -87,10 +119,10 @@ namespace Storage.Repositories
                 meetingId = item.MeetingID,
                 eventId = item.EventID,
                 person = item.Person,
-                started = item.StartTime,
-                ended = item.EndTime,
+                started = item.Started,
+                ended = item.Ended,
                 speechType = item.SpeechType,
-                durationSeconds = item.Duration,
+                durationSeconds = item.DurationSeconds,
                 additionalInfoFi = item.AdditionalInfoFI,
                 additionalInfoSv = item.AdditionalInfoSV
             }), transaction);
