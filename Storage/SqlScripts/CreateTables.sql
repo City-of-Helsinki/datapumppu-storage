@@ -313,6 +313,7 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
     ALTER TABLE meetings ADD COLUMN meeting_sequence_number INT;
     ALTER TABLE decisions ADD COLUMN meeting_id VARCHAR(64);
     ALTER TABLE decisions ADD CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id);
+
     INSERT INTO database_updates VALUES (exec_id);
 
 end if;
@@ -327,6 +328,7 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
     ALTER TABLE agenda_items DROP CONSTRAINT pk__agenda_items__meeting_id;
     ALTER TABLE agenda_items ADD CONSTRAINT pk__agenda_items__meeting_id UNIQUE (meeting_id, agenda_point, language);
     ALTER TABLE decisions ADD COLUMN language VARCHAR(10);
+
     INSERT INTO database_updates VALUES (exec_id);
 
 end if;
@@ -360,6 +362,49 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
     ALTER TABLE votes ADD COLUMN meeting_id VARCHAR(64);
     ALTER TABLE votes RENAME COLUMN voting_id TO voting_number;
     ALTER TABLE votes ADD CONSTRAINT fk__votes__meeting_id__voting_id FOREIGN KEY (meeting_id, voting_number) REFERENCES votings(meeting_id, voting_number);
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
+DO $$
+DECLARE exec_id uuid = '8e6ae333-1cea-447e-87ab-354c6bdc07df';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+    
+    ALTER TABLE votings RENAME COLUMN voting_type_text TO voting_type_text_fi;
+    ALTER TABLE votings ADD COLUMN voting_type_text_sv VARCHAR(64);
+    ALTER TABLE votings RENAME COLUMN for_text TO for_text_fi;
+    ALTER TABLE votings ADD COLUMN for_text_sv TEXT;
+    ALTER TABLE votings RENAME COLUMN for_title TO for_title_fi;
+    ALTER TABLE votings RENAME COLUMN against_title TO against_title_fi;
+    ALTER TABLE votings ADD COLUMN for_title_sv VARCHAR(64);
+    ALTER TABLE votings ADD COLUMN against_title_sv VARCHAR(64);
+    ALTER TABLE votings RENAME COLUMN against_text TO against_text_fi;
+    ALTER TABLE votings ADD COLUMN against_text_sv TEXT;
+    ALTER TABLE meeting_seats RENAME COLUMN person_fi TO person;
+    ALTER TABLE meeting_seats DROP COLUMN person_sv;
+    ALTER TABLE meeting_seats ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE meeting_seats ADD COLUMN additional_info_sv VARCHAR(64);
+    ALTER TABLE propositions ALTER COLUMN text_fi TYPE TEXT;
+    ALTER TABLE propositions ALTER COLUMN text_sv TYPE TEXT;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
+DO $$
+DECLARE exec_id uuid = '0288404c-ff22-4876-b108-b852afcfcd67';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE speaking_turns RENAME COLUMN person_fi TO person;
+    ALTER TABLE speaking_turns ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE speaking_turns ADD COLUMN additional_info_sv VARCHAR(64);
+    ALTER TABLE speaking_turns DROP COLUMN person_sv;
+
     INSERT INTO database_updates VALUES (exec_id);
 
 end if;

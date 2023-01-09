@@ -59,24 +59,26 @@ namespace Storage.Repositories
         public Task UpsertSpeakingTurns(List<SpeakingTurn> speakingTurns, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing UpsertSpeakingTurns()");
-            var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person_fi, person_sv, started, ended, speech_type, duration_seconds) values(
+            var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, additional_info_fi, additional_info_sv) values(
                 @meetingId,
                 @eventId,
-                @personFi,
-                @personSv,
+                @person,
                 @started,
                 @ended,
                 @speechType,
-                @durationSeconds
+                @durationSeconds,
+                @additionalInfoFi,
+                @additionalInfoSv
             ) ";
             sqlQuery += @"ON CONFLICT (meeting_id, started) DO UPDATE SET 
                 event_id = @eventId,
-                person_fi = @personFi,
-                person_sv = @personSv,
+                person = @person,
                 started = @started,
                 ended = @ended,
                 speech_type = @speechType,
-                duration_seconds = @durationSeconds
+                duration_seconds = @durationSeconds,
+                additional_info_fi = @additionalInfoFi,
+                additional_info_sv = @additionalInfoSv
                 WHERE speaking_turns.meeting_id = @meetingID and speaking_turns.started = @started
             ;";
 
@@ -84,12 +86,13 @@ namespace Storage.Repositories
             {
                 meetingId = item.MeetingID,
                 eventId = item.EventID,
-                personFi = item.PersonFI,
-                personSv = item.PersonSV,
+                person = item.Person,
                 started = item.StartTime,
                 ended = item.EndTime,
                 speechType = item.SpeechType,
-                durationSeconds = item.Duration
+                durationSeconds = item.Duration,
+                additionalInfoFi = item.AdditionalInfoFI,
+                additionalInfoSv = item.AdditionalInfoSV
             }), transaction);
         }
     }

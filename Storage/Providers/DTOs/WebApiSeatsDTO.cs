@@ -1,13 +1,13 @@
-﻿namespace Storage.Events.DTOs
+﻿namespace Storage.Controllers.MeetingInfo.DTOs
 {
-    public class MeetingSeatDTO
+    public class WebApiSeatDTO
     {
-        public string SeatID { get; set; }
-
         public string? Person { get; set; }
 
         public string? AdditionalInfoFI { get; set; }
 
         public string? AdditionalInfoSV { get; set; }
+
+        public string? SeatId { get; set; }
     }
 }

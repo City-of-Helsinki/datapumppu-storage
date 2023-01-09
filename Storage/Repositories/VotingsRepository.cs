@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Dapper;
 using Storage.Repositories.Models;
+using Storage.Repositories.Providers;
 
 namespace Storage.Repositories
 {
@@ -10,31 +11,86 @@ namespace Storage.Repositories
         Task InsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
 
         Task SaveVotingResult(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
+
+        Task<VotingEvent?> GetVoting(string meetingId, string caseId);
+
+        Task<List<Vote>> GetVotes(string meetingId, int votingNumber);
     }
 
     public class VotingsRepository : IVotingsRepository
     {
         private readonly ILogger<VotingsRepository> _logger;
+        private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
-        public VotingsRepository(ILogger<VotingsRepository> logger)
+        public VotingsRepository(ILogger<VotingsRepository> logger,
+            IDatabaseConnectionFactory databaseConnectionFactory)
         {
             _logger = logger;
+            _databaseConnectionFactory = databaseConnectionFactory;
+        }
+
+        public async Task<VotingEvent?> GetVoting(string meetingId, string caseId)
+        {
+            _logger.LogInformation("Executing GetVoting()");
+            var sqlQuery = @"
+                select
+                    voting_number,
+                    voting_type_text_fi,
+                    voting_type_text_sv,
+                    votes_for,
+                    votes_against,
+                    votes_empty,
+                    votes_absent,
+                    for_title_fi,
+                    against_title_fi,
+                    for_title_sv,
+                    against_title_sv
+                from votings
+                join meeting_events on votings.voting_ended_eventid = meeting_events.event_id
+                where
+                    meeting_events.meeting_id = @meetingId and meeting_events.case_number = @caseId
+            ";
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+            return (await connection.QueryAsync<VotingEvent>(sqlQuery, new { meetingId, caseId })).FirstOrDefault();
+        }
+
+        public async Task<List<Vote>> GetVotes(string meetingId, int votingNumber)
+        {
+            _logger.LogInformation("Executing GetVotes()");
+            var sqlQuery = @"
+                select
+                    voter_name,
+                    vote_type
+                from
+                    votes
+                where meeting_id = @meetingId and voting_number = @votingNumber";
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+            var votes = await connection.QueryAsync<Vote>(sqlQuery, new { meetingId, votingNumber });
+            return votes?.ToList() ?? new List<Vote>();
         }
 
         public Task InsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing InsertVoting()");
-            var sqlQuery = @"insert into votings (meeting_id, voting_number, voting_started, voting_started_eventid, voting_type, voting_type_text, for_text, for_title, against_text, against_title) values (
+            var sqlQuery = @"insert into votings (meeting_id, voting_number, voting_started, voting_started_eventid, voting_type, voting_type_text_fi, 
+                voting_type_text_sv, for_text_fi, for_text_sv, for_title_fi, for_title_sv, against_text_fi, against_text_sv, against_title_fi, against_title_sv) values (
                 @meetingId,
                 @votingNumber,
                 @timestamp,
                 @eventId,
                 @votingType,
-                @votingTypeText,
-                @forText,
-                @forTitle,
-                @againstText,
-                @againstTitle 
+                @votingTypeTextFi,
+                @votingTypeTextSv,
+                @forTextFi,
+                @forTextSv,
+                @forTitleFi,
+                @forTitleSv,
+                @againstTextFi,
+                @againstTextSv,
+                @againstTitleFi, 
+                @againstTitleSv 
             )";
 
             return connection.ExecuteAsync(sqlQuery, votingEvent, transaction);
@@ -50,35 +106,46 @@ namespace Storage.Repositories
         private Task UpsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("event : " + JsonSerializer.Serialize(votingEvent));
-            var sqlQuery = @"INSERT INTO votings (meeting_id, voting_number, voting_ended, voting_ended_eventid, voting_type, voting_type_text, votes_for, 
-                votes_against, votes_empty, votes_absent, for_text, for_title, against_text, against_title) values(
+            var sqlQuery = @"INSERT INTO votings (meeting_id, voting_number, voting_ended, voting_ended_eventid, voting_type, voting_type_text_fi, 
+                voting_type_text_sv, votes_for, votes_against, votes_empty, votes_absent, for_text_fi, for_text_sv, for_title_fi, for_title_sv, 
+                against_text_fi, against_text_sv, against_title_fi, against_title_sv) values(
                 @meetingId, 
                 @votingNumber,
                 @timestamp,
                 @eventId,
                 @votingType,
-                @votingTypeText,
+                @votingTypeTextFi,
+                @votingTypeTextSv,
                 @votesFor,
                 @votesAgainst,
                 @votesEmpty,
                 @votesAbsent,
-                @forText,
-                @forTitle,
-                @againstText,
-                @againstTitle) ";
+                @forTextFi,
+                @forTextSv,
+                @forTitleFi,
+                @forTitleSv,
+                @againstTextFi,
+                @againstTextSv,
+                @againstTitleFi,
+                @againstTitleSv) ";
             sqlQuery += $@"ON CONFLICT (meeting_id, voting_number) DO UPDATE SET
                 voting_ended = @timestamp,
                 voting_ended_eventid = @eventId,
                 voting_type = @votingType,
-                voting_type_text = @votingTypeText,
+                voting_type_text_fi = @votingTypeTextFi,
+                voting_type_text_sv = @votingTypeTextSv,
                 votes_for = @votesFor,
                 votes_against = @votesAgainst,
                 votes_empty = @votesEmpty,
                 votes_absent = @votesAbsent,
-                for_text = @forText,
-                for_title = @forTitle,
-                against_text = @againstText,
-                against_title = @againstTitle
+                for_text_fi = @forTextFi,
+                for_text_sv = @forTextSv,
+                for_title_fi = @forTitleFi,
+                for_title_sv = @forTitleSv,
+                against_text_fi = @againstTextFi,
+                against_text_sv = @againstTextSv,
+                against_title_fi = @againstTitleFi,
+                against_title_sv = @againstTitleSv
                 where votings.meeting_id = @meetingId AND votings.voting_number = @votingNumber
             ";
 

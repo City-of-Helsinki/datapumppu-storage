@@ -38,6 +38,8 @@ namespace Storage
             builder.Services.AddScoped<IPersonEventsRepository, PersonEventsRepository>();
             builder.Services.AddScoped<IReplyReservationsRepository, ReplyReservationsRepository>();
             builder.Services.AddScoped<IVotingsRepository, VotingsRepository>();
+            builder.Services.AddScoped<ISeatsProvider, SeatsProvider>();
+            builder.Services.AddScoped<IVotesProvider, VotesProvider>();
 
             builder.Services.AddScoped<IMeetingProvider, MeetingProvider>();
             builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
@@ -63,7 +65,11 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
             // EventObserver disabled for now (ServiceBus)
-            // builder.Services.AddHostedService<EventObserver>();
+            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]))
+            {
+                builder.Services.AddHostedService<EventObserver>();
+            }
+
             builder.Services.AddHostedService<DatabaseMigrationService>();
 
             var app = builder.Build();
