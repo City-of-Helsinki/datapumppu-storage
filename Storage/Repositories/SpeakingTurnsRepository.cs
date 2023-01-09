@@ -34,8 +34,8 @@ namespace Storage.Repositories
             var sqlQuery = @"
                 select
                     person,
-                    start_time,
-                    end_time,
+                    started,
+                    ended,
                     speech_type,
                     duration_seconds,
                     additional_info_fi,
@@ -119,8 +119,8 @@ namespace Storage.Repositories
                 meetingId = item.MeetingID,
                 eventId = item.EventID,
                 person = item.Person,
-                started = item.StartTime,
-                ended = item.EndTime,
+                started = item.Started,
+                ended = item.Ended,
                 speechType = item.SpeechType,
                 durationSeconds = item.DurationSeconds,
                 additionalInfoFi = item.AdditionalInfoFI,

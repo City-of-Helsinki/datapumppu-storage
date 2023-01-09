@@ -34,10 +34,16 @@ namespace Storage.Providers
 
         private WebApiStatementsDTO MapToDTO(Statement seat)
         {
+            
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Statement, WebApiStatementsDTO>();
+                cfg.CreateMap<Statement, WebApiStatementsDTO>()
+                    .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Started))
+                    .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Ended))
+                    .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.DurationSeconds));
+
             });
+            config.AssertConfigurationIsValid();
 
             return config.CreateMapper().Map<WebApiStatementsDTO>(seat);
         }
