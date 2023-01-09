@@ -33,13 +33,13 @@ namespace Storage.Repositories
         {
             var sqlQuery = @"
                 select
-	                person,
-                    started,
-	                ended,
-	                speech_type, 
-	                duration_seconds,
-	                additional_info_fi,
-	                additional_info_sv
+                    person,
+                    startTime,
+                    endTime,
+                    speech_type,
+                    duration_seconds,
+                    additional_info_fi,
+                    additional_info_sv
                 from
                     speaking_turns
                 join
