@@ -1,7 +1,11 @@
 ﻿namespace Storage.Repositories.Models
 {
-    public class DecisionAttachment
+    public class Attachment
     {
+        public string? MeetingID { get; set; }
+
+        public int? AgendaPoint { get; set; }
+
         public string? NativeId { get; set; }
 
         public string? DecisionId { get; set; }

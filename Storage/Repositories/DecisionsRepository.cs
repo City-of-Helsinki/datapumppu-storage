@@ -12,11 +12,11 @@ namespace Storage.Repositories
     {
         Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction);
 
-        Task UpsertDecisionAttachments(List<DecisionAttachment> attachments, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertDecisionAttachments(List<Attachment> attachments, IDbConnection connection, IDbTransaction transaction);
 
-        Task UpsertDecisionPdfs(List<DecisionAttachment> decisionPdfs, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertDecisionPdfs(List<Attachment> decisionPdfs, IDbConnection connection, IDbTransaction transaction);
 
-        Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertDecisionHistoryPdfs(List<Attachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
     }
 
     public interface IDecisionsReadOnlyRepository
@@ -95,7 +95,7 @@ namespace Storage.Repositories
             return result;
         }
 
-        private async Task<List<DecisionAttachment>> FetchDecisionAttachments(string nativeId)
+        private async Task<List<Attachment>> FetchDecisionAttachments(string nativeId)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
@@ -103,10 +103,10 @@ namespace Storage.Repositories
                 WHERE decision_id = @nativeId
             ";
 
-            return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).ToList();
+            return (await connection.QueryAsync<Attachment>(sqlQuery, new { @nativeId })).ToList();
         }
 
-        private async Task<DecisionAttachment> FetchDecisionPdf(string nativeId)
+        private async Task<Attachment> FetchDecisionPdf(string nativeId)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
@@ -114,10 +114,10 @@ namespace Storage.Repositories
                 WHERE decision_id = @nativeId
             ";
 
-            return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
+            return (await connection.QueryAsync<Attachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
         }
 
-        private async Task<DecisionAttachment?> FetchDecisionHistoryPdf(string nativeId)
+        private async Task<Attachment?> FetchDecisionHistoryPdf(string nativeId)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
@@ -125,7 +125,7 @@ namespace Storage.Repositories
                 WHERE decision_id = @nativeId
             ";
         
-            return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
+            return (await connection.QueryAsync<Attachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
         }
 
         public Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction)
@@ -177,7 +177,7 @@ namespace Storage.Repositories
             }), transaction);
         }
 
-        public Task UpsertDecisionAttachments(List<DecisionAttachment> attachments,
+        public Task UpsertDecisionAttachments(List<Attachment> attachments,
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision attachments");
@@ -223,7 +223,7 @@ namespace Storage.Repositories
             }), transaction);
         }
 
-        public Task UpsertDecisionPdfs(List<DecisionAttachment> decisionPdfs,
+        public Task UpsertDecisionPdfs(List<Attachment> decisionPdfs,
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision pdfs");
@@ -271,11 +271,11 @@ namespace Storage.Repositories
             }), transaction);
         }
 
-        public Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs,
+        public Task UpsertDecisionHistoryPdfs(List<Attachment> decisionHistoryPdfs,
             IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decision history pdfs");
-            var sqlQuery = @"INSERT INTO history_pdfs (decision_id, native_id, title, attachment_number, publicity_class, 
+            var sqlQuery = @"INSERT INTO decision_history_pdfs (decision_id, native_id, title, attachment_number, publicity_class, 
                 security_reasons, type, file_uri, language, personal_data, issued) values(
                 @decisionId,
                 @nativeId,
@@ -300,7 +300,7 @@ namespace Storage.Repositories
                 language = @language,
                 personal_data = @personalData,
                 issued = @issued
-                WHERE history_pdfs.decision_id = @decisionId
+                WHERE decision_history_pdfs.decision_id = @decisionId
             ;";
 
             return connection.ExecuteAsync(sqlQuery, decisionHistoryPdfs.Select(item => new

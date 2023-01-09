@@ -4,10 +4,10 @@
     {
         public Decision Decision { get; set; }
 
-        public DecisionAttachment Pdf { get; set; }
+        public Attachment Pdf { get; set; }
 
-        public DecisionAttachment? DecisionHistoryPdf { get; set; }
+        public Attachment? DecisionHistoryPdf { get; set; }
 
-        public List<DecisionAttachment> Attachments { get; set; }
+        public List<Attachment> Attachments { get; set; }
     }
 }

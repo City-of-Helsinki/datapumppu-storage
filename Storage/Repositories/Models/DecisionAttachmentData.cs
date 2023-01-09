@@ -2,8 +2,8 @@
 {
     public class DecisionAttachmentData
     {
-        public List<DecisionAttachment> Existing { get; set; }
+        public List<Attachment> Existing { get; set; }
 
-        public List<DecisionAttachment> NonExisting { get; set; }
+        public List<Attachment> NonExisting { get; set; }
     }
 }

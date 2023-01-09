@@ -42,17 +42,24 @@ namespace Storage.Actions
 
             var agendas = meetingDTO.Agendas?.Select(agenda => mapper.Map<AgendaItem>(agenda)).ToList();
 
+            var agendaAttachments = meetingDTO.Agendas?.SelectMany(agenda => agenda.Attachments, (agenda, Attachments) =>
+                new { Attachments, agenda.AgendaPoint }).Select(agendaAttachmentsData =>
+                MapToAttachment(agendaAttachmentsData.Attachments, meetingDTO.MeetingID, agendaAttachmentsData.AgendaPoint, null)).ToList();
+
+            var agendaPdfs = meetingDTO.Agendas?.Where(agenda => agenda.Pdf != null)
+                .Select(agenda => MapToAttachment(agenda.Pdf, meetingDTO.MeetingID, agenda.AgendaPoint, null)).ToList();
+
             var decisions = meetingDTO.Decisions?.Select(decision => mapper.Map<Decision>(decision)).ToList();
 
             var decisionPdfs = meetingDTO.Decisions?.Where(decision => decision.Pdf != null)
-                    .Select(decision => MapToDecisionAttachment(decision.Pdf, decision.NativeId)).ToList();
+                    .Select(decision => MapToAttachment(decision.Pdf, null, null, decision.NativeId)).ToList();
 
             var decisionHistoryPdfs = meetingDTO.Decisions?.Where(decision => decision.DecisionHistoryPdf != null)
-                    .Select(decision => MapToDecisionAttachment(decision.DecisionHistoryPdf, decision.NativeId)).ToList();
+                    .Select(decision => MapToAttachment(decision.DecisionHistoryPdf, null, null, decision.NativeId)).ToList();
 
             var decisionAttachments = meetingDTO.Decisions?.SelectMany(decision => decision.Attachments,
                         (decision, Attachments) => new { Attachments, decision.NativeId })
-                    .Select(decisionAttachmentData => MapToDecisionAttachment(decisionAttachmentData.Attachments, decisionAttachmentData.NativeId))
+                    .Select(decisionAttachmentData => MapToAttachment(decisionAttachmentData.Attachments, null, null, decisionAttachmentData.NativeId))
                     .ToList();
 
             var meeting = mapper.Map<Meeting>(meetingDTO);
@@ -60,25 +67,30 @@ namespace Storage.Actions
             await MakeTransaction(
                 meeting, 
                 agendas ?? new List<AgendaItem>(), 
+                agendaAttachments ?? new List<Attachment>(), 
+                agendaPdfs ?? new List<Attachment>(), 
                 decisions ?? new List<Decision>(), 
-                decisionAttachments ?? new List<DecisionAttachment>(), 
-                decisionPdfs ?? new List<DecisionAttachment>(), 
-                decisionHistoryPdfs ?? new List<DecisionAttachment>());
+                decisionAttachments ?? new List<Attachment>(), 
+                decisionPdfs ?? new List<Attachment>(), 
+                decisionHistoryPdfs ?? new List<Attachment>());
         }
 
-        private DecisionAttachment MapToDecisionAttachment(AttachmentDTO attachmentDto, string decisionId)
+        private Attachment MapToAttachment(AttachmentDTO attachmentDto, string? meetingId, int? agendaPoint, string? decisionId)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<AttachmentDTO, DecisionAttachment>()
-                    .ForMember(dest => dest.DecisionId, opt => opt.MapFrom(x => decisionId));
+                cfg.CreateMap<AttachmentDTO, Attachment>()
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingId))
+                    .ForMember(dest => dest.AgendaPoint, opt => opt.MapFrom(_ => agendaPoint))
+                    .ForMember(dest => dest.DecisionId, opt => opt.MapFrom(_ => decisionId));
             });
             var mapper = config.CreateMapper();
 
-            return mapper.Map<DecisionAttachment>(attachmentDto);
+            return mapper.Map<Attachment>(attachmentDto);
         }
 
-        private async Task MakeTransaction(Meeting meeting, List<AgendaItem> agendas, List<Decision> decisions, List<DecisionAttachment> decisionAttachments, List<DecisionAttachment> decisionPdfs, List<DecisionAttachment> decisionHistoryPdfs)
+        private async Task MakeTransaction(Meeting meeting, List<AgendaItem> agendas, List<Attachment> agendaAttachments, List<Attachment> agendaPdfs, 
+            List<Decision> decisions, List<Attachment> decisionAttachments, List<Attachment> decisionPdfs, List<Attachment> decisionHistoryPdfs)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
 
@@ -87,6 +99,8 @@ namespace Storage.Actions
             {
                 await _meetingsRepository.UpsertMeeting(meeting, connection, transaction);
                 await _agendaItemsRepository.UpsertAgendaItems(agendas, connection, transaction);
+                await _agendaItemsRepository.UpsertAgendaAttachments(agendaAttachments, connection, transaction);
+                await _agendaItemsRepository.UpsertAgendaPdfs(agendaPdfs, connection, transaction);
                 await _decisionsRepository.UpsertDecisions(decisions, connection, transaction);
                 await _decisionsRepository.UpsertDecisionAttachments(decisionAttachments, connection, transaction);
                 await _decisionsRepository.UpsertDecisionPdfs(decisionPdfs, connection, transaction);

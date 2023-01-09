@@ -27,7 +27,7 @@ namespace Storage.Mappers
             return result;
         }
 
-        private WebApiAttachmentDTO? MapAttachmentToDTO(DecisionAttachment? attachment)
+        private WebApiAttachmentDTO? MapAttachmentToDTO(Attachment? attachment)
         {
             if (attachment == null)
             {
@@ -36,7 +36,7 @@ namespace Storage.Mappers
 
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<DecisionAttachment, WebApiAttachmentDTO>();
+                cfg.CreateMap<Attachment, WebApiAttachmentDTO>();
             });
             var mapper = config.CreateMapper();
             var result = mapper.Map<WebApiAttachmentDTO>(attachment);

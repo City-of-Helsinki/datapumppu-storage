@@ -2,6 +2,7 @@
 using Storage.Repositories.Models;
 using Storage.Repositories.Providers;
 using System.Data;
+using System.Transactions;
 
 namespace Storage.Repositories
 {
@@ -10,6 +11,9 @@ namespace Storage.Repositories
         Task<List<AgendaItem>> FetchAgendasByMeetingId(string id, string language);
 
         Task UpsertAgendaItems(List<AgendaItem> agendasItems, IDbConnection connection, IDbTransaction transaction);
+
+        Task UpsertAgendaAttachments(List<Attachment> attachments, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertAgendaPdfs(List<Attachment> pdfs, IDbConnection connection, IDbTransaction transaction);
     }
 
     public class AgendaItemsRepository : IAgendaItemsRepository
@@ -71,6 +75,104 @@ namespace Storage.Repositories
             }), transaction);
         }
 
+
+        public Task UpsertAgendaAttachments(List<Attachment> attachments, 
+            IDbConnection connection, IDbTransaction transaction)
+        {
+            _logger.LogInformation("Upserting agenda attachments");
+            var sqlQuery = @"INSERT INTO attachments (meeting_id, agenda_point, native_id, title, attachment_number,
+                publicity_class, security_reasons, type, file_uri, language, personal_data, issued) values(
+                @meetingId,
+                @agendaPoint,
+                @nativeId,
+                @title,
+                @attachmentNumber,
+                @publicityClass,
+                @securityReasons,
+                @type,
+                @fileUri,
+                @language,
+                @personalData,
+                @issued
+            ) ";
+            sqlQuery += @"ON CONFLICT (meeting_id, agenda_point, attachment_number) DO UPDATE SET 
+                title = @title,
+                publicity_class = @publicityClass,
+                security_reasons = @securityReasons,
+                type = @type,
+                file_uri = @fileUri,
+                language = @language,
+                personal_data = @personalData,
+                issued = @issued
+                WHERE attachments.meeting_id = @meetingId and attachments.attachment_number = @attachmentNumber and attachments.agenda_point = @agendaPoint
+            ;";
+
+            return connection.ExecuteAsync(sqlQuery, attachments.Select(item => new
+            {
+                meetingId = item.MeetingID,
+                agendaPoint = item.AgendaPoint,
+                nativeId = item.NativeId,
+                title = item.Title,
+                attachmentNumber = item.AttachmentNumber,
+                publicityClass = item.PublicityClass,
+                securityReasons = item.SecurityReasons,
+                type = item.Type,
+                fileUri = item.FileURI,
+                language = item.Language,
+                personalData = item.PersonalData,
+                issued = item.Issued
+            }), transaction);
+        }
+
+        public Task UpsertAgendaPdfs(List<Attachment> pdfs,
+            IDbConnection connection, IDbTransaction transaction)
+        {
+            _logger.LogInformation("Upserting agenda pdfs");
+            var sqlQuery = @"INSERT INTO pdfs (meeting_id, agenda_point, native_id, title, attachment_number, publicity_class,
+                security_reasons, type, file_uri, language, personal_data, issued) values(
+                @meetingId,
+                @agenda_point,
+                @nativeId,
+                @title,
+                @attachmentNumber,
+                @publicityClass,
+                @securityReasons,
+                @type,
+                @fileUri,
+                @language,
+                @personalData,
+                @issued
+            ) ";
+            sqlQuery += @"ON CONFLICT (meeting_id, agenda_point) DO UPDATE SET 
+                native_id = @nativeId,
+                title = @title,
+                attachment_number = @attachmentNumber,
+                publicity_class = @publicityClass,
+                security_reasons = @securityReasons,
+                type = @type,
+                file_uri = @fileUri,
+                language = @language,
+                personal_data = @personalData,
+                issued = @issued
+                WHERE pdfs.meeting_id = @meeting_id AND pdfs.agenda_point = @agendaPoint
+            ;";
+
+            return connection.ExecuteAsync(sqlQuery, pdfs.Select(item => new
+            {
+                meetingId = item.MeetingID,
+                agendaPoint = item.AgendaPoint,
+                nativeId = item.NativeId,
+                title = item.Title,
+                attachmentNumber = item.AttachmentNumber,
+                publicityClass = item.PublicityClass,
+                securityReasons = item.SecurityReasons,
+                type = item.Type,
+                fileUri = item.FileURI,
+                language = item.Language,
+                personalData = item.PersonalData,
+                issued = item.Issued
+            }), transaction);
+        }
     }
 }
 
