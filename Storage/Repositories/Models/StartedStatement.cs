@@ -1,6 +1,6 @@
 ﻿namespace Storage.Repositories.Models
 {
-    public class StartedSpeakingTurn
+    public class StartedStatement
     {
         public string MeetingID { get; set; }
 
