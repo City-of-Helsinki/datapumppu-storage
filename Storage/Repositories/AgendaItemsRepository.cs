@@ -79,7 +79,7 @@ namespace Storage.Repositories
         }
 
         public Task UpsertAgendaItemAttachments(List<AgendaItemAttachment> attachments,
-    IDbConnection connection, IDbTransaction transaction)
+            IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting agendaitem attachments");
             var sqlQuery = @"INSERT INTO agenda_item_attachments (meeting_id, agenda_point, native_id, title, attachment_number,
@@ -131,8 +131,9 @@ namespace Storage.Repositories
                 };
             }), transaction);
         }
+
         public Task UpsertAgendaItemPdfs(List<AgendaItemAttachment> decisionPdfs,
-    IDbConnection connection, IDbTransaction transaction)
+            IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting agendaitem pdfs");
             var sqlQuery = @"INSERT INTO agenda_item_pdfs (meeting_id, agenda_point, native_id, title, attachment_number, publicity_class,
@@ -183,7 +184,7 @@ namespace Storage.Repositories
         }
 
         public Task UpsertAgendaItemDecisionHistoryPdfs(List<AgendaItemAttachment> decisionHistoryPdfs,
-    IDbConnection connection, IDbTransaction transaction)
+            IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting agendaitem DecisionHistoryPdfs");
             var sqlQuery = @"INSERT INTO agenda_item_decision_history_pdfs (meeting_id, agenda_point, native_id, title, attachment_number, publicity_class, 

@@ -96,10 +96,12 @@ namespace Storage.Actions
 
         private string GetLanguage(string language)
         {
-            var correctLanguages = new List<string?> { "fi", "sv", "en", null};
-            if (correctLanguages.Contains(language)) {
+            var correctLanguages = new List<string?> { "fi", "sv", "en", null };
+            if (correctLanguages.Contains(language)) 
+            {
                 return language;
             }
+
             return null;
         }
 
