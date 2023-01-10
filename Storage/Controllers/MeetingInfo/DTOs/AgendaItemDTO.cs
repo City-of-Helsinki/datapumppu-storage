@@ -15,5 +15,11 @@
         public string? Language { get; set; }
 
         public string? DecisionHistoryHTML { get; set; }
+
+        public AttachmentDTO? Pdf { get; set; }
+
+        public AttachmentDTO? DecisionHistoryPdf { get; set; }
+
+        public List<AttachmentDTO>? Attachments { get; set; }
     }
 }

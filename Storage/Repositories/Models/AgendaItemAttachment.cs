@@ -1,7 +1,11 @@
-﻿namespace Storage.Controllers.MeetingInfo.DTOs
+﻿namespace Storage.Repositories.Models
 {
-    public class DecisionAttachmentDTO
+    public class AgendaItemAttachment
     {
+        public string? MeetingID { get; set; }
+
+        public int? AgendaPoint { get; set; }
+
         public string? NativeId { get; set; }
 
         public string? Title { get; set; }
@@ -10,7 +14,7 @@
 
         public string? PublicityClass { get; set; }
 
-        public string[]? SecurityReasons { get; set; }
+        public string? SecurityReasons { get; set; }
 
         public string? Type { get; set; }
 

@@ -411,3 +411,67 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '394e0ee7-01c9-4876-b674-7e0b41951d08';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+
+    CREATE TABLE agenda_item_attachments (
+        meeting_id VARCHAR(64),
+        agenda_point INT,
+        native_id VARCHAR(64),
+        title VARCHAR(256),
+        attachment_number VARCHAR(64),
+        publicity_class VARCHAR(32),
+        security_reasons VARCHAR(128),
+        type VARCHAR(64),
+        file_uri VARCHAR(256),
+        language VARCHAR(10),
+        personal_data VARCHAR(128),
+        issued VARCHAR(64),
+        CONSTRAINT fk__agenda_item_attachments__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language),
+        CONSTRAINT pk__agenda_item_attachments__id PRIMARY KEY (meeting_id, agenda_point, attachment_number)
+     );
+
+ 
+    CREATE TABLE agenda_item_pdfs (
+        meeting_id VARCHAR(64),
+        agenda_point INT,
+        native_id VARCHAR(64),
+        title VARCHAR(256),
+        attachment_number VARCHAR(64),
+        publicity_class VARCHAR(32),
+        security_reasons VARCHAR(128),
+        type VARCHAR(64),
+        file_uri VARCHAR(256),
+        language VARCHAR(10),
+        personal_data VARCHAR(128),
+        issued VARCHAR(64),
+        CONSTRAINT fk__agenda_item_pdfs__agenda_point__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language),
+        CONSTRAINT pk__agenda_item_pdfs__id PRIMARY KEY (meeting_id, agenda_point)
+    );
+
+
+    CREATE TABLE agenda_item_decision_history_pdfs (
+        meeting_id VARCHAR(64),
+        agenda_point INT,
+        native_id VARCHAR(64),
+        title VARCHAR(256),
+        attachment_number VARCHAR(64),
+        publicity_class VARCHAR(32),
+        security_reasons VARCHAR(128),
+        type VARCHAR(64),
+        file_uri VARCHAR(256),
+        language VARCHAR(10),
+        personal_data VARCHAR(128),
+        issued VARCHAR(64),
+        CONSTRAINT fk__agenda_item_decision_history_pdfs__agenda_point__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language),
+        CONSTRAINT pk__agenda_item_decision_history_pdfs__id PRIMARY KEY (meeting_id, agenda_point)
+    );
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
