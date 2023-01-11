@@ -26,6 +26,7 @@ namespace Storage.Actions
                 cfg.CreateMap<SpeakingTurnReservationEventDTO, SpeakingTurnReservation>()
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var speakingTurnReservation = mapper.Map<SpeakingTurnReservation>(speakingTurnReservationDto);
 

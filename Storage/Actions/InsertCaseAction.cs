@@ -27,6 +27,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => caseEventDto.MeetingID))
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var caseItem = mapper.Map<Case>(caseEventDto);
 

@@ -45,6 +45,7 @@ namespace Storage.Actions
                         opt.MapFrom(x => eventId);
                     });
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var rollCall = mapper.Map<RollCall>(rollCallEventDto);
 

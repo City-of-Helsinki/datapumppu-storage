@@ -27,6 +27,7 @@ namespace Storage.Actions
             {
                 cfg.CreateMap<VideoSyncDTO, VideoSync>();
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var videoSyncItem = mapper.Map<VideoSync>(videoSyncDto);
 

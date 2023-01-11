@@ -29,6 +29,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => votingEventDto.MeetingID))
                     .ForMember(dest => dest.VotingNumber, opt => opt.MapFrom(_ => votingEventDto.VotingNumber));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var votingEvent = mapper.Map<VotingEvent>(votingEventDto);
 

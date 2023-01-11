@@ -92,6 +92,7 @@ namespace Storage.Providers
             {
                 cfg.CreateMap<Meeting, WebApiMeetingDTO>();
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var meetingDTO = mapper.Map<WebApiMeetingDTO>(meeting);
 
@@ -104,6 +105,7 @@ namespace Storage.Providers
             {
                 cfg.CreateMap<AgendaItem, WebApiAgendaItemDTO>();
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var result = agendaItems.Select(agenda => mapper.Map<WebApiAgendaItemDTO>(agenda)).ToList();
 
