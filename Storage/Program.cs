@@ -38,6 +38,7 @@ namespace Storage
             builder.Services.AddScoped<IPersonEventsRepository, PersonEventsRepository>();
             builder.Services.AddScoped<IReplyReservationsRepository, ReplyReservationsRepository>();
             builder.Services.AddScoped<IVotingsRepository, VotingsRepository>();
+            builder.Services.AddScoped<IVideoSyncRepository, VideoSyncRepository>();
             builder.Services.AddScoped<ISeatsProvider, SeatsProvider>();
             builder.Services.AddScoped<IVotesProvider, VotesProvider>();
 
@@ -48,6 +49,7 @@ namespace Storage
             builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
 
             builder.Services.AddScoped<IUpsertMeetingAction, UpsertMeetingAction>();
+            builder.Services.AddScoped<IUpsertVideoSyncItemAction, UpsertVideoSyncItemAction>();
             builder.Services.AddScoped<IEventActions, EventActions>();
             builder.Services.AddScoped<IEventAction, InsertEventAction>();
             builder.Services.AddScoped<IEventAction, UpdateMeetingStatusAction>();

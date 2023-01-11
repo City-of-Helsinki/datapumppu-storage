@@ -475,3 +475,22 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+
+DO $$
+DECLARE exec_id uuid = '6c4d9600-141b-4c2b-b58c-b158a9443d3b';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    CREATE TABLE video_synchronizations(
+        meeting_id VARCHAR(64),
+        CONSTRAINT fk__video_synchronization__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id),
+        timestamp TIMESTAMP,
+        video_position INT,
+        CONSTRAINt pk__video_synchronizations__meeting_id PRIMARY KEY (meeting_id, video_position)
+    );
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
