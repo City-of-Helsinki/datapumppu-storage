@@ -10,6 +10,8 @@ namespace Storage.Repositories
     {
         Task<List<AgendaItem>> FetchAgendasByMeetingId(string id, string language);
 
+        Task UpsertAgendaItemHtml(AgendaItem agendaItem);
+
         Task UpsertAgendaItems(List<AgendaItem> agendasItems, IDbConnection connection, IDbTransaction transaction);
 
         Task UpsertAgendaItemAttachments(List<AgendaItemAttachment> agendaAttachments, IDbConnection connection, IDbTransaction transaction);
@@ -41,6 +43,32 @@ namespace Storage.Repositories
             var result = (await connection.QueryAsync<AgendaItem>(sqlQuery, new { @id, @language })).ToList();
 
             return result;
+        }
+
+        public async Task UpsertAgendaItemHtml(AgendaItem agendaItem)
+        {
+            _logger.LogInformation("UpsertAgendaItemHtml");
+
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            
+            var sqlQuery = @"
+                UPDATE agenda_items SET 
+                    html_content = @html
+                WHERE
+                    agenda_items.meeting_id = @meetingId
+                    and
+                    agenda_items.agenda_point = @agendaPoint
+                    and
+                    agenda_items.language = @language
+            ;";
+
+            await connection.ExecuteAsync(sqlQuery, new
+            {
+                html = agendaItem.Html,
+                meetingId = agendaItem.MeetingID,
+                agendaPoint = agendaItem.AgendaPoint,
+                language = agendaItem.Language
+            });
         }
 
         public Task UpsertAgendaItems(List<AgendaItem> agendaItems, IDbConnection connection, IDbTransaction transaction)

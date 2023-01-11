@@ -11,14 +11,19 @@ namespace Storage.Controllers.MeetingInfo
     {
         private readonly ILogger<MeetingInfoController> _logger;
         private readonly IUpsertMeetingAction _upsertMeetingAction;
+        private readonly IUpsertAgendaPointAction _upsertAgendaPointAction;
         private readonly IMeetingProvider _meetingProvider;
 
-        public MeetingInfoController(ILogger<MeetingInfoController> logger,
-            IUpsertMeetingAction upsertMeetingAction, IMeetingProvider meetingProvider)
+        public MeetingInfoController(
+            ILogger<MeetingInfoController> logger,
+            IUpsertMeetingAction upsertMeetingAction,
+            IUpsertAgendaPointAction upsertAgendaPointAction,
+            IMeetingProvider meetingProvider)
         {
             _logger = logger;
             _upsertMeetingAction = upsertMeetingAction;
             _meetingProvider = meetingProvider;
+            _upsertAgendaPointAction = upsertAgendaPointAction;
         }
 
         [HttpPost("meeting")]
@@ -26,6 +31,14 @@ namespace Storage.Controllers.MeetingInfo
         {
             _logger.LogInformation("HTTP POST: meeting received");
             await _upsertMeetingAction.Execute(meetingDTO);
+            return Ok();
+        }
+
+        [HttpPost("agendaPoint")]
+        public async Task<IActionResult> UpsertAgendaPoint([FromBody] AgendaPointEditDTO agendaPointDTO)
+        {
+            _logger.LogInformation("HTTP POST: UpsertAgendaPoint");
+            await _upsertAgendaPointAction.Execute(agendaPointDTO);
             return Ok();
         }
 
