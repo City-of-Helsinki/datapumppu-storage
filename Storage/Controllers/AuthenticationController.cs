@@ -6,7 +6,7 @@ namespace Storage.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthenticationController
+    public class AuthenticationController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly IAdminUsersRepository _adminUsersRepository;
@@ -34,7 +34,7 @@ namespace Storage.Controllers
                 Password = passwordHash
             });
 
-            return exists ? new OkResult() : new ForbidResult();
+            return exists ? Ok() : NotFound();
         }
     }
 }
