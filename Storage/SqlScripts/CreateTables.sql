@@ -475,3 +475,20 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+
+DO $$
+DECLARE exec_id uuid = '39774ea0-5558-4238-a3cb-8bc9a9d08d02';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    CREATE TABLE admin_users (
+        username varchar (256),
+        password varchar (64),
+        CONSTRAINT pk__admin_users__username PRIMARY KEY (username)
+    );
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
