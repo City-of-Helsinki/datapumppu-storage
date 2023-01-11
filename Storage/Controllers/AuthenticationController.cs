@@ -6,7 +6,6 @@ namespace Storage.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-
     public class AuthenticationController
     {
         private readonly IConfiguration _configuration;
