@@ -24,9 +24,9 @@ namespace Storage.Controllers
             [FromQuery] string username,
             [FromQuery] string password)
         {
-            using var md5 = System.Security.Cryptography.MD5.Create();
+            using var hasher = System.Security.Cryptography.SHA256.Create();
             var bytes = System.Text.Encoding.ASCII.GetBytes(_configuration["PASSWORD_SALT"] + password);
-            var passwordHash = Convert.ToBase64String(md5.ComputeHash(bytes));
+            var passwordHash = Convert.ToBase64String(hasher.ComputeHash(bytes));
 
             var exists = await _adminUsersRepository.UserExists(new Repositories.Models.AdminUser
             {
