@@ -10,7 +10,6 @@ namespace Storage.Controllers
     {
         private readonly ILogger<VideoSyncController> _logger;
         private readonly IUpsertVideoSyncItemAction _upsertVideoSyncItemAction;
-       
 
         public VideoSyncController(ILogger<VideoSyncController> logger, IUpsertVideoSyncItemAction upsertVideoSyncItemAction
            )
