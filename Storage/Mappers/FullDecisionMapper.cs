@@ -21,6 +21,7 @@ namespace Storage.Mappers
                     .ForMember(dest => dest.Pdf, opt => opt.MapFrom(_ => MapAttachmentToDTO(fullDecision.Pdf)))
                     .ForMember(dest => dest.DecisionHistoryPdf, opt => opt.MapFrom(_ => MapAttachmentToDTO(fullDecision.DecisionHistoryPdf)));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var result = mapper.Map<WebApiDecisionDTO>(fullDecision.Decision);
 
@@ -37,7 +38,8 @@ namespace Storage.Mappers
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<DecisionAttachment, WebApiAttachmentDTO>();
-            });
+            }); 
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var result = mapper.Map<WebApiAttachmentDTO>(attachment);
 

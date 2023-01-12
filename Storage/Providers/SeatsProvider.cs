@@ -44,6 +44,7 @@ namespace Storage.Providers
             {
                 cfg.CreateMap<MeetingSeat, WebApiSeatDTO>();
             });
+            config.AssertConfigurationIsValid();
 
             return config.CreateMapper().Map<WebApiSeatDTO>(seat);
         }

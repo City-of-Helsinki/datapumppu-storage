@@ -36,8 +36,15 @@ namespace Storage.Actions
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID));
                 cfg.CreateMap<DecisionDTO, Decision>()
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID));
-                cfg.CreateMap<MeetingDTO, Meeting>();
+                cfg.CreateMap<MeetingDTO, Meeting>()
+                    .ForMember(dest => dest.MeetingTitleFI, opt => opt.Ignore())
+                    .ForMember(dest => dest.MeetingTitleSV, opt => opt.Ignore())
+                    .ForMember(dest => dest.MeetingStarted, opt => opt.Ignore())
+                    .ForMember(dest => dest.MeetingStartedEventID, opt => opt.Ignore())
+                    .ForMember(dest => dest.MeetingEnded, opt => opt.Ignore())
+                    .ForMember(dest => dest.MeetingEndedEventID, opt => opt.Ignore());
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
 
             var agendas = meetingDTO.Agendas?.Select(agenda => mapper.Map<AgendaItem>(agenda)).ToList();
@@ -89,6 +96,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingId))
                     .ForMember(dest => dest.AgendaPoint, opt => opt.MapFrom(_ => agendaPoint));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
 
             return mapper.Map<AgendaItemAttachment>(attachmentDto);
@@ -112,6 +120,7 @@ namespace Storage.Actions
                 cfg.CreateMap<AttachmentDTO, DecisionAttachment>()
                     .ForMember(dest => dest.DecisionId, opt => opt.MapFrom(x => decisionId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
 
             return mapper.Map<DecisionAttachment>(attachmentDto);

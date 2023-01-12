@@ -27,6 +27,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => speechTimerEventDto.MeetingID))
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var speechTimerEvent = mapper.Map<SpeechTimerEvent>(speechTimerEventDto);
 

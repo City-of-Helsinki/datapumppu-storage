@@ -26,6 +26,7 @@ namespace Storage.Actions
                 cfg.CreateMap<BreakNoticeEventDTO, BreakNotice>()
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var breakNotice = mapper.Map<BreakNotice>(breakNoticeEventDto);
 

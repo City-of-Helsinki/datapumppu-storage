@@ -27,6 +27,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
                 cfg.CreateMap<MeetingSeatDTO, MeetingSeat>();
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var meetingSeats = attendeesEventDto.MeetingSeats.Select(meetingSeatDto => mapper.Map<MeetingSeat>(meetingSeatDto)).ToList();
             var meetingSeatUpdate = mapper.Map<MeetingSeatUpdate>(attendeesEventDto);

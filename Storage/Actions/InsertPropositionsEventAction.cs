@@ -27,6 +27,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => propositionEventDto.MeetingID))
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var propositions = propositionEventDto.Propositions.Select(proposition => mapper.Map<Proposition>(proposition)).ToList();
 
