@@ -4,6 +4,7 @@ using Storage.Mappers;
 using Storage.Providers.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
+using Storage.Repositories.Models.Extensions;
 
 namespace Storage.Providers
 {
@@ -57,27 +58,11 @@ namespace Storage.Providers
                     .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Started))
                     .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Ended))
                     .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.DurationSeconds))
-                    .ForMember(dest => dest.VideoPosition, opt => opt.MapFrom(src => GetVideoPosition(src.Started, videoSync)));
+                    .ForMember(dest => dest.VideoPosition, opt => opt.MapFrom(src => videoSync.GetVideoPosition(src.Started)));
             });
             config.AssertConfigurationIsValid();
 
             return config.CreateMapper().Map<WebApiStatementsDTO>(seat);
-        }
-
-        private int GetVideoPosition(DateTime? startTime, VideoSync? videoSync)
-        {
-            if (videoSync == null || videoSync?.Timestamp == null || videoSync?.VideoPosition == null)
-            {
-                return 0;
-            }
-
-            var timeDiff = (startTime - videoSync.Timestamp);
-            if (timeDiff == null)
-            {
-                return 0;
-            }
-
-            return videoSync.VideoPosition.Value + (int)timeDiff.Value.TotalSeconds;
         }
     }
 }
