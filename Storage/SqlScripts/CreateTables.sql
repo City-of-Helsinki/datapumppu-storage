@@ -511,3 +511,32 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'f7ea741d-12e9-45f1-910c-43abf477a446';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE cases RENAME TO case_points;
+    ALTER TABLE case_points RENAME COLUMN case_text TO case_text_fi;
+    ALTER TABLE case_points ALTER COLUMN case_text_fi TYPE TEXT;
+    ALTER TABLE case_points ADD COLUMN case_text_sv TEXT;
+
+    ALTER TABLE case_points RENAME COLUMN item_text TO item_text_fi;
+    ALTER TABLE case_points ALTER COLUMN item_text_fi TYPE TEXT;
+    ALTER TABLE case_points ADD COLUMN item_text_sv TEXT;
+
+    ALTER TABLE case_points ADD COLUMN case_number VARCHAR(10);
+    ALTER TABLE case_points ADD COLUMN item_number VARCHAR(10);
+
+    ALTER TABLE case_points RENAME COLUMN case_id TO identifier;
+    ALTER TABLE case_points DROP CONSTRAINT pk__cases__meeting_id;
+    ALTER TABLE case_points ALTER COLUMN identifier DROP NOT NULL;
+
+    ALTER TABLE case_points ADD CONSTRAINT pk__cases__meeting_id PRIMARY KEY (meeting_id, case_number, item_number);
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
