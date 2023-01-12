@@ -43,8 +43,9 @@ namespace Storage.Providers
             }
             var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             // map to DTO
-            var meetingDTO = MapMeetingToDTO(meeting);
+            
             var agendaItemDTOs = MapAgendasToDTO(agendaItems);
+            var meetingDTO = MapMeetingToDTO(meeting, agendaItemDTOs);
             meetingDTO.Agendas = agendaItemDTOs;
 
             return meetingDTO;
@@ -59,8 +60,10 @@ namespace Storage.Providers
             }
             var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID, language);
             var decisions = await _decisionsRepository.FetchDecisionsByMeetingId(meeting.MeetingID, language);
-            var meetingWebApiDTO = MapMeetingToDTO(meeting);
+
             var agendaitemDTOs = MapAgendasToDTO(agendaitems);
+            var meetingWebApiDTO = MapMeetingToDTO(meeting, agendaitemDTOs);
+            
             var decisionDtos = decisions.Select(decision => _fullDecisionMapper.MapDecisionToDTO(decision)).ToList();
 
             meetingWebApiDTO.Agendas = agendaitemDTOs;
@@ -79,18 +82,22 @@ namespace Storage.Providers
             string id = meeting.MeetingID;
             var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             // map to DTO
-            var meetingDTO = MapMeetingToDTO(meeting);
             var agendaItemDTOs = MapAgendasToDTO(agendaItems);
+            var meetingDTO = MapMeetingToDTO(meeting, agendaItemDTOs);
+            
             meetingDTO.Agendas = agendaItemDTOs;
 
             return meetingDTO;
         }
 
-        private WebApiMeetingDTO MapMeetingToDTO(Meeting meeting)
+        private WebApiMeetingDTO MapMeetingToDTO(Meeting meeting, List<WebApiAgendaItemDTO> agendaItems)
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Meeting, WebApiMeetingDTO>();
+                cfg.CreateMap<Meeting, WebApiMeetingDTO>()
+                    .ForMember(dest => dest.Agendas, opt => opt.MapFrom(_ => agendaItems))
+                    .ForMember(dest => dest.Decisions, opt => opt.Ignore());
+
             });
             config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
