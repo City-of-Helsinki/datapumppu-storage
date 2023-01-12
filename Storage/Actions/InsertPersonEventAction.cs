@@ -26,6 +26,7 @@ namespace Storage.Actions
                 cfg.CreateMap<PersonEventDTO, PersonEvent>()
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var personEvent = mapper.Map<PersonEvent>(personEventDto);
 

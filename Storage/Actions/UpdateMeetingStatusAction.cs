@@ -43,8 +43,13 @@ namespace Storage.Actions
                     {
                          opt.PreCondition(src => src.EventType == EventType.MeetingEnded);
                          opt.MapFrom(src => src.Timestamp);
-                    });
+                    })
+                    .ForMember(dest => dest.MeetingDate, opt => opt.Ignore())
+                    .ForMember(dest => dest.Name, opt => opt.Ignore())
+                    .ForMember(dest => dest.MeetingSequenceNumber, opt => opt.Ignore())
+                    .ForMember(dest => dest.Location, opt => opt.Ignore());
             });
+            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             var meeting = mapper.Map<Meeting>(meetingStatusEvent);
 
