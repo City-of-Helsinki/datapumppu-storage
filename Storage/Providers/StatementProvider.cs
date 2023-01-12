@@ -16,36 +16,68 @@ namespace Storage.Providers
     {
         private readonly ILogger<StatementProvider> _logger;
         private readonly ISpeakingTurnsRepository _speakingTurnsRepository;
+        private readonly IVideoSyncRepository _videoSyncRepository;
 
         public StatementProvider(ILogger<StatementProvider> logger,
-            ISpeakingTurnsRepository speakingTurnsRepository)
+            ISpeakingTurnsRepository speakingTurnsRepository,
+            IVideoSyncRepository videoSyncRepository)
         {
             _logger = logger;
             _speakingTurnsRepository = speakingTurnsRepository;
+            _videoSyncRepository = videoSyncRepository;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetSpeakingTurns(string meetingId, string caseNumber)
         {
+            _logger.LogInformation($"GetSpeakingTurns {meetingId} {caseNumber}");
+
             var speakingTurns = await _speakingTurnsRepository.GetSpeakingTurns(meetingId, caseNumber);
 
-            return speakingTurns.Select(MapToDTO).ToList();
+            var videoSync = await GetVideoSync(meetingId, speakingTurns);
 
+            return speakingTurns.Select(turn => MapToDTO(turn, videoSync)).ToList();
         }
 
-        private WebApiStatementsDTO MapToDTO(Statement seat)
+        private Task<VideoSync?> GetVideoSync(string meetingId, List<Statement> statements)
         {
-            
+            var startTime = statements.OrderBy(turn => turn.Started).FirstOrDefault()?.Started;
+            if (startTime == null)
+            {
+                return Task.FromResult<VideoSync?>(null);
+            }
+
+            return _videoSyncRepository.GetVideoPosition(meetingId, startTime.Value);
+        }
+
+        private WebApiStatementsDTO MapToDTO(Statement seat, VideoSync? videoSync)
+        {
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Statement, WebApiStatementsDTO>()
                     .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Started))
                     .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Ended))
-                    .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.DurationSeconds));
-
+                    .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.DurationSeconds))
+                    .ForMember(dest => dest.VideoPosition, opt => opt.MapFrom(src => GetVideoPosition(src.Started, videoSync)));
             });
             config.AssertConfigurationIsValid();
 
             return config.CreateMapper().Map<WebApiStatementsDTO>(seat);
+        }
+
+        private int GetVideoPosition(DateTime? startTime, VideoSync? videoSync)
+        {
+            if (videoSync == null || videoSync?.Timestamp == null || videoSync?.VideoPosition == null)
+            {
+                return 0;
+            }
+
+            var timeDiff = (startTime - videoSync.Timestamp);
+            if (timeDiff == null)
+            {
+                return 0;
+            }
+
+            return videoSync.VideoPosition.Value + (int)timeDiff.Value.TotalSeconds;
         }
     }
 }
