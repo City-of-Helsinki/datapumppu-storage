@@ -24,7 +24,7 @@ namespace Storage.Repositories
         {
             _logger.LogInformation("Executing UpsertCase()");
            
-            var sqlQuery = @"INSERT INTO case_points (meeting_id, case_number, item_number, event_id, proposition_fi, proposition_sv, case_text_fi, case_text_sv, item_text_fi, item_text_sv, identifier) values(
+            var sqlQuery = @"INSERT INTO cases (meeting_id, case_number, item_number, event_id, proposition_fi, proposition_sv, case_text_fi, case_text_sv, item_text_fi, item_text_sv, identifier) values(
                 @meetingId, 
                 @caseNumber,
                 @itemNumber,
@@ -46,7 +46,7 @@ namespace Storage.Repositories
                 item_text_fi = @itemTextFi,
                 item_text_sv = @itemTextSv,
                 identifier = @identifier
-                WHERE case_points.meeting_id = @meetingId and case_points.case_number = @caseNumber and case_points.item_number = @itemNumber
+                WHERE cases.meeting_id = @meetingId and cases.case_number = @caseNumber and cases.item_number = @itemNumber
             ;";
 
             return connection.ExecuteAsync(sqlQuery, caseItem, transaction);
