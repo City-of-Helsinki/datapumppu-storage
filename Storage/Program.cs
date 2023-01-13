@@ -59,7 +59,7 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, UpdateVotingStatusAction>();
             builder.Services.AddScoped<IEventAction, UpdateSpeakingTurnsAction>();
             builder.Services.AddScoped<IEventAction, UpdateMeetingSeatsAction>();
-            builder.Services.AddScoped<IEventAction, InsertCaseAction>();
+            builder.Services.AddScoped<IEventAction, UpsertCaseAction>();
             builder.Services.AddScoped<IEventAction, UpsertRollCallAction>();
             builder.Services.AddScoped<IEventAction, InsertSpeakingTurnReservationAction>();
             builder.Services.AddScoped<IEventAction, InsertStartedSpeakingTurnAction>();

@@ -6,14 +6,14 @@ using System.Data;
 
 namespace Storage.Actions
 {
-    public class InsertCaseAction : IEventAction
+    public class UpsertCaseAction : IEventAction
     {
         public List<EventType> EventTypes { get; } = new()
             { EventType.Case };
 
         private readonly ICaseRepository _caseRepository;
 
-        public InsertCaseAction(ICaseRepository caseRepository)
+        public UpsertCaseAction(ICaseRepository caseRepository)
         {
             _caseRepository = caseRepository;
         }
@@ -31,7 +31,7 @@ namespace Storage.Actions
             var mapper = config.CreateMapper();
             var caseItem = mapper.Map<Case>(caseEventDto);
 
-            return _caseRepository.InsertCase(caseItem, connection, transaction);
+            return _caseRepository.UpsertCase(caseItem, connection, transaction);
         }
     }
 }
