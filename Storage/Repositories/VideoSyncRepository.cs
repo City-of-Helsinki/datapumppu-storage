@@ -7,9 +7,11 @@ namespace Storage.Repositories
     public interface IVideoSyncRepository
     {
         Task<int> UpsertVideoSyncItem(VideoSync videoSyncItem);
+
+        Task<VideoSync?> GetVideoPosition(string meetingId, DateTime timestamp);
     }
 
-    public class VideoSyncRepository: IVideoSyncRepository
+    public class VideoSyncRepository : IVideoSyncRepository
     {
         private readonly ILogger<VideoSyncRepository> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
@@ -18,6 +20,29 @@ namespace Storage.Repositories
         {
             _connectionFactory = connectionFactory;
             _logger = logger;
+        }
+
+        public async Task<VideoSync?> GetVideoPosition(string meetingId, DateTime timestamp)
+        {
+            _logger.LogInformation("Executing GetVideoPosition()");
+
+            string sqlQuery = @"
+                select
+                    meeting_id,
+                    timestamp,
+                    video_position
+                from
+                    video_synchronizations
+                where
+                    meeting_id = @meetingId
+                    and
+                    timestamp < @timestamp
+                order by
+                    timestamp desc
+                limit 1";
+
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            return (await connection.QueryAsync<VideoSync>(sqlQuery, new { meetingId, timestamp })).FirstOrDefault();
         }
 
         public async Task<int> UpsertVideoSyncItem(VideoSync videoSyncItem)

@@ -15,5 +15,7 @@
         public string AdditionalInfoFI { get; set; } = string.Empty;
 
         public string AdditionalInfoSV { get; set; } = string.Empty;
+
+        public int VideoPosition { get; set; }
     }
 }
