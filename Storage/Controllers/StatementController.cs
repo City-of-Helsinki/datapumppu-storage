@@ -23,7 +23,7 @@ namespace Storage.Controllers
             try
             {
                 _logger.LogInformation($"GetSpeakingTurns {meetingId}, {caseNumber}");
-                var turns = await _speakingTurnProvider.GetSpeakingTurns(meetingId, caseNumber);
+                var turns = await _speakingTurnProvider.GetStatements(meetingId, caseNumber);
                 return new OkObjectResult(turns);
             }
             catch (Exception ex)
@@ -33,5 +33,22 @@ namespace Storage.Controllers
             }
         }
 
+        [HttpGet("person")]
+        public async Task<IActionResult> GetStatementsByPerson(
+            [FromQuery]string name,
+            [FromQuery]int year)
+        {
+            try
+            {
+                _logger.LogInformation($"GetStatementsByPerson {name}, {year}");
+                var turns = await _speakingTurnProvider.GetStatementsByPerson(name, year);
+                return new OkObjectResult(turns);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetSpeakingTurns failed");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
     }
 }

@@ -13,7 +13,9 @@ namespace Storage.Repositories
 
         Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction);
 
-        Task<List<Statement>> GetSpeakingTurns(string meetingId, string agendaPoint);
+        Task<List<Statement>> GetStatements(string meetingId, string agendaPoint);
+
+        Task<List<Statement>> GetSatementsByName(string name, int year);
     }
 
     public class SpeakingTurnsRepository : ISpeakingTurnsRepository
@@ -29,10 +31,36 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public async Task<List<Statement>> GetSpeakingTurns(string meetingId, string agendaPoint)
+        public async Task<List<Statement>> GetSatementsByName(string name, int year)
         {
             var sqlQuery = @"
                 select
+                    meeting_id,
+                    person,
+                    started,
+                    ended,
+                    speech_type,
+                    duration_seconds,
+                    additional_info_fi,
+                    additional_info_sv
+                from
+                    speaking_turns
+                where
+                    lower(person) like (lower(@name))
+                    and
+                    extract(year from started) = @year
+            ";
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            return (await connection.QueryAsync<Statement>(sqlQuery, new { name, year })).ToList();
+        }
+
+        public async Task<List<Statement>> GetStatements(string meetingId, string agendaPoint)
+        {
+            var sqlQuery = @"
+                select
+                    speaking_turns.meeting_id,
                     person,
                     started,
                     ended,

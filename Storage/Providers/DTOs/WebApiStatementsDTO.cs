@@ -17,5 +17,7 @@
         public string AdditionalInfoSV { get; set; } = string.Empty;
 
         public int VideoPosition { get; set; }
+
+        public string VideoLink { get; set; } = string.Empty;
     }
 }
