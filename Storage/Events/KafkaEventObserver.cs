@@ -14,10 +14,17 @@ namespace Storage.Events
         private readonly IConfiguration _configuration;
         private readonly IDatabaseConnectionFactory _connectionFactory;
         private IHostEnvironment _hostEnvironment;
-        private readonly IKafkaClientFactory _clientFactory; 
+        private readonly IKafkaClientFactory _clientFactory;
 
 
-        public KafkaEventObserver(ILogger<KafkaEventObserver> logger, IServiceProvider serviceProvider, IConfiguration configuration, IDatabaseConnectionFactory connectionFactory, IHostEnvironment hostEnvironment, IKafkaClientFactory clientFactory)
+        public KafkaEventObserver(
+            ILogger<KafkaEventObserver> logger,
+            IServiceProvider serviceProvider,
+            IConfiguration configuration,
+            IDatabaseConnectionFactory connectionFactory,
+            IHostEnvironment hostEnvironment,
+            IKafkaClientFactory clientFactory
+        )
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
