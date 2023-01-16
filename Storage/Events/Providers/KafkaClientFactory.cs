@@ -43,20 +43,18 @@ namespace Storage.Events.Providers
                     BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
                 };
             }
-            else
+
+            return new ConsumerConfig
             {
-                return new ConsumerConfig
-                {
-                    BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
-                    GroupId = _configuration["KAFKA_GROUP_ID"],
-                    SaslMechanism = SaslMechanism.ScramSha512,
-                    SecurityProtocol = SecurityProtocol.SaslSsl,
-                    SaslUsername = _configuration["KAFKA_USER_USERNAME"],
-                    SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
-                    SslCertificatePem = _configuration["SSL_CERT_PEM"],
-                    AutoOffsetReset = AutoOffsetReset.Earliest
-                };
-            }
+                BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
+                GroupId = _configuration["KAFKA_GROUP_ID"],
+                SaslMechanism = SaslMechanism.ScramSha512,
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslUsername = _configuration["KAFKA_USER_USERNAME"],
+                SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
+                SslCertificatePem = _configuration["SSL_CERT_PEM"],
+                AutoOffsetReset = AutoOffsetReset.Earliest
+            };
         }
 
         private ProducerConfig CreateProducerConfiguration()
@@ -68,18 +66,16 @@ namespace Storage.Events.Providers
                     BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
                 };
             }
-            else
+
+            return new ProducerConfig
             {
-                return new ProducerConfig
-                {
-                    BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
-                    SaslMechanism = SaslMechanism.ScramSha512,
-                    SecurityProtocol = SecurityProtocol.SaslSsl,
-                    SaslUsername = _configuration["KAFKA_USER_USERNAME"],
-                    SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
-                    SslCertificatePem = _configuration["SSL_CERT_PEM"],
-                };
-            }
+                BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
+                SaslMechanism = SaslMechanism.ScramSha512,
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslUsername = _configuration["KAFKA_USER_USERNAME"],
+                SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
+                SslCertificatePem = _configuration["SSL_CERT_PEM"],
+            };
         }
 
     }
