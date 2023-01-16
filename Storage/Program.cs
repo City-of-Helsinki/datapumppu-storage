@@ -1,5 +1,6 @@
 using Storage.Actions;
 using Storage.Events;
+using Storage.Events.Providers;
 using Storage.Mappers;
 using Storage.Providers;
 using Storage.Repositories;
@@ -22,6 +23,7 @@ namespace Storage
                 .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
+            builder.Services.AddSingleton<IKafkaClientFactory, KafkaClientFactory>();
 
             builder.Services.AddScoped<IMeetingsRepository, MeetingsRepository>();
             builder.Services.AddScoped<IAgendaItemsRepository, AgendaItemsRepository>();
@@ -64,10 +66,13 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-            // EventObserver disabled for now (ServiceBus)
             if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]))
             {
                 builder.Services.AddHostedService<EventObserver>();
+            }
+            else if (!string.IsNullOrEmpty(builder.Configuration["KAFKA_BOOTSTRAP_SERVER"]))
+            {
+                builder.Services.AddHostedService<KafkaEventObserver>();
             }
 
             builder.Services.AddHostedService<DatabaseMigrationService>();
