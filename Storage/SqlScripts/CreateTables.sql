@@ -539,3 +539,18 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = 'e4febf6a-dc1b-4a1f-80bb-90915b0f058f';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE cases ALTER COLUMN proposition_fi TYPE TEXT;
+    ALTER TABLE cases ALTER COLUMN proposition_sv TYPE TEXT;
+    ALTER TABLE meeting_events ALTER COLUMN sequence_number TYPE BIGINT;
+    ALTER TABLE meeting_seat_updates ALTER COLUMN sequence_number TYPE BIGINT;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
