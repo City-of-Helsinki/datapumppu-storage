@@ -2,7 +2,7 @@
 {
     public enum SpeechType
     {
-        Answer = 0, //do not change int values!
-        Normal = 1,
+        Reply = 0, //do not change int values!
+        Statement = 1,
     }
 }
