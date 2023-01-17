@@ -10,6 +10,8 @@
 
         public string? CaseIDLabel { get; set; }
 
+        public List<WebApiAttachmentDTO> Attachments { get; set; } = new List<WebApiAttachmentDTO>();
+
         public string? Html { get; set; }
 
         public string? DecisionHistoryHTML { get; set; }
