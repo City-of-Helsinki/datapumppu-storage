@@ -8,7 +8,7 @@
 
         public DateTime Timestamp { get; set; }
 
-        public int SequenceNumber { get; set; }
+        public long SequenceNumber { get; set; }
 
         public string CaseNumber { get; set; }
 

@@ -35,7 +35,7 @@ namespace Storage.Actions
 
             if (votingEventDto.EventType == EventType.VotingStarted)
             {
-                return _votingsRepository.InsertVoting(votingEvent, connection, transaction);
+                return _votingsRepository.UpsertVotingStartedEvent(votingEvent, connection, transaction);
             }
      
             return _votingsRepository.SaveVotingResult(votingEvent, connection, transaction);
