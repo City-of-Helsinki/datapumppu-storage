@@ -41,6 +41,7 @@ namespace Storage.Events.Providers
                 return new ConsumerConfig
                 {
                     BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
+                    GroupId = _configuration["KAFKA_GROUP_ID"],
                 };
             }
 
