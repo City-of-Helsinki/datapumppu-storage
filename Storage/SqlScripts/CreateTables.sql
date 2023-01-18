@@ -554,3 +554,16 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = 'b0125a25-4780-4211-8846-00f2811fc4cc';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+
+    CREATE INDEX ix__video_synchronizations__timestamp  ON video_synchronizations (timestamp);
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;

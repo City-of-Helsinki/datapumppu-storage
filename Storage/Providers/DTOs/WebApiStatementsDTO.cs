@@ -16,6 +16,12 @@
 
         public string AdditionalInfoSV { get; set; } = string.Empty;
 
+        public string? Title { get; set; }
+
+        public int? CaseNumber { get; set; }
+
+        public string? MeetingId { get; set; }
+
         public int VideoPosition { get; set; }
 
         public string VideoLink { get; set; } = string.Empty;

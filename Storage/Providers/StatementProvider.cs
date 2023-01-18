@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Storage.Controllers.MeetingInfo.DTOs;
-using Storage.Mappers;
-using Storage.Providers.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
 using Storage.Repositories.Models.Extensions;
@@ -12,7 +10,7 @@ namespace Storage.Providers
     {
         Task<List<WebApiStatementsDTO>> GetStatements(string meetingId, string caseNumber);
 
-        Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year);
+        Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang);
     }
 
     public class StatementProvider : IStatementProvider
@@ -41,18 +39,26 @@ namespace Storage.Providers
             return speakingTurns.Select(turn => MapToDTO(turn, videoSync)).ToList();
         }
 
-        public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year)
+        public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang)
         {
-            _logger.LogInformation($"GetStatementsByPerson {name} {year}");
+            _logger.LogInformation($"GetStatementsByPerson {name} {year} {lang}");
 
-            var statements = await _speakingTurnsRepository.GetSatementsByName(name, year);
-         
+            var statements = await _speakingTurnsRepository.GetSatementsByName(name, year, lang);
 
+            
             var dtos = new List<WebApiStatementsDTO>();
+            var videoSyncs = new Dictionary<string, List<VideoSync>>();
             foreach (var statement in statements)
             {
-                var videoSync = await GetVideoSync(statement.MeetingID, statement);
-                dtos.Add(MapToDTO(statement, videoSync));
+                if (!videoSyncs.ContainsKey(statement.MeetingID))
+                {
+                    videoSyncs.Add(statement.MeetingID, await _videoSyncRepository.GetVideoPositions(statement.MeetingID));
+                }
+
+                var syncs = videoSyncs[statement.MeetingID];
+                var sync = syncs.Where(sync => sync.Timestamp < statement.Started).OrderBy(sync => sync.Timestamp).FirstOrDefault();
+
+                dtos.Add(MapToDTO(statement, sync));
             }
 
             return dtos;

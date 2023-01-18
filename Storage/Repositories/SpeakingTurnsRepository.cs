@@ -15,7 +15,7 @@ namespace Storage.Repositories
 
         Task<List<Statement>> GetStatements(string meetingId, string agendaPoint);
 
-        Task<List<Statement>> GetSatementsByName(string name, int year);
+        Task<List<Statement>> GetSatementsByName(string name, int year, string lang);
     }
 
     public class SpeakingTurnsRepository : ISpeakingTurnsRepository
@@ -31,29 +31,39 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public async Task<List<Statement>> GetSatementsByName(string name, int year)
+        public async Task<List<Statement>> GetSatementsByName(string name, int year, string lang)
         {
             var sqlQuery = @"
-                select
-                    meeting_id,
+                select distinct
+                    speaking_turns.meeting_id,
                     person,
                     started,
                     ended,
                     speech_type,
                     duration_seconds,
                     additional_info_fi,
-                    additional_info_sv
+                    additional_info_sv,
+                    agenda_items.title as title,
+                    agenda_items.agenda_point as case_number
                 from
                     speaking_turns
+                join
+                    meeting_events on speaking_turns.event_id = meeting_events.event_id
+                join
+                    agenda_items on 
+                        meeting_events.meeting_id = agenda_items.meeting_id and
+                        agenda_items.agenda_point = meeting_events.case_number::int8
                 where
-                    lower(person) like (lower(@name))
+                    person = @name
                     and
                     extract(year from started) = @year
+                    and
+                    agenda_items.language = @lang
             ";
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
-            return (await connection.QueryAsync<Statement>(sqlQuery, new { name, year })).ToList();
+            return (await connection.QueryAsync<Statement>(sqlQuery, new { name, year, lang })).ToList();
         }
 
         public async Task<List<Statement>> GetStatements(string meetingId, string agendaPoint)
