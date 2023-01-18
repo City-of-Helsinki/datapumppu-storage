@@ -71,7 +71,7 @@ namespace Storage.Repositories
                     type,
                     file_uri,
                     personal_data,
-                    issued
+                    issued,
                     language
                 FROM
                     agenda_item_attachments
@@ -82,7 +82,7 @@ namespace Storage.Repositories
             ";
 
             using var connection = await _connectionFactory.CreateOpenConnection();
-            var result = (await connection.QueryAsync<AgendaItemAttachment>(sqlQuery, new { @id, @language })).ToList();
+            var result = (await connection.QueryAsync<AgendaItemAttachment>(sqlQuery, new { id, language })).ToList();
 
             return result;
         }
