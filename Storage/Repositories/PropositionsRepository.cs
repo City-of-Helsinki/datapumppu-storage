@@ -13,16 +13,18 @@ namespace Storage.Repositories
     {
         public Task InsertPropositions(List<Proposition> propositions, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"INSERT INTO propositions (meeting_id, event_id, text_fi, text_sv, person_fi, person_sv, type, type_text_fi, type_text_sv) values(
+            var sqlQuery = @"INSERT INTO propositions (meeting_id, event_id, text_fi, text_sv, person, type, type_text_fi, 
+                type_text_sv, additional_info_fi, additional_info_sv) values(
                 @meetingId, 
                 @eventId,
                 @textFi, 
                 @textSv, 
-                @personFi,
-                @personSv,
+                @person,
                 @type,
                 @typeTextFi,
-                @typeTextSv
+                @typeTextSv,
+                @additionalInfoFi,
+                @additionalInfoSv
             ) ";
 
             return connection.ExecuteAsync(sqlQuery, propositions.Select(item => new {
@@ -30,11 +32,12 @@ namespace Storage.Repositories
                 eventId = item.EventID,
                 textFi = item.TextFI,
                 textSv = item.TextSV,
-                personFi = item.PersonFI,
-                personSv = item.PersonSV,
+                person = item.Person,
                 type = item.Type,
                 typeTextFi = item.TypeTextFI,
-                typeTextSv = item.TypeTextSV
+                typeTextSv = item.TypeTextSV,
+                additionalInfoFi = item.AdditionalInfoFI,
+                additionalInfoSv = item.AdditionalInfoSV,
             }), transaction);
         }
     }

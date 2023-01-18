@@ -94,18 +94,20 @@ namespace Storage.Repositories
 
         public Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"insert into started_speaking_turns (meeting_id, event_id, timestamp, person_fi, person_sv, speaking_time, speech_timer, start_time, direction, seat_id, speech_type) values (
+            var sqlQuery = @"insert into started_speaking_turns (meeting_id, event_id, timestamp, person, speaking_time, speech_timer, start_time, 
+                direction, seat_id, speech_type, additional_info_fi, additional_info_sv) values (
                 @meetingId, 
                 @eventId,
                 @timestamp,
-                @personFi,
-                @personSv,
+                @person,
                 @speakingTime,
                 @speechTimer,
                 @startTime,
                 @direction,
                 @seatId,
-                @speechType
+                @speechType, 
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, startedSpeakingTurn, transaction);
@@ -113,14 +115,16 @@ namespace Storage.Repositories
 
         public Task InsertSpeakingTurnReservation(SpeakingTurnReservation speakingTurnReservation, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"insert into speaking_turn_reservations (meeting_id, event_id, timestamp, person_fi, person_sv, ordinal, seat_id) values (
+            var sqlQuery = @"insert into speaking_turn_reservations (meeting_id, event_id, timestamp, person, ordinal, seat_id, additional_info_fi, 
+            additional_info_sv) values (
                 @meetingId,
                 @eventId,
                 @timestamp,
-                @personFi,
-                @personSv,
+                @person,
                 @ordinal,
-                @seatId
+                @seatId,
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, speakingTurnReservation, transaction);
@@ -129,7 +133,8 @@ namespace Storage.Repositories
         public Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing UpsertSpeakingTurns()");
-            var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, additional_info_fi, additional_info_sv) values(
+            var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, 
+                additional_info_fi, additional_info_sv) values(
                 @meetingId,
                 @eventId,
                 @person,
