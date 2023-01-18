@@ -10,6 +10,8 @@ namespace Storage.Repositories
     {
         Task<List<AgendaItem>> FetchAgendasByMeetingId(string id, string language);
 
+        Task<List<AgendaItemAttachment>> FetchAgendaAttachmentsByMeetingId(string id, string language);
+
         Task UpsertAgendaItemHtml(AgendaItem agendaItem);
 
         Task UpsertAgendaItems(List<AgendaItem> agendasItems, IDbConnection connection, IDbTransaction transaction);
@@ -36,11 +38,51 @@ namespace Storage.Repositories
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
-                SELECT meeting_id, agenda_point, section, title, case_id_label, html_content Html, html_decision_history DecisionHistoryHtml, language
+                SELECT
+                    meeting_id,
+                    agenda_point,
+                    section,
+                    title,
+                    case_id_label,
+                    html_content Html,
+                    html_decision_history DecisionHistoryHtml,
+                    language
                 FROM agenda_items
                 WHERE meeting_id = @id AND language = @language
             ";
             var result = (await connection.QueryAsync<AgendaItem>(sqlQuery, new { @id, @language })).ToList();
+
+            return result;
+        }
+
+        public async Task<List<AgendaItemAttachment>> FetchAgendaAttachmentsByMeetingId(string id, string language)
+        {
+            _logger.LogInformation($"FetchAgendaAttachmentsByMeetingId {id} {language}");
+            
+            var sqlQuery = @"
+                SELECT
+                    meeting_id,
+                    agenda_point,
+                    native_id,
+                    title,
+                    attachment_number,
+                    publicity_class,
+                    security_reasons,
+                    type,
+                    file_uri,
+                    personal_data,
+                    issued
+                    language
+                FROM
+                    agenda_item_attachments
+                WHERE
+                    meeting_id = @id
+                    and
+                    (language = @language or language is null)
+            ";
+
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var result = (await connection.QueryAsync<AgendaItemAttachment>(sqlQuery, new { @id, @language })).ToList();
 
             return result;
         }

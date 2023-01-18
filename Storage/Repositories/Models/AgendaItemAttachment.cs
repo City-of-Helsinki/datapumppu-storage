@@ -20,10 +20,10 @@
 
         public string? FileURI { get; set; }
 
-        public string? Language { get; set; }
-
         public string? PersonalData { get; set; }
 
         public string? Issued { get; set; }
+
+        public string? Language { get; set; }
     }
 }

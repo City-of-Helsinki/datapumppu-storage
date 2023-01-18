@@ -75,18 +75,18 @@ namespace Storage.Repositories
             var decisions = (await connection.QueryAsync<Decision>(sqlQuery, new { @id, @language })).ToList();
             var result = new List<FullDecision>();
 
-            foreach(var decision in decisions)
+            foreach (var decision in decisions)
             {
-                var attachments = await FetchDecisionAttachments(decision.NativeId);
-                var pdf = await FetchDecisionPdf(decision.NativeId);
-                var historyPdf = await FetchDecisionHistoryPdf(decision.NativeId);
+                //
+                // Commented out since we do not need these at the moment
+                //
+                // var attachments = await FetchDecisionAttachments(decision.NativeId);
+                // var pdf = await FetchDecisionPdf(decision.NativeId);
+                // var historyPdf = await FetchDecisionHistoryPdf(decision.NativeId);
 
                 var fullDecision = new FullDecision()
                 {
                     Decision = decision,
-                    Attachments = attachments,
-                    Pdf = pdf,
-                    DecisionHistoryPdf = historyPdf
                 };
 
                 result.Add(fullDecision);

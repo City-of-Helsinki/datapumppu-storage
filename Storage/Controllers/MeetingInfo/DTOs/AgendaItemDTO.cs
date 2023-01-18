@@ -20,6 +20,6 @@
 
         public AttachmentDTO? DecisionHistoryPdf { get; set; }
 
-        public List<AttachmentDTO>? Attachments { get; set; }
+        public AttachmentDTO[] Attachments { get; set; } = new AttachmentDTO[0];
     }
 }
