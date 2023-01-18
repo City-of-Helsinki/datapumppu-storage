@@ -13,11 +13,12 @@ namespace Storage.Repositories
     {
         public Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person_fi, person_sv) values(
+            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person, additional_info_fi, additional_info_sv) values(
                 @meetingId, 
                 @eventId,
-                @personFi, 
-                @personSv
+                @person,
+                @additionalInfoFi,
+                @additionalInfoSv
             ) ";
 
             return connection.ExecuteAsync(sqlQuery, replyReservation, transaction);

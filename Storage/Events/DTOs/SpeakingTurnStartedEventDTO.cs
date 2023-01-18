@@ -3,9 +3,7 @@ namespace Storage.Events.DTOs
 {
     public class SpeakingTurnStartedEventDTO: EventDTO
     {
-        public string? PersonFI { get; set; }
-
-        public string? PersonSV { get; set; }
+        public string? Person { get; set; }
 
         public int? SpeakingTime { get; set; }
 
@@ -18,5 +16,9 @@ namespace Storage.Events.DTOs
         public string? SeatID { get; set; }
 
         public SpeechType? SpeechType { get; set; }
+
+        public string? AdditionalInfoFI { get; set; }
+
+        public string? AdditionalInfoSV { get; set; }
     }
 }
