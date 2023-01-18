@@ -39,16 +39,24 @@ namespace Storage.Repositories
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
                 SELECT
-                    meeting_id,
+                    agenda_items.meeting_id,
                     agenda_point,
                     section,
                     title,
                     case_id_label,
                     html_content Html,
                     html_decision_history DecisionHistoryHtml,
-                    language
-                FROM agenda_items
-                WHERE meeting_id = @id AND language = @language
+                    language,
+                    meeting_events.timestamp
+                FROM
+                    agenda_items
+                LEFT JOIN cases on
+                    cases.meeting_id = agenda_items.meeting_id
+                    and
+                    agenda_items.agenda_point = cases.case_number::int8
+                LEFT JOIN meeting_events on
+                    cases.event_id = meeting_events.event_id
+                WHERE agenda_items.meeting_id = @id AND language = @language
             ";
             var result = (await connection.QueryAsync<AgendaItem>(sqlQuery, new { @id, @language })).ToList();
 

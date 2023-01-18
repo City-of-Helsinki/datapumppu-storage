@@ -15,5 +15,9 @@
         public string? Html { get; set; }
 
         public string? DecisionHistoryHTML { get; set; }
+
+        public DateTime? Timestamp { get; set; }
+
+        public int VideoPosition { get; set; }
     }
 }
