@@ -21,14 +21,16 @@ namespace Storage.Repositories
         public Task InsertPersonEvent(PersonEvent personEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing InsertPersonEvent()");
-            var sqlQuery = @"insert into person_events (meeting_id, event_id, timestamp, person_fi, person_sv, event_type, seat_id) values(               
+            var sqlQuery = @"insert into person_events (meeting_id, event_id, timestamp, person, event_type, 
+                seat_id, additional_info_fi, additional_info_sv) values(               
                 @meetingId,
                 @eventId,
                 @timestamp,
-                @personFi,
-                @personSv,
+                @person,
                 @eventType,
-                @seatId
+                @seatId,
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, personEvent, transaction);

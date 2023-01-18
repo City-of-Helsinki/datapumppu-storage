@@ -170,19 +170,23 @@ namespace Storage.Repositories
 
         private Task InsertVotes(List<Vote> votes, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"insert into votes (meeting_id, voting_number, voter_name, vote_type) values (
+            var sqlQuery = @"insert into votes (meeting_id, voting_number, person, vote_type, additional_info_fi, additional_info_sv) values (
                 @meetingId,
                 @votingNumber,
-                @voterName,
-                @voteType
+                @person,
+                @voteType,
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, votes.Select(item => new
             {
                 meetingId = item.MeetingID,
                 votingNumber = item.VotingNumber,
-                voterName = item.VoterName,
-                voteType = item.VoteType
+                person = item.Person,
+                voteType = item.VoteType,
+                additionalInfoFi = item.AdditionalInfoFI,
+                additionalInfoSv = item.AdditionalInfoSV
             }), transaction);
         }
     }

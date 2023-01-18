@@ -1,8 +1,6 @@
 ﻿using Dapper;
-using Microsoft.Extensions.Logging;
 using Storage.Repositories.Models;
 using System.Data;
-using System.Security.Cryptography.Xml;
 
 namespace Storage.Repositories
 {
@@ -15,15 +13,17 @@ namespace Storage.Repositories
     {
         public Task InsertSpeechTimerEvent(SpeechTimerEvent speechTimerEvent, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"INSERT INTO speech_timer_events (meeting_id, event_id, seat_id, person_fi, person_sv, duration_seconds, speech_timer, direction) values(
+            var sqlQuery = @"INSERT INTO speech_timer_events (meeting_id, event_id, seat_id, person, duration_seconds, speech_timer, 
+                direction, additional_info_fi, additional_info_sv) values(
                 @meetingId, 
                 @eventId,
                 @seatId, 
-                @personFi,
-                @personSv,
+                @person,
                 @durationSeconds,
                 @speechTimer,
-                @direction
+                @direction,
+                @additionalInfoFi,
+                @additionalInfoSv
             ); ";
 
             return connection.ExecuteAsync(sqlQuery, speechTimerEvent, transaction);
