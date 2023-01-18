@@ -19,5 +19,9 @@
         public string? AdditionalInfoFI { get; set; }
 
         public string? AdditionalInfoSV { get; set; }
+
+        public string? Title { get; set; }
+
+        public int? CaseNumber { get; set; }
     }
 }
