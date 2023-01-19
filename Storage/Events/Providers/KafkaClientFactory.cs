@@ -55,7 +55,7 @@ namespace Storage.Events.Providers
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslUsername = _configuration["KAFKA_USER_USERNAME"],
                 SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
-                SslCertificatePem = cert,
+                SslCaPem = cert,
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
         }
@@ -79,7 +79,7 @@ namespace Storage.Events.Providers
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslUsername = _configuration["KAFKA_USER_USERNAME"],
                 SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
-                SslCertificatePem = cert,
+                SslCaPem = cert
             };
         }
 
