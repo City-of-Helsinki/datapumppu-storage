@@ -554,3 +554,20 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+
+DO $$
+DECLARE exec_id uuid = '96a00f64-724a-403d-9a16-ea3f7fce0dfe';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+    
+    ALTER TABLE speaking_turns RENAME TO statements;
+    ALTER TABLE speaking_turn_reservations RENAME TO statement_reservations;
+    ALTER TABLE started_speaking_turns RENAME TO started_statements;
+    ALTER TABLE break_notices RENAME TO pause_infos;
+    ALTER TABLE pause_infos RENAME COLUMN notice TO info;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;

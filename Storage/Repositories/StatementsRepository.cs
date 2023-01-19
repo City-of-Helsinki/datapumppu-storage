@@ -5,26 +5,28 @@ using System.Data;
 
 namespace Storage.Repositories
 {
-    public interface ISpeakingTurnsRepository
+    public interface IStatementsRepository
     {
-        Task InsertSpeakingTurnReservation(SpeakingTurnReservation speakingTurnReservation, IDbConnection connection, IDbTransaction transaction);
+        Task InsertStartedStatement(StartedStatement startedStatement, IDbConnection connection, IDbTransaction transaction);
 
-        Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction);
+        Task UpsertStatements(List<Statement> statements, IDbConnection connection, IDbTransaction transaction);
 
-        Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction);
+        Task InsertStatementReservation(StatementReservation statementReservation, IDbConnection connection, IDbTransaction transaction);
+
+        Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction);
 
         Task<List<Statement>> GetStatements(string meetingId, string agendaPoint);
 
         Task<List<Statement>> GetSatementsByName(string name, int year);
     }
 
-    public class SpeakingTurnsRepository : ISpeakingTurnsRepository
+    public class StatementsRepository : IStatementsRepository
     {
-        private readonly ILogger<SpeakingTurnsRepository> _logger;
+        private readonly ILogger<StatementsRepository> _logger;
         private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
-        public SpeakingTurnsRepository(
-            ILogger<SpeakingTurnsRepository> logger,
+        public StatementsRepository(
+            ILogger<StatementsRepository> logger,
             IDatabaseConnectionFactory databaseConnectionFactory)
         {
             _logger = logger;
@@ -60,7 +62,7 @@ namespace Storage.Repositories
         {
             var sqlQuery = @"
                 select
-                    speaking_turns.meeting_id,
+                    statements.meeting_id,
                     person,
                     started,
                     ended,
@@ -69,9 +71,9 @@ namespace Storage.Repositories
                     additional_info_fi,
                     additional_info_sv
                 from
-                    speaking_turns
+                    statements
                 join
-                    meeting_events on speaking_turns.event_id = meeting_events.event_id
+                    meeting_events on statements.event_id = meeting_events.event_id
                 where
                     meeting_events.meeting_id = @meetingId and meeting_events.case_number = @agendaPoint
             ";
@@ -82,9 +84,10 @@ namespace Storage.Repositories
         }
 
 
-        public Task InsertStartedSpeakingTurn(StartedStatement startedSpeakingTurn, IDbConnection connection, IDbTransaction transaction)
+        public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"insert into started_speaking_turns (meeting_id, event_id, timestamp, person_fi, person_sv, speaking_time, speech_timer, start_time, direction, seat_id, speech_type) values (
+            var sqlQuery = @"insert into started_statements (meeting_id, event_id, timestamp, person_fi, person_sv, speaking_time, 
+                speech_timer, start_time, direction, seat_id, speech_type) values (
                 @meetingId, 
                 @eventId,
                 @timestamp,
@@ -98,28 +101,16 @@ namespace Storage.Repositories
                 @speechType
             )";
 
-            return connection.ExecuteAsync(sqlQuery, startedSpeakingTurn, transaction);
+            return connection.ExecuteAsync(sqlQuery, startedStatements, transaction);
         }
 
-        public Task InsertSpeakingTurnReservation(SpeakingTurnReservation speakingTurnReservation, IDbConnection connection, IDbTransaction transaction)
-        {
-            var sqlQuery = @"insert into speaking_turn_reservations (meeting_id, event_id, timestamp, person_fi, person_sv, ordinal, seat_id) values (
-                @meetingId,
-                @eventId,
-                @timestamp,
-                @personFi,
-                @personSv,
-                @ordinal,
-                @seatId
-            )";
 
-            return connection.ExecuteAsync(sqlQuery, speakingTurnReservation, transaction);
-        }
 
-        public Task UpsertSpeakingTurns(List<Statement> speakingTurns, IDbConnection connection, IDbTransaction transaction)
+        public Task UpsertStatements(List<Statement> statements, IDbConnection connection, IDbTransaction transaction)
         {
-            _logger.LogInformation("Executing UpsertSpeakingTurns()");
-            var sqlQuery = @"INSERT INTO speaking_turns (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, additional_info_fi, additional_info_sv) values(
+            _logger.LogInformation("Executing UpsertStatements()");
+            var sqlQuery = @"INSERT INTO statements (meeting_id, event_id, person, started, ended, speech_type, duration_seconds, 
+                additional_info_fi, additional_info_sv) values(
                 @meetingId,
                 @eventId,
                 @person,
@@ -139,10 +130,10 @@ namespace Storage.Repositories
                 duration_seconds = @durationSeconds,
                 additional_info_fi = @additionalInfoFi,
                 additional_info_sv = @additionalInfoSv
-                WHERE speaking_turns.meeting_id = @meetingID and speaking_turns.started = @started
+                WHERE statements.meeting_id = @meetingID and statements.started = @started
             ;";
 
-            return connection.ExecuteAsync(sqlQuery, speakingTurns.Select(item => new
+            return connection.ExecuteAsync(sqlQuery, statements.Select(item => new
             {
                 meetingId = item.MeetingID,
                 eventId = item.EventID,
@@ -154,6 +145,33 @@ namespace Storage.Repositories
                 additionalInfoFi = item.AdditionalInfoFI,
                 additionalInfoSv = item.AdditionalInfoSV
             }), transaction);
+        }
+
+        public Task InsertStatementReservation(StatementReservation statementReservation, IDbConnection connection, IDbTransaction transaction)
+        {
+            var sqlQuery = @"insert into statement_reservations (meeting_id, event_id, timestamp, person_fi, person_sv, ordinal, seat_id) values (
+                @meetingId,
+                @eventId,
+                @timestamp,
+                @personFi,
+                @personSv,
+                @ordinal,
+                @seatId
+            )";
+
+            return connection.ExecuteAsync(sqlQuery, statementReservation, transaction);
+        }
+
+        public Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction)
+        {
+            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person_fi, person_sv) values(
+                @meetingId, 
+                @eventId,
+                @personFi, 
+                @personSv
+            ) ";
+
+            return connection.ExecuteAsync(sqlQuery, replyReservation, transaction);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Storage.Events.DTOs
 {
-    public class SpeakingTurnReservationEventDTO: EventDTO
+    public class StatementReservationEventDTO: EventDTO
     {
         public string? PersonFI { get; set; }
 
