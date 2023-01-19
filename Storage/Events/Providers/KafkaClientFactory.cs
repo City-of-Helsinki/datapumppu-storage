@@ -45,7 +45,7 @@ namespace Storage.Events.Providers
                 };
             }
 
-            var cert = parseCert(_configuration["SSL_CERT_PEM"]);
+            var cert = ParseCert(_configuration["SSL_CERT_PEM"]);
 
             return new ConsumerConfig
             {
@@ -70,7 +70,7 @@ namespace Storage.Events.Providers
                 };
             }
 
-            var cert = parseCert(_configuration["SSL_CERT_PEM"]);
+            var cert = ParseCert(_configuration["SSL_CERT_PEM"]);
 
             return new ProducerConfig
             {
@@ -83,8 +83,9 @@ namespace Storage.Events.Providers
             };
         }
 
-        private string parseCert(string cert)
+        private string ParseCert(string cert)
         {
+            // To prevent pipeline errors the keyvault ca.crt is in quotes and without the begin/end tags. 
             cert = cert.Replace("\"", "");
 
             var certBegin = "-----BEGIN CERTIFICATE-----\n";
