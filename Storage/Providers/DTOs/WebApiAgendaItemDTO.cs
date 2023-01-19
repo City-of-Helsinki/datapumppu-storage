@@ -18,6 +18,6 @@
 
         public DateTime? Timestamp { get; set; }
 
-        public int VideoPosition { get; set; }
+        public int? VideoPosition { get; set; }
     }
 }
