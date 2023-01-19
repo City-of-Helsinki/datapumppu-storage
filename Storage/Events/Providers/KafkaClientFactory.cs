@@ -45,6 +45,8 @@ namespace Storage.Events.Providers
                 };
             }
 
+            var cert = ParseCert(_configuration["SSL_CERT_PEM"]);
+
             return new ConsumerConfig
             {
                 BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
@@ -53,7 +55,7 @@ namespace Storage.Events.Providers
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslUsername = _configuration["KAFKA_USER_USERNAME"],
                 SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
-                SslCertificatePem = _configuration["SSL_CERT_PEM"],
+                SslCertificatePem = cert,
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
         }
@@ -68,6 +70,8 @@ namespace Storage.Events.Providers
                 };
             }
 
+            var cert = ParseCert(_configuration["SSL_CERT_PEM"]);
+
             return new ProducerConfig
             {
                 BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
@@ -75,8 +79,19 @@ namespace Storage.Events.Providers
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslUsername = _configuration["KAFKA_USER_USERNAME"],
                 SaslPassword = _configuration["KAFKA_USER_PASSWORD"],
-                SslCertificatePem = _configuration["SSL_CERT_PEM"],
+                SslCertificatePem = cert,
             };
+        }
+
+        private string ParseCert(string cert)
+        {
+            // To prevent pipeline errors the keyvault ca.crt is in quotes and without the begin/end tags. 
+            cert = cert.Replace("\"", "");
+
+            var certBegin = "-----BEGIN CERTIFICATE-----\n";
+            var certEnd = "\n-----END CERTIFICATE-----";
+
+            return certBegin + cert + certEnd;
         }
 
     }
