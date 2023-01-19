@@ -65,7 +65,7 @@ namespace Storage.Providers
                 {
                     return new WebApiVoteDTO
                     {
-                        Name = vote.VoterName,
+                        Name = vote.Person,
                         VoteType = (int)vote.VoteType
                     };
                 }).ToArray()                

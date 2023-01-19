@@ -17,7 +17,7 @@ namespace Storage.Repositories
 
         Task<List<Statement>> GetStatements(string meetingId, string agendaPoint);
 
-        Task<List<Statement>> GetSatementsByName(string name, int year);
+        Task<List<Statement>> GetSatementsByName(string name, int year, string lang);
     }
 
     public class StatementsRepository : IStatementsRepository
@@ -33,29 +33,39 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public async Task<List<Statement>> GetSatementsByName(string name, int year)
+        public async Task<List<Statement>> GetSatementsByName(string name, int year, string lang)
         {
             var sqlQuery = @"
-                select
-                    meeting_id,
+                select distinct
+                    statements.meeting_id,
                     person,
                     started,
                     ended,
                     speech_type,
                     duration_seconds,
                     additional_info_fi,
-                    additional_info_sv
+                    additional_info_sv,
+                    agenda_items.title as title,
+                    agenda_items.agenda_point as case_number
                 from
-                    speaking_turns
+                    statements
+                join
+                    meeting_events on statements.event_id = meeting_events.event_id
+                join
+                    agenda_items on 
+                        meeting_events.meeting_id = agenda_items.meeting_id and
+                        agenda_items.agenda_point = meeting_events.case_number::int8
                 where
-                    lower(person) like (lower(@name))
+                    person = @name
                     and
                     extract(year from started) = @year
+                    and
+                    agenda_items.language = @lang
             ";
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
-            return (await connection.QueryAsync<Statement>(sqlQuery, new { name, year })).ToList();
+            return (await connection.QueryAsync<Statement>(sqlQuery, new { name, year, lang })).ToList();
         }
 
         public async Task<List<Statement>> GetStatements(string meetingId, string agendaPoint)
@@ -86,25 +96,24 @@ namespace Storage.Repositories
 
         public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"insert into started_statements (meeting_id, event_id, timestamp, person_fi, person_sv, speaking_time, 
-                speech_timer, start_time, direction, seat_id, speech_type) values (
+            var sqlQuery = @"insert into started_statements (meeting_id, event_id, timestamp, person, speaking_time, speech_timer, start_time, 
+                direction, seat_id, speech_type, additional_info_fi, additional_info_sv) values (
                 @meetingId, 
                 @eventId,
                 @timestamp,
-                @personFi,
-                @personSv,
+                @person,
                 @speakingTime,
                 @speechTimer,
                 @startTime,
                 @direction,
                 @seatId,
-                @speechType
+                @speechType, 
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, startedStatements, transaction);
         }
-
-
 
         public Task UpsertStatements(List<Statement> statements, IDbConnection connection, IDbTransaction transaction)
         {
@@ -149,14 +158,16 @@ namespace Storage.Repositories
 
         public Task InsertStatementReservation(StatementReservation statementReservation, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"insert into statement_reservations (meeting_id, event_id, timestamp, person_fi, person_sv, ordinal, seat_id) values (
+            var sqlQuery = @"insert into statement_reservations (meeting_id, event_id, timestamp, person, ordinal, seat_id, additional_info_fi, 
+                additional_info_sv) values (
                 @meetingId,
                 @eventId,
                 @timestamp,
-                @personFi,
-                @personSv,
+                @person,
                 @ordinal,
-                @seatId
+                @seatId,
+                @additionalInfoFi,
+                @additionalInfoSv
             )";
 
             return connection.ExecuteAsync(sqlQuery, statementReservation, transaction);
@@ -164,11 +175,12 @@ namespace Storage.Repositories
 
         public Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person_fi, person_sv) values(
+            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person, additional_info_fi, additional_info_sv) values(
                 @meetingId, 
                 @eventId,
-                @personFi, 
-                @personSv
+                @person,
+                @additionalInfoFi,
+                @additionalInfoSv
             ) ";
 
             return connection.ExecuteAsync(sqlQuery, replyReservation, transaction);

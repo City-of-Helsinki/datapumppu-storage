@@ -28,6 +28,8 @@ namespace Storage.Actions
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId))
                     .ForMember(dest => dest.Started, opt => opt.MapFrom(src => src.StartTime))
                     .ForMember(dest => dest.Ended, opt => opt.MapFrom(src => src.EndTime))
+                    .ForMember(dest => dest.Title, opt => opt.Ignore())
+                    .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
                     .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.Duration));
             });
             config.AssertConfigurationIsValid();

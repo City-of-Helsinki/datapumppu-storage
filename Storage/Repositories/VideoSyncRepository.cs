@@ -9,6 +9,8 @@ namespace Storage.Repositories
         Task<int> UpsertVideoSyncItem(VideoSync videoSyncItem);
 
         Task<VideoSync?> GetVideoPosition(string meetingId, DateTime timestamp);
+
+        Task<List<VideoSync>> GetVideoPositions(string meetingId);
     }
 
     public class VideoSyncRepository : IVideoSyncRepository
@@ -43,6 +45,24 @@ namespace Storage.Repositories
 
             using var connection = await _connectionFactory.CreateOpenConnection();
             return (await connection.QueryAsync<VideoSync>(sqlQuery, new { meetingId, timestamp })).FirstOrDefault();
+        }
+
+        public async Task<List<VideoSync>> GetVideoPositions(string meetingId)
+        {
+            _logger.LogInformation("Executing GetVideoPosition()");
+
+            string sqlQuery = @"
+                select
+                    meeting_id,
+                    timestamp,
+                    video_position
+                from
+                    video_synchronizations
+                where
+                    meeting_id = @meetingId";
+
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            return (await connection.QueryAsync<VideoSync>(sqlQuery, new { meetingId })).ToList();
         }
 
         public async Task<int> UpsertVideoSyncItem(VideoSync videoSyncItem)

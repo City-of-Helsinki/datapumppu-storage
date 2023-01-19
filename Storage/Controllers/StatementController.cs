@@ -36,12 +36,13 @@ namespace Storage.Controllers
         [HttpGet("person")]
         public async Task<IActionResult> GetStatementsByPerson(
             [FromQuery]string name,
-            [FromQuery]int year)
+            [FromQuery]int year,
+            [FromQuery]string lang)
         {
             try
             {
-                _logger.LogInformation($"GetStatementsByPerson {name}, {year}");
-                var turns = await _statementProvider.GetStatementsByPerson(name, year);
+                _logger.LogInformation($"GetStatementsByPerson {name}, {year} {lang}");
+                var turns = await _statementProvider.GetStatementsByPerson(name, year, lang);
                 return new OkObjectResult(turns);
             }
             catch (Exception ex)

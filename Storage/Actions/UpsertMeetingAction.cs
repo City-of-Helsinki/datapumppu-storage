@@ -57,8 +57,11 @@ namespace Storage.Actions
             var agendaItemPdfs = meetingDTO.Agendas?.Where(agendaItem => agendaItem.Pdf != null)
                 .Select(agendaItem => MapToAgendaItemAttachment(agendaItem.Pdf, agendaItem.AgendaPoint, meetingDTO.MeetingID)).ToList();
 
-            var agendaItemDecisionHistoryPdfs = meetingDTO.Agendas?.Where(agendaItem => agendaItem.DecisionHistoryPdf != null)
-                .Select(agendaItem => MapToAgendaItemAttachment(agendaItem.DecisionHistoryPdf, agendaItem.AgendaPoint, meetingDTO.MeetingID)).ToList();
+            //
+            // not used at the moment
+            //
+            //var agendaItemDecisionHistoryPdfs = meetingDTO.Agendas?.Where(agendaItem => agendaItem.DecisionHistoryPdf != null)
+            //    .Select(agendaItem => MapToAgendaItemAttachment(agendaItem.DecisionHistoryPdf, agendaItem.AgendaPoint, meetingDTO.MeetingID)).ToList();
 
             var decisions = meetingDTO.Decisions?.Select(decision => mapper.Map<Decision>(decision)).ToList();
 
@@ -77,10 +80,9 @@ namespace Storage.Actions
             
             await MakeTransaction(
                 meeting, 
-                agendas ?? new List<AgendaItem>(), 
-                agendaItemAttachments ?? new List<AgendaItemAttachment>(),
+                agendas, 
+                agendaItemAttachments,
                 agendaItemPdfs ?? new List<AgendaItemAttachment>(),
-                agendaItemDecisionHistoryPdfs ?? new List<AgendaItemAttachment>(),
                 decisions ?? new List<Decision>(), 
                 decisionAttachments ?? new List<DecisionAttachment>(), 
                 decisionPdfs ?? new List<DecisionAttachment>(), 
@@ -126,9 +128,14 @@ namespace Storage.Actions
             return mapper.Map<DecisionAttachment>(attachmentDto);
         }
 
-        private async Task MakeTransaction(Meeting meeting, List<AgendaItem> agendas, List<AgendaItemAttachment> agendaItemAttachments, 
-            List<AgendaItemAttachment> agendaItemPdfs, List<AgendaItemAttachment> agendaItemDecisionHistoryPdfs,
-            List<Decision> decisions, List<DecisionAttachment> decisionAttachments, List<DecisionAttachment> decisionPdfs,
+        private async Task MakeTransaction(
+            Meeting meeting,
+            List<AgendaItem>? agendas,
+            List<AgendaItemAttachment>? agendaItemAttachments,
+            List<AgendaItemAttachment> agendaItemPdfs,
+            List<Decision> decisions,
+            List<DecisionAttachment> decisionAttachments,
+            List<DecisionAttachment> decisionPdfs,
             List<DecisionAttachment> decisionHistoryPdfs)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
@@ -137,8 +144,16 @@ namespace Storage.Actions
             try
             {
                 await _meetingsRepository.UpsertMeeting(meeting, connection, transaction);
-                await _agendaItemsRepository.UpsertAgendaItems(agendas, connection, transaction);
-                await _agendaItemsRepository.UpsertAgendaItemAttachments(agendaItemAttachments, connection, transaction);
+
+                if (agendas?.Count > 0)
+                {
+                    await _agendaItemsRepository.UpsertAgendaItems(agendas, connection, transaction);
+                }
+
+                if (agendaItemAttachments?.Count > 0)
+                {
+                    await _agendaItemsRepository.UpsertAgendaItemAttachments(agendaItemAttachments, connection, transaction);
+                }
                 await _agendaItemsRepository.UpsertAgendaItemPdfs(agendaItemPdfs, connection, transaction);
                 await _agendaItemsRepository.UpsertAgendaItemDecisionHistoryPdfs(agendaItemPdfs, connection, transaction);
                 await _decisionsRepository.UpsertDecisions(decisions, connection, transaction);

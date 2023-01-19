@@ -557,15 +557,73 @@ end $$;
 
 
 DO $$
-DECLARE exec_id uuid = '96a00f64-724a-403d-9a16-ea3f7fce0dfe';
+DECLARE exec_id uuid = 'a420c082-38ff-4f8c-b8d4-c02b775e7213';
 BEGIN
 IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE speech_timer_events RENAME COLUMN person_fi TO person;
+    ALTER TABLE speech_timer_events DROP COLUMN person_sv;
+    ALTER TABLE speech_timer_events ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE speech_timer_events ADD COLUMN additional_info_sv VARCHAR(64);
+
+    ALTER TABLE propositions RENAME COLUMN person_fi TO person;
+    ALTER TABLE propositions DROP COLUMN person_sv;
+    ALTER TABLE propositions ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE propositions ADD COLUMN additional_info_sv VARCHAR(64);
+
+    ALTER TABLE person_events RENAME COLUMN person_fi TO person;
+    ALTER TABLE person_events DROP COLUMN person_sv;
+    ALTER TABLE person_events ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE person_events ADD COLUMN additional_info_sv VARCHAR(64);    
+
+    ALTER TABLE speaking_turn_reservations RENAME COLUMN person_fi TO person;
+    ALTER TABLE speaking_turn_reservations DROP COLUMN person_sv;
+    ALTER TABLE speaking_turn_reservations ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE speaking_turn_reservations ADD COLUMN additional_info_sv VARCHAR(64);    
+
+    ALTER TABLE started_speaking_turns RENAME COLUMN person_fi TO person;
+    ALTER TABLE started_speaking_turns DROP COLUMN person_sv;
+    ALTER TABLE started_speaking_turns ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE started_speaking_turns ADD COLUMN additional_info_sv VARCHAR(64);    
+
+    ALTER TABLE reply_reservations RENAME COLUMN person_fi TO person;
+    ALTER TABLE reply_reservations DROP COLUMN person_sv;
+    ALTER TABLE reply_reservations ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE reply_reservations ADD COLUMN additional_info_sv VARCHAR(64);   
     
+    ALTER TABLE votes RENAME COLUMN voter_name TO person;
+    ALTER TABLE votes ADD COLUMN additional_info_fi VARCHAR(64);
+    ALTER TABLE votes ADD COLUMN additional_info_sv VARCHAR(64);
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'b0125a25-4780-4211-8846-00f2811fc4cc';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+
+    CREATE INDEX ix__video_synchronizations__timestamp  ON video_synchronizations (timestamp);
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'cc852698-6376-4f7b-b227-6ad5d069a520';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
     ALTER TABLE speaking_turns RENAME TO statements;
     ALTER TABLE speaking_turn_reservations RENAME TO statement_reservations;
     ALTER TABLE started_speaking_turns RENAME TO started_statements;
     ALTER TABLE break_notices RENAME TO pause_infos;
-    ALTER TABLE pause_infos RENAME COLUMN notice TO info;
 
     INSERT INTO database_updates VALUES (exec_id);
 
