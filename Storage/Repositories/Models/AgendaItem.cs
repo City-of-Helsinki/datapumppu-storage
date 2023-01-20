@@ -19,6 +19,10 @@ namespace Storage.Repositories.Models
         public string? Language { get; set; }
 
         public string? DecisionHistoryHtml { get; set; }
+
+        public DateTime? Timestamp { get; set; }
+
+        public int VideoPosition { get; set; }
     }
 }
 

@@ -33,7 +33,10 @@ namespace Storage.Actions
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<AgendaItemDTO, AgendaItem>()
-                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID));
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID))
+                    .ForMember(dest => dest.Timestamp, opt => opt.Ignore())
+                    .ForMember(dest => dest.VideoPosition, opt => opt.Ignore());
+
                 cfg.CreateMap<DecisionDTO, Decision>()
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => meetingDTO.MeetingID));
                 cfg.CreateMap<MeetingDTO, Meeting>()
