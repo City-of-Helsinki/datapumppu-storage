@@ -600,7 +600,6 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 end if;
 end $$;
 
-
 DO $$
 DECLARE exec_id uuid = 'b0125a25-4780-4211-8846-00f2811fc4cc';
 BEGIN

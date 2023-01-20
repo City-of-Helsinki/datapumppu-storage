@@ -2,6 +2,12 @@
 {
     public static class VideoSyncExtensions
     {
+        public static int GetVideoPosition(this List<VideoSync> videoSyncs, DateTime? startTime)
+        {
+            var sync = videoSyncs.Where(sync => sync.Timestamp < startTime).OrderBy(sync => sync.Timestamp).FirstOrDefault();
+            return sync?.GetVideoPosition(startTime) ?? 0;
+        }
+
         public static int GetVideoPosition(this VideoSync? videoSync, DateTime? startTime)
         {
             if (videoSync == null || videoSync?.Timestamp == null || videoSync?.VideoPosition == null)

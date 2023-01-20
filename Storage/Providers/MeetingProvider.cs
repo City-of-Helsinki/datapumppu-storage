@@ -4,6 +4,7 @@ using Storage.Mappers;
 using Storage.Providers.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
+using Storage.Repositories.Models.Extensions;
 
 namespace Storage.Providers
 {
@@ -21,16 +22,19 @@ namespace Storage.Providers
         private readonly IAgendaItemsRepository _agendaItemsRepository;
         private readonly IDecisionsReadOnlyRepository _decisionsRepository;
         private readonly IFullDecisionMapper _fullDecisionMapper;
+        private readonly IVideoSyncRepository _videoSyncRepository;
 
         public MeetingProvider(IMeetingsRepository meetingsRepository,
             IAgendaItemsRepository agendaItemsRepository,
             IDecisionsReadOnlyRepository decisionsRepository,
+            IVideoSyncRepository videoSyncRepository,
             IFullDecisionMapper fullDecisionMapper)
         {
             _meetingsRepository = meetingsRepository;
             _agendaItemsRepository = agendaItemsRepository;
             _decisionsRepository = decisionsRepository;
             _fullDecisionMapper = fullDecisionMapper;
+            _videoSyncRepository = videoSyncRepository;
         }
 
         public async Task<WebApiMeetingDTO?> FetchById(string id, string language)
@@ -60,6 +64,8 @@ namespace Storage.Providers
                 return null;
             }
             var agendaitems = await _agendaItemsRepository.FetchAgendasByMeetingId(meeting.MeetingID, language);
+
+            agendaitems = await UpdateVideoPositions(meeting.MeetingID, agendaitems);
 
             var attachments = await _agendaItemsRepository.FetchAgendaAttachmentsByMeetingId(meeting.MeetingID, language);
 
@@ -93,6 +99,17 @@ namespace Storage.Providers
             meetingDTO.Agendas = agendaItemDTOs;
 
             return meetingDTO;
+        }
+
+        private async Task<List<AgendaItem>> UpdateVideoPositions(string meetingId, List<AgendaItem> agendaItems)
+        {
+            var videoPositions = await _videoSyncRepository.GetVideoPositions(meetingId);
+            foreach (var agendaItem in agendaItems)
+            {
+                agendaItem.VideoPosition = videoPositions.GetVideoPosition(agendaItem.Timestamp);
+            }
+
+            return agendaItems;
         }
 
         private WebApiMeetingDTO MapMeetingToDTO(Meeting meeting, List<WebApiAgendaItemDTO> agendaItems)
