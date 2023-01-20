@@ -60,7 +60,7 @@ namespace Storage.Repositories
             _logger.LogInformation("Executing GetVotes()");
             var sqlQuery = @"
                 select
-                    voter_name,
+                    person,
                     vote_type
                 from
                     votes
