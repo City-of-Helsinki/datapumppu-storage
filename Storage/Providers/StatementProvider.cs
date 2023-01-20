@@ -16,15 +16,15 @@ namespace Storage.Providers
     public class StatementProvider : IStatementProvider
     {
         private readonly ILogger<StatementProvider> _logger;
-        private readonly ISpeakingTurnsRepository _speakingTurnsRepository;
+        private readonly IStatementsRepository _statementsRepository;
         private readonly IVideoSyncRepository _videoSyncRepository;
 
         public StatementProvider(ILogger<StatementProvider> logger,
-            ISpeakingTurnsRepository speakingTurnsRepository,
+            IStatementsRepository statementsRepository,
             IVideoSyncRepository videoSyncRepository)
         {
             _logger = logger;
-            _speakingTurnsRepository = speakingTurnsRepository;
+            _statementsRepository = statementsRepository;
             _videoSyncRepository = videoSyncRepository;
         }
 
@@ -32,18 +32,18 @@ namespace Storage.Providers
         {
             _logger.LogInformation($"GetStatements {meetingId} {caseNumber}");
 
-            var speakingTurns = await _speakingTurnsRepository.GetStatements(meetingId, caseNumber);
+            var statements = await _statementsRepository.GetStatements(meetingId, caseNumber);
 
-            var videoSync = await GetVideoSync(meetingId, speakingTurns);
+            var videoSync = await GetVideoSync(meetingId, statements);
 
-            return speakingTurns.Select(turn => MapToDTO(turn, videoSync)).ToList();
+            return statements.Select(turn => MapToDTO(turn, videoSync)).ToList();
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang)
         {
             _logger.LogInformation($"GetStatementsByPerson {name} {year} {lang}");
 
-            var statements = await _speakingTurnsRepository.GetSatementsByName(name, year, lang);
+            var statements = await _statementsRepository.GetSatementsByName(name, year, lang);
 
             
             var dtos = new List<WebApiStatementsDTO>();

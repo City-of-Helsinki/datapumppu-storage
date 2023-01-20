@@ -6,25 +6,25 @@ using System.Data;
 
 namespace Storage.Actions
 {
-    public class UpdateSpeakingTurnsAction : IEventAction
+    public class UpdateStatementsAction : IEventAction
     {
         public List<EventType> EventTypes { get; } = new()
-            { EventType.SpeakingTurns };
+            { EventType.Statements };
 
-        private readonly ISpeakingTurnsRepository _speakingTurnsRepository;
+        private readonly IStatementsRepository _statementsRepository;
 
-        public UpdateSpeakingTurnsAction(ISpeakingTurnsRepository speakingTurnsRepository)
+        public UpdateStatementsAction(IStatementsRepository statementsRepository)
         {
-            _speakingTurnsRepository = speakingTurnsRepository;
+            _statementsRepository = statementsRepository;
         }
 
         public Task Execute(BinaryData eventBody, Guid eventId, IDbConnection connection, IDbTransaction transaction)
         {
-            var speakingTurnsEventDto = eventBody.ToObjectFromJson<SpeakingTurnsEventDTO>();
+            var statementsEventDto = eventBody.ToObjectFromJson<StatementsEventDTO>();
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<SpeakingTurnDTO, Statement>()
-                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => speakingTurnsEventDto.MeetingID))
+                cfg.CreateMap<StatementDTO, Statement>()
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => statementsEventDto.MeetingID))
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId))
                     .ForMember(dest => dest.Started, opt => opt.MapFrom(src => src.StartTime))
                     .ForMember(dest => dest.Ended, opt => opt.MapFrom(src => src.EndTime))
@@ -34,9 +34,9 @@ namespace Storage.Actions
             });
             config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
-            var speakingTurns = speakingTurnsEventDto.SpeakingTurns.Select(speakingTurnDto => mapper.Map<Statement>(speakingTurnDto)).ToList();
+            var statements = statementsEventDto.Statements.Select(statementDto => mapper.Map<Statement>(statementDto)).ToList();
 
-            return _speakingTurnsRepository.UpsertSpeakingTurns(speakingTurns, connection, transaction);
+            return _statementsRepository.UpsertStatements(statements, connection, transaction);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Storage.Events.DTOs
 {
-    public class SpeakingTurnDTO
+    public class StatementDTO
     {
         public string? Person { get; set; }
 

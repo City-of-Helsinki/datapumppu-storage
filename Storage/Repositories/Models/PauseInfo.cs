@@ -1,11 +1,11 @@
 ﻿namespace Storage.Repositories.Models
 {
-    public class BreakNotice
+    public class PauseInfo
     {
         public string MeetingID { get; set; }
 
         public Guid EventID { get; set; }
 
-        public string Notice { get; set; }
+        public string Info { get; set; }
     }
 }

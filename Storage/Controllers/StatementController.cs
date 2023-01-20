@@ -8,27 +8,27 @@ namespace Storage.Controllers
     public class StatementController : ControllerBase
     {
         private readonly ILogger<StatementController> _logger;
-        private readonly IStatementProvider _speakingTurnProvider;
+        private readonly IStatementProvider _statementProvider;
 
         public StatementController(ILogger<StatementController> logger,
-            IStatementProvider speakingTurnProvider)
+            IStatementProvider statementProvider)
         {
             _logger = logger;
-            _speakingTurnProvider = speakingTurnProvider;
+            _statementProvider = statementProvider;
         }
 
         [HttpGet("{meetingId}/{caseNumber}")]
-        public async Task<IActionResult> GetSpeakingTurns(string meetingId, string caseNumber)
+        public async Task<IActionResult> GetStatements(string meetingId, string caseNumber)
         {
             try
             {
-                _logger.LogInformation($"GetSpeakingTurns {meetingId}, {caseNumber}");
-                var turns = await _speakingTurnProvider.GetStatements(meetingId, caseNumber);
+                _logger.LogInformation($"GetStatements {meetingId}, {caseNumber}");
+                var turns = await _statementProvider.GetStatements(meetingId, caseNumber);
                 return new OkObjectResult(turns);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetSpeakingTurns failed");
+                _logger.LogError(ex, "GetStatements failed");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -42,12 +42,12 @@ namespace Storage.Controllers
             try
             {
                 _logger.LogInformation($"GetStatementsByPerson {name}, {year} {lang}");
-                var turns = await _speakingTurnProvider.GetStatementsByPerson(name, year, lang);
+                var turns = await _statementProvider.GetStatementsByPerson(name, year, lang);
                 return new OkObjectResult(turns);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetSpeakingTurns failed");
+                _logger.LogError(ex, "GetStatementsByPerson failed");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

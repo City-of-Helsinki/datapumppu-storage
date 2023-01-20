@@ -6,31 +6,31 @@ using System.Data;
 
 namespace Storage.Actions
 {
-    public class InsertBreakNoticeAction : IEventAction
+    public class InsertPauseInfoAction : IEventAction
     {
         public List<EventType> EventTypes { get; } = new()
-            { EventType.BreakNotice };
+            { EventType.PauseInfo };
 
-        private readonly IBreakNoticeRepository _breakNoticeRepository;
+        private readonly IPauseInfoRepository _pauseInfoRepository;
 
-        public InsertBreakNoticeAction(IBreakNoticeRepository breakNoticeRepository)
+        public InsertPauseInfoAction(IPauseInfoRepository pauseInfoRepository)
         {
-            _breakNoticeRepository = breakNoticeRepository;
+            _pauseInfoRepository = pauseInfoRepository;
         }
 
         public Task Execute(BinaryData eventBody, Guid eventId, IDbConnection connection, IDbTransaction transaction)
         {
-            var breakNoticeEventDto = eventBody.ToObjectFromJson<BreakNoticeEventDTO>();
+            var breakNoticeEventDto = eventBody.ToObjectFromJson<PauseInfoEventDTO>();
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<BreakNoticeEventDTO, BreakNotice>()
+                cfg.CreateMap<PauseInfoEventDTO, PauseInfo>()
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
             config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
-            var breakNotice = mapper.Map<BreakNotice>(breakNoticeEventDto);
+            var breakNotice = mapper.Map<PauseInfo>(breakNoticeEventDto);
 
-            return _breakNoticeRepository.InsertBreakNotice(breakNotice, connection, transaction);
+            return _pauseInfoRepository.InsertPauseInfo(breakNotice, connection, transaction);
         }
     }
 }

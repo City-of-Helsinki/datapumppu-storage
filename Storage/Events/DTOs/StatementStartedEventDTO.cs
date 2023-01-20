@@ -1,7 +1,7 @@
 ﻿using Storage.Controllers.Event.DTOs;
 namespace Storage.Events.DTOs
 {
-    public class SpeakingTurnStartedEventDTO: EventDTO
+    public class StatementStartedEventDTO: EventDTO
     {
         public string? Person { get; set; }
 

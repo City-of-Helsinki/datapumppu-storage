@@ -1,13 +1,9 @@
-﻿namespace Storage.Repositories.Models
+﻿using Storage.Controllers.Event.DTOs;
+
+namespace Storage.Events.DTOs
 {
-    public class SpeakingTurnReservation
+    public class StatementReservationEventDTO: EventDTO
     {
-        public string MeetingID { get; set; }
-
-        public Guid EventID { get; set; }
-
-        public DateTime Timestamp { get; set; }
-
         public string? Person { get; set; }
 
         public int? Ordinal { get; set; }
