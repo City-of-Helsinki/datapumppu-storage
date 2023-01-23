@@ -70,8 +70,6 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-            builder.Services.AddHostedService<DatabaseCleaner>();
-
             if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]))
             {
                 builder.Services.AddHostedService<EventObserver>();
@@ -82,6 +80,7 @@ namespace Storage
             }
 
             builder.Services.AddHostedService<DatabaseMigrationService>();
+            builder.Services.AddHostedService<DatabaseCleaner>();
 
             var app = builder.Build();
 

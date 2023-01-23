@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using Storage.Repositories.Providers;
 
-namespace Storage.Events
+namespace Storage
 {
     public class DatabaseCleaner : IHostedService
     {
@@ -17,16 +17,16 @@ namespace Storage.Events
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(1));
+            _timer = new Timer(DoCleaning, null, TimeSpan.Zero, TimeSpan.FromHours(1));
             return Task.CompletedTask;
         }
 
-        private async void DoWork(object state)
+        private async void DoCleaning(object state)
         {
             var now = DateTime.Now;
             if(now.Hour == 1)
             {
-                _logger.LogInformation("Executing database cleaner");
+                _logger.LogInformation("Removing test data from database.");
                 var sqlQuery = "DELETE FROM meetings WHERE meeting_id LIKE '%test%'";
                 using var connection = await _connectionFactory.CreateOpenConnection();
                 await connection.ExecuteAsync(sqlQuery);
