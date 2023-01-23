@@ -47,10 +47,10 @@ namespace Storage.Events
             consumer.Subscribe(topic);
 
             using var connection = await _connectionFactory.CreateOpenConnection();
-            using var transaction = connection.BeginTransaction();
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                using var transaction = connection.BeginTransaction();
                 try
                 {
                     var cr = consumer.Consume(stoppingToken);
@@ -66,10 +66,11 @@ namespace Storage.Events
                     var eventId = Guid.NewGuid();
                     foreach (var action in actions)
                     {
+                        _logger.LogInformation("" + body.EventType + " | " + binaryBody.ToString());
                         await action.Execute(binaryBody, eventId, connection, transaction);
                     }
 
-                    consumer.Commit();
+                    consumer.Commit(cr);
                     transaction.Commit();
                     _logger.LogInformation("Consumer Event successfully stored.");
                 }
