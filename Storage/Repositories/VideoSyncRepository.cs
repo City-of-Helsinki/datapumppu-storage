@@ -74,9 +74,9 @@ namespace Storage.Repositories
                 @timestamp,
                 @videoPosition
             ) ";
-            sqlQuery += @"ON CONFLICT (meeting_id, video_position) DO UPDATE SET 
-                timestamp = @timestamp
-                WHERE video_synchronizations.meeting_id = @meetingId and video_synchronizations.video_position = @videoPosition
+            sqlQuery += @"ON CONFLICT (meeting_id, timestamp) DO UPDATE SET 
+                video_position = @videoPosition
+                WHERE video_synchronizations.meeting_id = @meetingId and video_synchronizations.timestamp = @timestamp
             ;";
 
             using var connection = await _connectionFactory.CreateOpenConnection();

@@ -695,3 +695,16 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '29fe5591-2e17-4658-93ea-7977238e0500';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE video_synchronizations DROP CONSTRAINT pk__video_synchronizations__meeting_id;
+    ALTER TABLE video_synchronizations ADD CONSTRAINT pk__video_synchronizations__meeting_id PRIMARY KEY (meeting_id, timestamp); 
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
