@@ -57,16 +57,13 @@ namespace Storage.Events
                     var body = JsonSerializer.Deserialize<EventDTO>(cr.Message.Value)!;
                     using var scope = _serviceProvider.CreateScope();
 
-                    // convert object to binarydata for azure service bus compatibility
-                    var binaryBody = BinaryData.FromObjectAsJson<EventDTO>(body);
-
+                    var binaryBody = BinaryData.FromString(cr.Message.Value);
                     var eventActions = scope.ServiceProvider.GetService<IEventActions>();
                     var actions = eventActions.GetActionsForEvent(body.EventType);
 
                     var eventId = Guid.NewGuid();
                     foreach (var action in actions)
                     {
-                        _logger.LogInformation("" + body.EventType + " | " + binaryBody.ToString());
                         await action.Execute(binaryBody, eventId, connection, transaction);
                     }
 
