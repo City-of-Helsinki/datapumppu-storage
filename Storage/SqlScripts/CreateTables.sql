@@ -628,3 +628,70 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'ea3133b1-08d3-454e-b402-c685aa555414';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE agenda_items DROP CONSTRAINT fk__agenda_items__meeting_id__meetings__meeting_id;
+    ALTER TABLE agenda_items ADD CONSTRAINT fk__agenda_items__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE meeting_events DROP CONSTRAINT fk__meeting_events__meeting_id__meetings__meeting_id;
+    ALTER TABLE meeting_events ADD CONSTRAINT fk__meeting_events__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE votings DROP CONSTRAINT fk__votings__meeting_id__meetings__meeting_id;
+    ALTER TABLE votings ADD CONSTRAINT fk__votings__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE decisions DROP CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id;
+    ALTER TABLE decisions ADD CONSTRAINT fk__decisions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE meeting_seat_updates DROP CONSTRAINT fk__meeting_seat_updates__meeting_id__meetings__meeting_id;
+    ALTER TABLE meeting_seat_updates ADD CONSTRAINT fk__meeting_seat_updates__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE statements DROP CONSTRAINT fk__speaking_turns__meeting_id__meetings__meeting_id;
+    ALTER TABLE statements ADD CONSTRAINT fk__statements__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+    ALTER TABLE statements DROP CONSTRAINT fk__speaking_turns__event_id__meeting_events__event_id;
+    ALTER TABLE statements ADD CONSTRAINT fk__statements__event_id__meeting_events__event_id FOREIGN KEY (event_id) REFERENCES meeting_events(event_id) ON DELETE CASCADE;
+
+    ALTER TABLE cases DROP CONSTRAINT fk__cases__meeting_id__meetings__meeting_id;
+    ALTER TABLE cases ADD CONSTRAINT fk__cases__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE roll_calls DROP CONSTRAINT fk__roll_calls__meeting_id__meetings__meeting_id;
+    ALTER TABLE roll_calls ADD CONSTRAINT fk__roll_calls__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE statement_reservations DROP CONSTRAINT fk__speaking_turn_reservations__meeting_id__meetings__meeting_id;
+    ALTER TABLE statement_reservations ADD CONSTRAINT fk__statement_reservations__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+    ALTER TABLE statement_reservations DROP CONSTRAINT fk__speaking_turn_reservations__event_id__meeting_events__event_id ;
+    ALTER TABLE statement_reservations ADD CONSTRAINT fk__statement_reservations__event_id__meeting_events__event_id FOREIGN KEY (event_id) REFERENCES meeting_events(event_id) ON DELETE CASCADE;
+
+    ALTER TABLE started_statements DROP CONSTRAINT fk__started_speaking_turns__meeting_id__meetings__meeting_id;
+    ALTER TABLE started_statements ADD CONSTRAINT fk__started_statements__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+    ALTER TABLE started_statements DROP CONSTRAINT fk__started_speaking_turns__event_id__meeting_events__event_id ;
+    ALTER TABLE started_statements ADD CONSTRAINT fk__started_statements__event_id__meeting_events__event_id FOREIGN KEY (event_id) REFERENCES meeting_events(event_id) ON DELETE CASCADE;
+
+    ALTER TABLE person_events DROP CONSTRAINT fk__person_events__meeting_id__meetings__meeting_id;
+    ALTER TABLE person_events ADD CONSTRAINT fk__person_events__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE pause_infos DROP CONSTRAINT fk__break_notices__meeting_id__meetings__meeting_id;
+    ALTER TABLE pause_infos ADD CONSTRAINT fk__pause_infos__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+    ALTER TABLE pause_infos DROP CONSTRAINT fk__break_notices__event_id__meeting_events__event_id;
+    ALTER TABLE pause_infos ADD CONSTRAINT fk__pause_infos__event_id__meeting_events__event_id FOREIGN KEY (event_id) REFERENCES meeting_events(event_id) ON DELETE CASCADE;
+
+    ALTER TABLE speech_timer_events DROP CONSTRAINT fk__speech_timer_events__meeting_id__meetings__meeting_id;
+    ALTER TABLE speech_timer_events ADD CONSTRAINT fk__speech_timer_events__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE propositions DROP CONSTRAINT fk__propositions__meeting_id__meetings__meeting_id;
+    ALTER TABLE propositions ADD CONSTRAINT fk__propositions__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE reply_reservations DROP CONSTRAINT fk__reply_reservations__meeting_id__meetings__meeting_id;
+    ALTER TABLE reply_reservations ADD CONSTRAINT fk__reply_reservations__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    ALTER TABLE video_synchronizations DROP CONSTRAINT fk__video_synchronization__meeting_id__meetings__meeting_id;
+    ALTER TABLE video_synchronizations ADD CONSTRAINT fk__video_synchronization__meeting_id__meetings__meeting_id FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id) ON DELETE CASCADE;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;

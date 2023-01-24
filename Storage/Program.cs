@@ -80,6 +80,7 @@ namespace Storage
             }
 
             builder.Services.AddHostedService<DatabaseMigrationService>();
+            builder.Services.AddHostedService<DatabaseCleaner>();
 
             var app = builder.Build();
 
