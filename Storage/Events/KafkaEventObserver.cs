@@ -41,10 +41,13 @@ namespace Storage.Events
 
         private async void MessageHandler(CancellationToken stoppingToken)
         {
-            var topic = _configuration["KAFKA_CONSUMER_TOPIC"];
+            var consumerTopic = _configuration["KAFKA_CONSUMER_TOPIC"];
             var consumer = _clientFactory.CreateConsumer();
 
-            consumer.Subscribe(topic);
+            var producerTopic = _configuration["KAFKA_PRODUCER_TOPIC"];
+            var producer = _clientFactory.CreateProducer();
+
+            consumer.Subscribe(consumerTopic);
 
             using var connection = await _connectionFactory.CreateOpenConnection();
 
@@ -70,6 +73,9 @@ namespace Storage.Events
                     consumer.Commit(cr);
                     transaction.Commit();
                     _logger.LogInformation("Consumer Event successfully stored.");
+
+                    // send MeetingID to WebApi
+                    await producer.ProduceAsync(producerTopic, new Message<Null, string> { Value = body.MeetingID });
                 }
                 catch (OperationCanceledException)
                 {
@@ -84,7 +90,7 @@ namespace Storage.Events
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Consumer Unexpected Error: " + e.Message);
+                    _logger.LogError("Kafka Unexpected Error: " + e.Message);
                     transaction.Rollback();
                 }
             }
