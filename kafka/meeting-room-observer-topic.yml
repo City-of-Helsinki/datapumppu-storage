@@ -1,0 +1,13 @@
+kind: KafkaTopic
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: meeting-room-observer-topic
+  labels:
+    strimzi.io/cluster: kafka
+  namespace: hki-kanslia-datapumppu-dev
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824

@@ -1,0 +1,51 @@
+kind: KafkaUser
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: internal-user
+  labels:
+    strimzi.io/cluster: kafka
+  namespace: hki-kanslia-datapumppu-dev
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - host: '*'
+        operations:
+          - Read
+          - Create
+          - Describe
+          - Write
+        resource:
+          name: meeting-room-observer-topic
+          patternType: literal
+          type: topic
+      - host: '*'
+        operations:
+          - Read
+          - Create
+          - Describe
+          - Write
+        resource:
+          name: ahjosali-topic
+          patternType: literal
+          type: topic
+      - host: '*'
+        operations:
+          - Read
+          - Create
+          - Describe
+          - Write
+        resource:
+          name: webapi-topic
+          patternType: literal
+          type: topic
+      - host: '*'
+        operations:
+          - Read
+        resource:
+          name: '*'
+          patternType: literal
+          type: group
+        type: allow
