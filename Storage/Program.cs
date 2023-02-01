@@ -47,6 +47,7 @@ namespace Storage
             builder.Services.AddScoped<IMeetingProvider, MeetingProvider>();
             builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
             builder.Services.AddScoped<IStatementProvider, StatementProvider>();
+            builder.Services.AddScoped<IReservationsProvider, ReservationsProvider>();
 
             builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
 

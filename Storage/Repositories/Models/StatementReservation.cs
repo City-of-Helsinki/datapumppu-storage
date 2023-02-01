@@ -17,5 +17,9 @@
         public string? AdditionalInfoFI { get; set; }
 
         public string? AdditionalInfoSV { get; set; }
+
+        public int? CaseNumber { get; set; }
+
+        public bool? Active { get; set; }
     }
 }

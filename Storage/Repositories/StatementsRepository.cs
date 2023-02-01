@@ -1,6 +1,8 @@
 ﻿using Dapper;
+using Newtonsoft.Json;
 using Storage.Repositories.Models;
 using Storage.Repositories.Providers;
+using System.Collections.Generic;
 using System.Data;
 
 namespace Storage.Repositories
@@ -18,6 +20,10 @@ namespace Storage.Repositories
         Task<List<Statement>> GetStatements(string meetingId, string agendaPoint);
 
         Task<List<Statement>> GetSatementsByName(string name, int year, string lang);
+
+        Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint);
+
+        Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint);
     }
 
     public class StatementsRepository : IStatementsRepository
@@ -93,6 +99,95 @@ namespace Storage.Repositories
             return (await connection.QueryAsync<Statement>(sqlQuery, new { meetingId, agendaPoint })).ToList();
         }
 
+        public async Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint)
+        {
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            var timestampQuery = @$"
+                SELECT timestamp 
+                FROM meeting_events 
+                WHERE meeting_id = @meetingId 
+                AND case_number = @agendaPoint
+                AND event_type = '{(int)EventType.StatementReservationsCleared}'
+                ORDER BY timestamp DESC
+                LIMIT 1";
+            var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
+
+            var sqlQuery = @$"
+                SELECT 
+                    statement_reservations.meeting_id, 
+                    case_number, 
+                    statement_reservations.timestamp, 
+                    person, 
+                    additional_info_fi, 
+                    additional_info_sv, 
+                    ordinal, 
+                    seat_id
+                FROM 
+                    statement_reservations
+                JOIN 
+                    meeting_events 
+                    ON statement_reservations.event_id = meeting_events.event_id
+                WHERE 
+                    statement_reservations.meeting_id = @meetingId 
+                    AND case_number = @agendaPoint 
+                    AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp}', 'DD.MM.YYYY HH24:MI:SS')";
+
+            var reservations = (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+
+            foreach (var reservation in reservations)
+            {
+                var active = await IsStatementReservationActive(reservation);
+                reservation.Active = active;
+            }
+
+            return reservations;
+        }
+
+        public async Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint)
+        {
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            var timestampQuery = @$"
+                SELECT timestamp 
+                FROM meeting_events 
+                WHERE meeting_id = @meetingId 
+                AND case_number = @agendaPoint
+                AND event_type = '{(int)EventType.ReplyReservationsCleared}'
+                ORDER BY timestamp DESC
+                LIMIT 1";
+            var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
+
+            var sqlQuery = @$"
+                SELECT 
+                    reply_reservations.meeting_id, 
+                    case_number, 
+                    reply_reservations.timestamp, 
+                    person, 
+                    additional_info_fi, 
+                    additional_info_sv, 
+                    ordinal, 
+                    seat_id
+                FROM 
+                    reply_reservations
+                JOIN 
+                    meeting_events 
+                    ON reply_reservations.event_id = meeting_events.event_id
+                WHERE 
+                    reply_reservations.meeting_id = @meetingId 
+                    AND case_number = @agendaPoint 
+                    AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp}', 'DD.MM.YYYY HH24:MI:SS')";
+
+            var reservations = (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+
+            foreach(var reservation in reservations)
+            {
+                var active = await IsReplyReservationActive(reservation);
+                reservation.Active = active;
+            }
+
+            return reservations;
+        } 
 
         public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)
         {
@@ -175,15 +270,81 @@ namespace Storage.Repositories
 
         public Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction)
         {
-            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person, additional_info_fi, additional_info_sv) values(
+            var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person, additional_info_fi, additional_info_sv, ordinal, seat_id, timestamp) values(
                 @meetingId, 
                 @eventId,
                 @person,
                 @additionalInfoFi,
-                @additionalInfoSv
+                @additionalInfoSv,
+                @ordinal,
+                @seatId,
+                @timestamp
             ) ";
 
             return connection.ExecuteAsync(sqlQuery, replyReservation, transaction);
         }
+
+        private async Task<bool> IsStatementReservationActive(StatementReservation statementReservation)
+        {
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            var sqlQuery = @$"
+                SELECT start_time FROM started_statements 
+                JOIN meeting_events 
+                ON started_statements.event_id = meeting_events.event_id
+                WHERE start_time >= TO_TIMESTAMP('{statementReservation.Timestamp}', 'DD.MM.YYYY HH24:MI:SS')
+                AND started_statements.meeting_id = '{statementReservation.MeetingID}'
+                AND meeting_events.case_number = '{statementReservation.CaseNumber}'
+                AND started_statements.person = '{statementReservation.Person}'
+            ";
+            var startTime = await connection.QueryAsync<DateTime>(sqlQuery);
+            if (!startTime.Any())
+            {
+                return false;
+            }
+
+            var isEnded = await IsStatementEnded(statementReservation.MeetingID, startTime.First(), statementReservation.CaseNumber);
+            return !isEnded;
+        }
+
+        private async Task<bool> IsReplyReservationActive(ReplyReservation replyReservation)
+        {
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            var sqlQuery = @$"
+                SELECT start_time FROM started_statements 
+                JOIN meeting_events 
+                ON started_statements.event_id = meeting_events.event_id
+                WHERE start_time >= TO_TIMESTAMP('{replyReservation.Timestamp}', 'DD.MM.YYYY HH24:MI:SS')
+                AND started_statements.meeting_id = '{replyReservation.MeetingID}'
+                AND meeting_events.case_number = '{replyReservation.CaseNumber}'
+                AND started_statements.person = '{replyReservation.Person}'
+
+            ";
+            var startTime = await connection.QueryAsync<DateTime>(sqlQuery);
+            if (!startTime.Any())
+            {
+                return false;
+            }
+
+            var isEnded = await IsStatementEnded(replyReservation.MeetingID, startTime.First(), replyReservation.CaseNumber);
+            return !isEnded;
+        }
+
+        private async Task<bool> IsStatementEnded(string meetingId, DateTime startTime, int? caseNumber)
+        {
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+            var sqlQuery = @$"
+                SELECT * FROM meeting_events
+                WHERE event_type = '{(int)EventType.StatementEnded}'
+                AND meeting_id = '{meetingId}'
+                AND case_number = '{caseNumber}'
+                AND timestamp >= TO_TIMESTAMP('{startTime}', 'DD.MM.YYYY HH24:MI:SS')
+            ";
+
+            var rows = (await connection.QueryAsync(sqlQuery)).ToList();
+            return rows.Count() > 0;
+        }
+
     }
 }

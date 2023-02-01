@@ -25,6 +25,7 @@ namespace Storage.Actions
             {
                 cfg.CreateMap<ReplyReservationEventDTO, ReplyReservation>()
                     .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(x => replyReservationEventDto.MeetingID))
+                    .ForMember(dest => dest.Active, opt => opt.Ignore())
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
             config.AssertConfigurationIsValid();
