@@ -1,8 +1,6 @@
 ﻿using Dapper;
-using Newtonsoft.Json;
 using Storage.Repositories.Models;
 using Storage.Repositories.Providers;
-using System.Collections.Generic;
 using System.Data;
 
 namespace Storage.Repositories
@@ -135,10 +133,10 @@ namespace Storage.Repositories
 
             var reservations = (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
+            var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
             foreach (var reservation in reservations)
             {
-                var active = await IsStatementReservationActive(reservation);
-                reservation.Active = active;
+                reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
             }
 
             return reservations;
@@ -180,10 +178,10 @@ namespace Storage.Repositories
 
             var reservations = (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
-            foreach(var reservation in reservations)
+            var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
+            foreach (var reservation in reservations)
             {
-                var active = await IsReplyReservationActive(reservation);
-                reservation.Active = active;
+                reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
             }
 
             return reservations;
@@ -284,66 +282,37 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, replyReservation, transaction);
         }
 
-        private async Task<bool> IsStatementReservationActive(StatementReservation statementReservation)
+        private async Task<StartedStatement?> GetActiveStatement(string meetingId, string agendaPoint)
         {
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
-
-            var sqlQuery = @$"
-                SELECT start_time FROM started_statements 
-                JOIN meeting_events 
-                ON started_statements.event_id = meeting_events.event_id
-                WHERE start_time >= TO_TIMESTAMP('{statementReservation.Timestamp}', 'DD.MM.YYYY HH24:MI:SS')
-                AND started_statements.meeting_id = '{statementReservation.MeetingID}'
-                AND meeting_events.case_number = '{statementReservation.CaseNumber}'
-                AND started_statements.person = '{statementReservation.Person}'
+            _logger.LogInformation("Executing GetActiveStatement()");
+            var sqlQuery1 = @$"
+                SELECT timestamp 
+                FROM meeting_events
+                WHERE meeting_id = @meetingId
+                AND case_number = @agendaPoint
+                AND event_type = '{(int)EventType.StatementEnded}'
             ";
-            var startTime = await connection.QueryAsync<DateTime>(sqlQuery);
-            if (!startTime.Any())
+            var lastStatementEnded = await connection.QueryFirstOrDefaultAsync<DateTime>(sqlQuery1, new { meetingId, agendaPoint });
+
+            var sqlQuery2 = $@"
+                SELECT started_statements.meeting_id, started_statements.event_id, started_statements.timestamp, person, speaking_time, speech_timer, start_time, direction, seat_id, speech_type, additional_info_fi, additional_info_sv FROM started_statements
+                JOIN meeting_events
+                ON started_statements.event_id = meeting_events.event_id
+                WHERE start_time > TO_TIMESTAMP('{lastStatementEnded}', 'DD.MM.YYYY HH24:MI:SS')
+                AND started_statements.meeting_id = @meetingId
+                AND meeting_events.case_number = @agendaPoint
+                ORDER BY timestamp DESC
+                LIMIT 1
+            ";
+            var result = await connection.QueryAsync<StartedStatement>(sqlQuery2, new { meetingId, agendaPoint });
+            
+            if (result.Any())
             {
-                return false;
+                return result.First();
             }
 
-            var isEnded = await IsStatementEnded(statementReservation.MeetingID, startTime.First(), statementReservation.CaseNumber);
-            return !isEnded;
-        }
-
-        private async Task<bool> IsReplyReservationActive(ReplyReservation replyReservation)
-        {
-            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
-
-            var sqlQuery = @$"
-                SELECT start_time FROM started_statements 
-                JOIN meeting_events 
-                ON started_statements.event_id = meeting_events.event_id
-                WHERE start_time >= TO_TIMESTAMP('{replyReservation.Timestamp}', 'DD.MM.YYYY HH24:MI:SS')
-                AND started_statements.meeting_id = '{replyReservation.MeetingID}'
-                AND meeting_events.case_number = '{replyReservation.CaseNumber}'
-                AND started_statements.person = '{replyReservation.Person}'
-
-            ";
-            var startTime = await connection.QueryAsync<DateTime>(sqlQuery);
-            if (!startTime.Any())
-            {
-                return false;
-            }
-
-            var isEnded = await IsStatementEnded(replyReservation.MeetingID, startTime.First(), replyReservation.CaseNumber);
-            return !isEnded;
-        }
-
-        private async Task<bool> IsStatementEnded(string meetingId, DateTime startTime, int? caseNumber)
-        {
-            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
-            var sqlQuery = @$"
-                SELECT * FROM meeting_events
-                WHERE event_type = '{(int)EventType.StatementEnded}'
-                AND meeting_id = '{meetingId}'
-                AND case_number = '{caseNumber}'
-                AND timestamp >= TO_TIMESTAMP('{startTime}', 'DD.MM.YYYY HH24:MI:SS')
-            ";
-
-            var rows = (await connection.QueryAsync(sqlQuery)).ToList();
-            return rows.Count() > 0;
+            return null;
         }
 
     }
