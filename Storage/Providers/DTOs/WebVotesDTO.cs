@@ -10,6 +10,14 @@
 
         public string? AgainstTitleSV { get; set; }
 
+        public string? ForTextFI { get; set; }
+
+        public string? ForTextSV { get; set; }
+
+        public string? AgainstTextFI { get; set; }
+
+        public string? AgainstTextSV { get; set; }
+
         public int ForCount { get; set; }
 
         public int AgainstCount { get; set; }
