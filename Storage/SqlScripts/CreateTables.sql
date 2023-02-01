@@ -708,3 +708,19 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = 'beb61906-59a7-4d15-9f99-65ba333dc562';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE votes DROP CONSTRAINT fk__votes__meeting_id__voting_id;
+    ALTER TABLE votes ADD CONSTRAINT fk__votes__meeting_id__voting_id FOREIGN KEY (meeting_id, voting_number) REFERENCES votings(meeting_id, voting_number) ON DELETE CASCADE;
+
+    ALTER TABLE meeting_seats DROP CONSTRAINT fk__meeting_seats__meeting_seat_update_id__meeting_seat_updates__id;
+    ALTER TABLE meeting_seats ADD CONSTRAINT fk__meeting_seats__meeting_seat_update_id__meeting_seat_updates__id FOREIGN KEY (meeting_seat_update_id) REFERENCES meeting_seat_updates(id) ON DELETE CASCADE;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
