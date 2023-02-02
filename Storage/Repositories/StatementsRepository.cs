@@ -90,6 +90,7 @@ namespace Storage.Repositories
                     meeting_events on statements.event_id = meeting_events.event_id
                 where
                     meeting_events.meeting_id = @meetingId and meeting_events.case_number = @agendaPoint
+                order by statements.started asc
             ";
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
