@@ -10,7 +10,7 @@ namespace Storage.Providers
 {
     public interface IVotesProvider
     {
-        Task<List<WebApiVotesDTO>> GetVoting(string meetingId, string caseNumber);
+        Task<List<WebApiVotingDTO>> GetVoting(string meetingId, string caseNumber);
     }
 
     public class VotesProvider : IVotesProvider
@@ -26,11 +26,11 @@ namespace Storage.Providers
             _votingsRepository = votingsRepository;
         }
 
-        public async Task<List<WebApiVotesDTO>> GetVoting(string meetingId, string caseNumber)
+        public async Task<List<WebApiVotingDTO>> GetVoting(string meetingId, string caseNumber)
         {
             var votingList = await _votingsRepository.GetVoting(meetingId, caseNumber);
 
-            var list = new List<WebApiVotesDTO>();
+            var list = new List<WebApiVotingDTO>();
             foreach (var voting in votingList)
             {
                 var votes = await _votingsRepository.GetVotes(meetingId, voting.VotingNumber);
@@ -40,9 +40,9 @@ namespace Storage.Providers
             return list;
         }
 
-        private WebApiVotesDTO MapVotingToDTO(VotingEvent voting, List<Vote> votes)
+        private WebApiVotingDTO MapVotingToDTO(VotingEvent voting, List<Vote> votes)
         {
-            return new WebApiVotesDTO
+            return new WebApiVotingDTO
             {
                 AbsentCount = voting.VotesAbsent ?? 0,
                 EmptyCount = voting.VotesEmpty ?? 0,

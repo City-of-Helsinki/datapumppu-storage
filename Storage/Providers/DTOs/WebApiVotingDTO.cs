@@ -1,6 +1,6 @@
 ﻿namespace Storage.Controllers.MeetingInfo.DTOs
 {
-    public class WebApiVotesDTO
+    public class WebApiVotingDTO
     {
         public string? ForTitleFI { get; set; }
         
