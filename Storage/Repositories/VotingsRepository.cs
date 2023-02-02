@@ -12,7 +12,7 @@ namespace Storage.Repositories
 
         Task SaveVotingResult(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
 
-        Task<VotingEvent?> GetVoting(string meetingId, string caseId);
+        Task<List<VotingEvent>> GetVoting(string meetingId, string caseId);
 
         Task<List<Vote>> GetVotes(string meetingId, int votingNumber);
     }
@@ -29,7 +29,7 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public async Task<VotingEvent?> GetVoting(string meetingId, string caseId)
+        public async Task<List<VotingEvent>> GetVoting(string meetingId, string caseId)
         {
             _logger.LogInformation("Executing GetVoting()");
             var sqlQuery = @"
@@ -42,9 +42,13 @@ namespace Storage.Repositories
                     votes_empty,
                     votes_absent,
                     for_title_fi,
+                    for_text_fi,
                     against_title_fi,
+                    against_text_fi,
                     for_title_sv,
-                    against_title_sv
+                    for_text_sv,
+                    against_title_sv,
+                    against_text_sv
                 from votings
                 join meeting_events on votings.voting_ended_eventid = meeting_events.event_id
                 where
@@ -52,7 +56,7 @@ namespace Storage.Repositories
             ";
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
-            return (await connection.QueryAsync<VotingEvent>(sqlQuery, new { meetingId, caseId })).FirstOrDefault();
+            return (await connection.QueryAsync<VotingEvent>(sqlQuery, new { meetingId, caseId })).ToList();
         }
 
         public async Task<List<Vote>> GetVotes(string meetingId, int votingNumber)

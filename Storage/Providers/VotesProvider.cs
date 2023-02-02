@@ -4,12 +4,13 @@ using Storage.Mappers;
 using Storage.Providers.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
+using System.Collections.Generic;
 
 namespace Storage.Providers
 {
     public interface IVotesProvider
     {
-        Task<WebApiVotesDTO?> GetVoting(string meetingId, string caseNumber);
+        Task<List<WebApiVotingDTO>> GetVoting(string meetingId, string caseNumber);
     }
 
     public class VotesProvider : IVotesProvider
@@ -25,33 +26,23 @@ namespace Storage.Providers
             _votingsRepository = votingsRepository;
         }
 
-        public async Task<WebApiVotesDTO?> GetVoting(string meetingId, string caseNumber)
+        public async Task<List<WebApiVotingDTO>> GetVoting(string meetingId, string caseNumber)
         {
-            var voting = await _votingsRepository.GetVoting(meetingId, caseNumber);
-            if (voting == null)
+            var votingList = await _votingsRepository.GetVoting(meetingId, caseNumber);
+
+            var list = new List<WebApiVotingDTO>();
+            foreach (var voting in votingList)
             {
-                return null;
+                var votes = await _votingsRepository.GetVotes(meetingId, voting.VotingNumber);
+                list.Add(MapVotingToDTO(voting, votes));
             }
 
-            var votes = await _votingsRepository.GetVotes(meetingId, voting.VotingNumber);
-
-            return MapVotingToDTO(voting, votes);
+            return list;
         }
 
-        private WebApiSeatDTO MapSeatsToDTO(MeetingSeat seat)
+        private WebApiVotingDTO MapVotingToDTO(VotingEvent voting, List<Vote> votes)
         {
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<MeetingSeat, WebApiSeatDTO>();
-            });
-            config.AssertConfigurationIsValid();
-
-            return config.CreateMapper().Map<WebApiSeatDTO>(seat);
-        }
-
-        private WebApiVotesDTO MapVotingToDTO(VotingEvent voting, List<Vote> votes)
-        {
-            return new WebApiVotesDTO
+            return new WebApiVotingDTO
             {
                 AbsentCount = voting.VotesAbsent ?? 0,
                 EmptyCount = voting.VotesEmpty ?? 0,
@@ -61,6 +52,10 @@ namespace Storage.Providers
                 ForTitleSV = voting.ForTitleSV,
                 AgainstTitleFI = voting.AgainstTitleFI,
                 AgainstTitleSV = voting.AgainstTitleSV,
+                ForTextFI = voting.ForTextFI,
+                ForTextSV = voting.ForTextSV,
+                AgainstTextFI = voting.AgainstTextFI,
+                AgainstTextSV = voting.AgainstTextSV,
                 Votes = votes.Select(vote =>
                 {
                     return new WebApiVoteDTO
@@ -68,7 +63,7 @@ namespace Storage.Providers
                         Name = vote.Person,
                         VoteType = (int)vote.VoteType
                     };
-                }).ToArray()                
+                }).ToArray()
             };
         }
     }
