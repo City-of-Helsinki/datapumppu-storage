@@ -54,8 +54,9 @@ namespace Storage.Providers
 
             var listA = statementReservations.Select(statementReservation => mapper.Map<WebApiReservationDTO>(statementReservation));
             var listB = replyReservations.Select(replyReservation => mapper.Map<WebApiReservationDTO>(replyReservation));
-            var result = listA.Concat(listB).ToList();
-            return result;
+            var result = listA.Concat(listB);
+            result = result.OrderBy(reservation => reservation.Ordinal);
+            return result.ToList();
         }
 
     }
