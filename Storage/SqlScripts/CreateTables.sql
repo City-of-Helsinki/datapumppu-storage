@@ -724,3 +724,17 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '29fe5591-2e17-4658-93ea-7977238e0123';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE reply_reservations ADD COLUMN ordinal INT;
+    ALTER TABLE reply_reservations ADD COLUMN seat_id VARCHAR(5);
+    ALTER TABLE reply_reservations ADD COLUMN timestamp TIMESTAMP;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;

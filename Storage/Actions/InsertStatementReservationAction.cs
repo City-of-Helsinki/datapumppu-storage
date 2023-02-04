@@ -24,6 +24,7 @@ namespace Storage.Actions
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<StatementReservationEventDTO, StatementReservation>()
+                    .ForMember(dest => dest.Active, opt => opt.Ignore())
                     .ForMember(dest => dest.EventID, opt => opt.MapFrom(x => eventId));
             });
             config.AssertConfigurationIsValid();
