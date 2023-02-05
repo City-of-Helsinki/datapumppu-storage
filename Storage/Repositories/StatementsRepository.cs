@@ -113,7 +113,7 @@ namespace Storage.Repositories
             var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
 
             var sqlQuery = @$"
-                SELECT 
+                SELECT DISTINCT
                     statement_reservations.meeting_id, 
                     case_number, 
                     statement_reservations.timestamp, 
@@ -158,7 +158,7 @@ namespace Storage.Repositories
             var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
 
             var sqlQuery = @$"
-                SELECT 
+                SELECT DISTINCT
                     reply_reservations.meeting_id, 
                     case_number, 
                     reply_reservations.timestamp, 
