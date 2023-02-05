@@ -738,3 +738,23 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'c2963a3b-b4a2-4ac6-86e3-8c55ea10567b';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE agenda_item_pdfs DROP CONSTRAINT fk__agenda_item_pdfs__agenda_point__agenda_items__id;
+    ALTER TABLE agenda_item_pdfs ADD CONSTRAINT fk__agenda_item_pdfs__agenda_point__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language) ON DELETE CASCADE;
+
+    ALTER TABLE agenda_item_decision_history_pdfs DROP CONSTRAINT fk__agenda_item_decision_history_pdfs__agenda_point__agenda_items__id;
+    ALTER TABLE agenda_item_decision_history_pdfs ADD CONSTRAINT fk__agenda_item_decision_history_pdfs__agenda_point__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language) ON DELETE CASCADE;
+
+    ALTER TABLE agenda_item_attachments DROP CONSTRAINT fk__agenda_item_attachments__agenda_items__id;
+    ALTER TABLE agenda_item_attachments ADD CONSTRAINT fk__agenda_item_attachments__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language) ON DELETE CASCADE;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
