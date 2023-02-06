@@ -758,3 +758,22 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '32295ea7-c86b-4bac-9796-8fb669035cbb';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE decision_attachments DROP CONSTRAINT fk__decision_attachments__decision_id__decisions__native_id;
+    ALTER TABLE decision_attachments ADD CONSTRAINT fk__decision_attachments__decision_id__decisions__native_id FOREIGN KEY (decision_id) REFERENCES decisions(native_id) ON DELETE CASCADE;
+
+    ALTER TABLE decision_pdfs DROP CONSTRAINT fk__decision_pdfs__decision_id__decisions__native_id;
+    ALTER TABLE decision_pdfs ADD CONSTRAINT fk__decision_pdfs__decision_id__decisions__native_id FOREIGN KEY (decision_id) REFERENCES decisions(native_id) ON DELETE CASCADE;
+
+    ALTER TABLE decision_history_pdfs DROP CONSTRAINT fk__decision_history_pdfs__decision_id__decisions__native_id;
+    ALTER TABLE decision_history_pdfs ADD CONSTRAINT fk__decision_history_pdfs__decision_id__decisions__native_id FOREIGN KEY (decision_id) REFERENCES decisions(native_id) ON DELETE CASCADE;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
