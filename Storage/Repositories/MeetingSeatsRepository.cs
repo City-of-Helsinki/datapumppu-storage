@@ -30,6 +30,12 @@ namespace Storage.Repositories
 
         public async Task<int> GetUpdateId(string meetingId, string caseNumber)
         {
+            List<string> caseNumbers = new List<string>();
+            for (int i = 1; i <= Int32.Parse(caseNumber); i++)
+            {
+                caseNumbers.Add(i.ToString());
+            }
+
             var sqlQuery = @"
                 select
 	                meeting_seat_updates.id,
@@ -40,13 +46,13 @@ namespace Storage.Repositories
 	            join
                     meeting_events on meeting_seat_updates.attendees_eventid = meeting_events.event_id
                 where
-                    meeting_seat_updates.meeting_id = @meetingId and meeting_events.case_number = @caseNumber
+                    meeting_seat_updates.meeting_id = @meetingId and meeting_events.case_number = any (@caseNumbers)
                 order by
-                    meeting_seat_updates.timestamp desc
+                    meeting_seat_updates.timestamp desc, id desc
             ";
 
             using var dbConnection = await _databaseConnectionFactory.CreateOpenConnection();
-            return (await dbConnection.QueryAsync<int>(sqlQuery, new { meetingId, caseNumber })).FirstOrDefault();
+            return (await dbConnection.QueryAsync<int>(sqlQuery, new { meetingId, caseNumbers    })).FirstOrDefault();
         }
 
         public async Task<List<MeetingSeat>> GetSeats(int updateId)

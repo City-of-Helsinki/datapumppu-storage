@@ -75,7 +75,8 @@ namespace Storage.Events
                     _logger.LogInformation("Consumer Event successfully stored.");
 
                     // send MeetingID to WebApi
-                    await producer.ProduceAsync(producerTopic, new Message<Null, string> { Value = body.MeetingID });
+                    var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(new { body.MeetingID, body.CaseNumber });
+                    await producer.ProduceAsync(producerTopic, new Message<Null, string> { Value = jsonBody });
                 }
                 catch (OperationCanceledException)
                 {

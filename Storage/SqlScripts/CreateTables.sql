@@ -724,3 +724,56 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '29fe5591-2e17-4658-93ea-7977238e0123';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE reply_reservations ADD COLUMN ordinal INT;
+    ALTER TABLE reply_reservations ADD COLUMN seat_id VARCHAR(5);
+    ALTER TABLE reply_reservations ADD COLUMN timestamp TIMESTAMP;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
+
+DO $$
+DECLARE exec_id uuid = 'c2963a3b-b4a2-4ac6-86e3-8c55ea10567b';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE agenda_item_pdfs DROP CONSTRAINT fk__agenda_item_pdfs__agenda_point__agenda_items__id;
+    ALTER TABLE agenda_item_pdfs ADD CONSTRAINT fk__agenda_item_pdfs__agenda_point__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language) ON DELETE CASCADE;
+
+    ALTER TABLE agenda_item_decision_history_pdfs DROP CONSTRAINT fk__agenda_item_decision_history_pdfs__agenda_point__agenda_items__id;
+    ALTER TABLE agenda_item_decision_history_pdfs ADD CONSTRAINT fk__agenda_item_decision_history_pdfs__agenda_point__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language) ON DELETE CASCADE;
+
+    ALTER TABLE agenda_item_attachments DROP CONSTRAINT fk__agenda_item_attachments__agenda_items__id;
+    ALTER TABLE agenda_item_attachments ADD CONSTRAINT fk__agenda_item_attachments__agenda_items__id FOREIGN KEY (meeting_id, agenda_point, language) REFERENCES agenda_items(meeting_id, agenda_point, language) ON DELETE CASCADE;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
+
+DO $$
+DECLARE exec_id uuid = '32295ea7-c86b-4bac-9796-8fb669035cbb';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE decision_attachments DROP CONSTRAINT fk__decision_attachments__decision_id__decisions__native_id;
+    ALTER TABLE decision_attachments ADD CONSTRAINT fk__decision_attachments__decision_id__decisions__native_id FOREIGN KEY (decision_id) REFERENCES decisions(native_id) ON DELETE CASCADE;
+
+    ALTER TABLE decision_pdfs DROP CONSTRAINT fk__decision_pdfs__decision_id__decisions__native_id;
+    ALTER TABLE decision_pdfs ADD CONSTRAINT fk__decision_pdfs__decision_id__decisions__native_id FOREIGN KEY (decision_id) REFERENCES decisions(native_id) ON DELETE CASCADE;
+
+    ALTER TABLE decision_history_pdfs DROP CONSTRAINT fk__decision_history_pdfs__decision_id__decisions__native_id;
+    ALTER TABLE decision_history_pdfs ADD CONSTRAINT fk__decision_history_pdfs__decision_id__decisions__native_id FOREIGN KEY (decision_id) REFERENCES decisions(native_id) ON DELETE CASCADE;
+
+    INSERT INTO database_updates VALUES (exec_id);
+
+end if;
+end $$;
