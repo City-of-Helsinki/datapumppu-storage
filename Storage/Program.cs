@@ -56,8 +56,8 @@ namespace Storage
             builder.Services.AddScoped<IUpsertVideoSyncItemAction, UpsertVideoSyncItemAction>();
             builder.Services.AddScoped<IEventActions, EventActions>();
 
-            builder.Services.AddScoped<IEventAction, InsertEventAction>();
             builder.Services.AddScoped<IEventAction, UpdateMeetingStatusAction>();
+            builder.Services.AddScoped<IEventAction, InsertEventAction>();
             builder.Services.AddScoped<IEventAction, UpdateVotingStatusAction>();
             builder.Services.AddScoped<IEventAction, UpdateStatementsAction>();
             builder.Services.AddScoped<IEventAction, UpdateMeetingSeatsAction>();
