@@ -130,7 +130,7 @@ namespace Storage.Repositories
                 WHERE 
                     statement_reservations.meeting_id = @meetingId 
                     AND case_number = @agendaPoint 
-                    AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp}', 'DD.MM.YYYY HH24:MI:SS')";
+                    AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
             var reservations = (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
