@@ -83,6 +83,16 @@ namespace Storage
             builder.Services.AddHostedService<DatabaseMigrationService>();
             builder.Services.AddHostedService<DatabaseCleaner>();
 
+            builder.Services.AddLogging(options =>
+            {
+                options.AddSimpleConsole(c =>
+                {
+                    c.IncludeScopes = true;
+                    c.SingleLine = true;
+                    c.TimestampFormat = "dd.MM.yyyy HH:mm:ss";
+                });
+            });
+
             var app = builder.Build();
 
             app.UseRouting();
