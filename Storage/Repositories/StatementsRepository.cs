@@ -175,7 +175,7 @@ namespace Storage.Repositories
                 WHERE 
                     reply_reservations.meeting_id = @meetingId 
                     AND case_number = @agendaPoint 
-                    AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp}', 'DD.MM.YYYY HH24:MI:SS')";
+                    AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
             var reservations = (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
@@ -300,7 +300,7 @@ namespace Storage.Repositories
                 SELECT started_statements.meeting_id, started_statements.event_id, started_statements.timestamp, person, speaking_time, speech_timer, start_time, direction, seat_id, speech_type, additional_info_fi, additional_info_sv FROM started_statements
                 JOIN meeting_events
                 ON started_statements.event_id = meeting_events.event_id
-                WHERE start_time > TO_TIMESTAMP('{lastStatementEnded}', 'DD.MM.YYYY HH24:MI:SS')
+                WHERE start_time > TO_TIMESTAMP('{lastStatementEnded.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')
                 AND started_statements.meeting_id = @meetingId
                 AND meeting_events.case_number = @agendaPoint
                 ORDER BY timestamp DESC
