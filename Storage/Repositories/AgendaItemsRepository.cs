@@ -47,7 +47,9 @@ namespace Storage.Repositories
                     html_content Html,
                     html_decision_history DecisionHistoryHtml,
                     language,
-                    meeting_events.timestamp
+                    meeting_events.timestamp,
+                    cases.item_text_fi,
+                    cases.item_number
                 FROM
                     agenda_items
                 LEFT JOIN cases on

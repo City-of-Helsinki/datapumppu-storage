@@ -19,5 +19,9 @@
         public DateTime? Timestamp { get; set; }
 
         public int? VideoPosition { get; set; }
+
+        public string ItemTextFi { get; set; } = string.Empty;
+
+        public string ItemNumber { get; set; } = "0";
     }
 }
