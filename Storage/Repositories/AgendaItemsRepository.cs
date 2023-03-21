@@ -8,6 +8,8 @@ namespace Storage.Repositories
 {
     public interface IAgendaItemsRepository
     {
+        Task<List<AgendaSubItem>> FetchAgendaSubItems(string meetingId, int agendaPoint);
+
         Task<List<AgendaItem>> FetchAgendasByMeetingId(string id, string language);
 
         Task<List<AgendaItemAttachment>> FetchAgendaAttachmentsByMeetingId(string id, string language);
@@ -34,6 +36,28 @@ namespace Storage.Repositories
             _logger = logger;
         }
 
+        public async Task<List<AgendaSubItem>> FetchAgendaSubItems(string meetingId, int agendaPoint)
+        {
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            var sqlQuery = @"
+                SELECT
+                    item_text_fi,
+                    item_number,
+                    cases.case_number::int8 as AgendaPoint
+                FROM
+                    cases
+                WHERE
+                    meeting_id = @meetingId
+                    AND
+                    cases.case_number::int8 = @agendaPoint
+                    AND
+                    item_number != '0'
+            ";
+            var result = (await connection.QueryAsync<AgendaSubItem>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+
+            return result;
+        }
+
         public async Task<List<AgendaItem>> FetchAgendasByMeetingId(string id, string language)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
@@ -56,6 +80,8 @@ namespace Storage.Repositories
                     cases.meeting_id = agenda_items.meeting_id
                     and
                     agenda_items.agenda_point = cases.case_number::int8
+                    and
+                    cases.item_number = '0'
                 LEFT JOIN meeting_events on
                     cases.event_id = meeting_events.event_id
                 WHERE agenda_items.meeting_id = @id AND language = @language

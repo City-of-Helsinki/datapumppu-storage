@@ -20,8 +20,8 @@
 
         public int? VideoPosition { get; set; }
 
-        public string ItemTextFi { get; set; } = string.Empty;
-
         public string ItemNumber { get; set; } = "0";
+
+        public List<WebApiAgendaItemSubItemDTO> SubItems { get; set; } = new List<WebApiAgendaItemSubItemDTO>();
     }
 }
