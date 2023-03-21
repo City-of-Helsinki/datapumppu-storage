@@ -135,10 +135,25 @@ namespace Storage.Repositories
             var reservations = (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
             var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
-            foreach (var reservation in reservations)
+            if (activeStatement != null)
             {
-                reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
+                reservations.Insert(0, new StatementReservation
+                {
+                    Active = true,
+                    AdditionalInfoFI = activeStatement.AdditionalInfoFI,
+                    AdditionalInfoSV = activeStatement.AdditionalInfoSV,
+                    CaseNumber = Int32.Parse(agendaPoint),
+                    MeetingID = meetingId,
+                    Ordinal = 0,
+                    Person = activeStatement.Person,
+                    SeatID = activeStatement.SeatID,
+                });
             }
+
+            //foreach (var reservation in reservations)
+            //{
+            //    reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
+            //}
 
             return reservations;
         }
@@ -179,11 +194,28 @@ namespace Storage.Repositories
 
             var reservations = (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
+
             var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
-            foreach (var reservation in reservations)
+
+            if (activeStatement != null)
             {
-                reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
+                reservations.Insert(0, new ReplyReservation
+                {
+                    Active = true,
+                    AdditionalInfoFI = activeStatement.AdditionalInfoFI,
+                    AdditionalInfoSV = activeStatement.AdditionalInfoSV,
+                    CaseNumber = Int32.Parse(agendaPoint),
+                    MeetingID = meetingId,
+                    Ordinal = 0,
+                    Person = activeStatement.Person,
+                    SeatID = activeStatement.SeatID,
+                });
             }
+            
+            //foreach (var reservation in reservations)
+            //{
+            //    reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
+            //}
 
             return reservations;
         } 
