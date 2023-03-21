@@ -21,7 +21,5 @@
         public int? VideoPosition { get; set; }
 
         public string ItemNumber { get; set; } = "0";
-
-        public List<WebApiAgendaSubItemDTO> SubItems { get; set; } = new List<WebApiAgendaSubItemDTO>();
     }
 }
