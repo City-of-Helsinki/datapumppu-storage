@@ -124,7 +124,8 @@ namespace Storage.Repositories
                     additional_info_fi, 
                     additional_info_sv, 
                     ordinal, 
-                    seat_id
+                    seat_id,
+                    meeting_events.item_number
                 FROM 
                     statement_reservations
                 JOIN 
@@ -182,7 +183,8 @@ namespace Storage.Repositories
                     additional_info_fi, 
                     additional_info_sv, 
                     ordinal, 
-                    seat_id
+                    seat_id,
+                    meeting_events.item_number
                 FROM 
                     reply_reservations
                 JOIN 

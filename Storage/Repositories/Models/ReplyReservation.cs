@@ -20,6 +20,8 @@
 
         public int? CaseNumber { get; set; }
 
+        public string ItemNumber { get; set; } = "0";
+
         public bool? Active { get; set; }
     }
 }

@@ -6,6 +6,8 @@
 
         public int AgendaPoint { get; set; }
 
+        public string ItemNumber { get; set; } = "0";
+
         public DateTime? Timestamp { get; set; }
 
         public string? Person { get; set; }
