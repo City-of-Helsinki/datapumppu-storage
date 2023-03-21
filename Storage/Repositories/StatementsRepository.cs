@@ -22,6 +22,8 @@ namespace Storage.Repositories
         Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint);
 
         Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint);
+
+        Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint);
     }
 
     public class StatementsRepository : IStatementsRepository
@@ -132,30 +134,28 @@ namespace Storage.Repositories
                     AND case_number = @agendaPoint 
                     AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
-            var reservations = (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+            return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+        }
 
+        public async Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint)
+        {
             var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
-            if (activeStatement != null)
+            if (activeStatement == null)
             {
-                reservations.Insert(0, new StatementReservation
-                {
-                    Active = true,
-                    AdditionalInfoFI = activeStatement.AdditionalInfoFI,
-                    AdditionalInfoSV = activeStatement.AdditionalInfoSV,
-                    CaseNumber = Int32.Parse(agendaPoint),
-                    MeetingID = meetingId,
-                    Ordinal = 0,
-                    Person = activeStatement.Person,
-                    SeatID = activeStatement.SeatID,
-                });
+                return null;
             }
 
-            //foreach (var reservation in reservations)
-            //{
-            //    reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
-            //}
-
-            return reservations;
+            return new ReplyReservation
+            {
+                Active = true,
+                AdditionalInfoFI = activeStatement.AdditionalInfoFI,
+                AdditionalInfoSV = activeStatement.AdditionalInfoSV,
+                CaseNumber = Int32.Parse(agendaPoint),
+                MeetingID = meetingId,
+                Ordinal = 0,
+                Person = activeStatement.Person,
+                SeatID = activeStatement.SeatID,
+            };
         }
 
         public async Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint)
@@ -192,32 +192,7 @@ namespace Storage.Repositories
                     AND case_number = @agendaPoint 
                     AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
-            var reservations = (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
-
-
-            var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
-
-            if (activeStatement != null)
-            {
-                reservations.Insert(0, new ReplyReservation
-                {
-                    Active = true,
-                    AdditionalInfoFI = activeStatement.AdditionalInfoFI,
-                    AdditionalInfoSV = activeStatement.AdditionalInfoSV,
-                    CaseNumber = Int32.Parse(agendaPoint),
-                    MeetingID = meetingId,
-                    Ordinal = 0,
-                    Person = activeStatement.Person,
-                    SeatID = activeStatement.SeatID,
-                });
-            }
-            
-            //foreach (var reservation in reservations)
-            //{
-            //    reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
-            //}
-
-            return reservations;
+            return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
         } 
 
         public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)

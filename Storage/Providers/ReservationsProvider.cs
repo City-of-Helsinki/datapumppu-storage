@@ -27,7 +27,13 @@ namespace Storage.Providers
         {
             var statementReservations = await _statementsRepository.GetStatementReservations(meetingId, caseNumber);
             var replyReservations = await _statementsRepository.GetReplyReservations(meetingId, caseNumber);
-         
+            
+            // add active speaker
+            var activeSpeaker = await _statementsRepository.GetActiveSpeaker(meetingId, caseNumber);
+            if(replyReservations != null && activeSpeaker != null)
+            {
+                replyReservations.Add(activeSpeaker);
+            }
          
             if (statementReservations == null && replyReservations == null) 
             {
