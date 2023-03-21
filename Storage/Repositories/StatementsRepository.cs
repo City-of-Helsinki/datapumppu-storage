@@ -293,6 +293,8 @@ namespace Storage.Repositories
                 WHERE meeting_id = @meetingId
                 AND case_number = @agendaPoint
                 AND event_type = '{(int)EventType.StatementEnded}'
+                ORDER BY timestamp desc
+                LIMIT 1
             ";
             var lastStatementEnded = await connection.QueryFirstOrDefaultAsync<DateTime>(sqlQuery1, new { meetingId, agendaPoint });
 
