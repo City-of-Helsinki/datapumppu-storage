@@ -85,7 +85,8 @@ namespace Storage.Repositories
                     speech_type,
                     duration_seconds,
                     additional_info_fi,
-                    additional_info_sv
+                    additional_info_sv,
+                    meeting_events.item_number
                 from
                     statements
                 join

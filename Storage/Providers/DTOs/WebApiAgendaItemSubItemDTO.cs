@@ -1,6 +1,6 @@
 ﻿namespace Storage.Controllers.MeetingInfo.DTOs
 {
-    public class WebApiAgendaItemSubItemDTO
+    public class WebApiAgendaSubItemDTO
     {
         public int AgendaPoint { get; set; }
 

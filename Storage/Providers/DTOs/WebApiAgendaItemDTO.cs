@@ -22,6 +22,6 @@
 
         public string ItemNumber { get; set; } = "0";
 
-        public List<WebApiAgendaItemSubItemDTO> SubItems { get; set; } = new List<WebApiAgendaItemSubItemDTO>();
+        public List<WebApiAgendaSubItemDTO> SubItems { get; set; } = new List<WebApiAgendaSubItemDTO>();
     }
 }

@@ -23,5 +23,7 @@
         public string? Title { get; set; }
 
         public int? CaseNumber { get; set; }
+
+        public string ItemNumber { get; set; } = "0";
     }
 }

@@ -20,6 +20,8 @@
 
         public int? CaseNumber { get; set; }
 
+        public string ItemNumber { get; set; } = "0";
+
         public string? MeetingId { get; set; }
 
         public int VideoPosition { get; set; }

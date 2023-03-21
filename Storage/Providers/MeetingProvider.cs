@@ -154,6 +154,8 @@ namespace Storage.Providers
         {
             var config = new MapperConfiguration(cfg =>
             {
+                cfg.CreateMap<AgendaSubItem, WebApiAgendaSubItemDTO>();
+
                 cfg.CreateMap<AgendaItem, WebApiAgendaItemDTO>()
                     .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => attachments.Where(a => a.AgendaPoint == src.AgendaPoint)))
                     .ForMember(dest => dest.SubItems, opt => opt.MapFrom(src => agendaSubItems.Where(a => a.AgendaPoint == src.AgendaPoint)));
