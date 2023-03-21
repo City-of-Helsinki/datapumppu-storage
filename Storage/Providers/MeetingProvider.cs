@@ -12,6 +12,8 @@ namespace Storage.Providers
     {
         Task<WebApiMeetingDTO?> FetchById(string id, string language);
 
+        Task<List<WebApiAgendaSubItemDTO>> FetchAgendaSubItemsById(string id, int agendaPoint);
+
         Task<WebApiMeetingDTO?> FetchNextUpcomingMeeting(string language);
         Task<WebApiMeetingDTO?> FetchMeeting(string year, string sequenceNumber, string language);
     }
@@ -35,6 +37,11 @@ namespace Storage.Providers
             _decisionsRepository = decisionsRepository;
             _fullDecisionMapper = fullDecisionMapper;
             _videoSyncRepository = videoSyncRepository;
+        }
+
+        public async Task<List<WebApiAgendaSubItemDTO>> FetchAgendaSubItemsById(string id, int agendaPoint)
+        {
+            return MapAgendasSubItemsToDTO(await _agendaItemsRepository.FetchAgendaSubItems(id, agendaPoint));
         }
 
         public async Task<WebApiMeetingDTO?> FetchById(string id, string language)
@@ -145,6 +152,17 @@ namespace Storage.Providers
             var meetingDTO = mapper.Map<WebApiMeetingDTO>(meeting);
 
             return meetingDTO;
+        }
+
+        private List<WebApiAgendaSubItemDTO> MapAgendasSubItemsToDTO(List<AgendaSubItem> agendaSubItems)
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<AgendaSubItem, WebApiAgendaSubItemDTO>();
+            });
+            config.AssertConfigurationIsValid();
+            var mapper = config.CreateMapper();
+            return agendaSubItems.Select(item => mapper.Map<WebApiAgendaSubItemDTO>(item)).ToList();
         }
 
         private List<WebApiAgendaItemDTO> MapAgendasToDTO(

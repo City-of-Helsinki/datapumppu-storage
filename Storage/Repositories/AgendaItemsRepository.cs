@@ -43,13 +43,13 @@ namespace Storage.Repositories
                 SELECT
                     item_text_fi,
                     item_number,
-                    cases.case_number::int8 as AgendaPoint
+                    case_number::int8 as AgendaPoint
                 FROM
                     cases
                 WHERE
                     meeting_id = @meetingId
                     AND
-                    cases.case_number::int8 = @agendaPoint
+                    case_number::int8 = @agendaPoint
                     AND
                     item_number != '0'
             ";

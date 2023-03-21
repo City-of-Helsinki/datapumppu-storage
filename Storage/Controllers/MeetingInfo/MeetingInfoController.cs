@@ -50,6 +50,16 @@ namespace Storage.Controllers.MeetingInfo
             return Ok(meeting);
         }
 
+        [HttpGet("meeting/{id}/{agendaPoint}")]
+        public async Task<IActionResult> GetMeetingAgendaSubItems(string id, int agendaPoint)
+        {
+            _logger.LogInformation("GetMeetingAgendaSubItems {0} {1}", id, agendaPoint);
+
+            var items = await _meetingProvider.FetchAgendaSubItemsById(id, agendaPoint);
+
+            return Ok(items);
+        }
+
         [HttpGet("meeting/{year}/{sequenceNumber}/{language}")]
         public async Task<IActionResult> GetMeeting(string year, string sequenceNumber, string language)
         {
