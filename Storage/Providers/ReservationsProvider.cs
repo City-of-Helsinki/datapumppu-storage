@@ -42,7 +42,27 @@ namespace Storage.Providers
 
             var result = MapReservationsToDTO(statementReservations, replyReservations);   
 
+            // there could be duplicates if reservation list is not yet cleared and there is someone already with an open microphone
+            result = RemoveDuplicates(result);
+
             return result;
+        }
+
+        private List<WebApiReservationDTO> RemoveDuplicates(List<WebApiReservationDTO> reservations)
+        {
+            if (reservations.Count > 1 && reservations[0].Person == reservations[1].Person)
+            {
+                if (reservations[0].Active == true)
+                {
+                    reservations.RemoveAt(1);
+                }
+                else if (reservations[1].Active == true)
+                {
+                    reservations.RemoveAt(0);
+                }
+            }
+
+            return reservations;
         }
 
         private List<WebApiReservationDTO> MapReservationsToDTO(List<StatementReservation> statementReservations, List<ReplyReservation> replyReservations)
