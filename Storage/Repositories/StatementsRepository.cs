@@ -157,6 +157,7 @@ namespace Storage.Repositories
                 Ordinal = 0,
                 Person = activeStatement.Person,
                 SeatID = activeStatement.SeatID,
+                ItemNumber = activeStatement.ItemNumber
             };
         }
 
@@ -309,8 +310,20 @@ namespace Storage.Repositories
             var lastStatementEnded = await connection.QueryFirstOrDefaultAsync<DateTime>(sqlQuery1, new { meetingId, agendaPoint });
 
             var sqlQuery2 = $@"
-                SELECT started_statements.meeting_id, started_statements.event_id, started_statements.timestamp, person, speaking_time, speech_timer, start_time, direction, seat_id, speech_type, additional_info_fi, additional_info_sv FROM started_statements
-                JOIN meeting_events
+                SELECT
+                    started_statements.meeting_id,
+                    started_statements.event_id,
+                    started_statements.timestamp,
+                    person,
+                    speaking_time,
+                    speech_timer,
+                    start_time,
+                    direction, seat_id, speech_type, additional_info_fi, additional_info_sv,
+                    meeting_events.item_number
+                FROM
+                    started_statements
+                JOIN
+                    meeting_events
                 ON started_statements.event_id = meeting_events.event_id
                 WHERE start_time > TO_TIMESTAMP('{lastStatementEnded.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')
                 AND started_statements.meeting_id = @meetingId

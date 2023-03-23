@@ -22,6 +22,8 @@
 
         public SpeechType SpeechType { get; set; }
 
+        public string ItemNumber { get; set; } = "0";
+
         public string? AdditionalInfoFI { get; set; }
 
         public string? AdditionalInfoSV { get; set; }
