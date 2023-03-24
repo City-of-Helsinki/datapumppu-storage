@@ -12,6 +12,8 @@ namespace Storage.Providers
     {
         Task<WebApiMeetingDTO?> FetchById(string id, string language);
 
+        Task<List<WebApiAgendaSubItemDTO>> FetchAgendaSubItemsById(string id, int agendaPoint);
+
         Task<WebApiMeetingDTO?> FetchNextUpcomingMeeting(string language);
         Task<WebApiMeetingDTO?> FetchMeeting(string year, string sequenceNumber, string language);
     }
@@ -37,6 +39,11 @@ namespace Storage.Providers
             _videoSyncRepository = videoSyncRepository;
         }
 
+        public async Task<List<WebApiAgendaSubItemDTO>> FetchAgendaSubItemsById(string id, int agendaPoint)
+        {
+            return MapAgendasSubItemsToDTO(await _agendaItemsRepository.FetchAgendaSubItems(id, agendaPoint));
+        }
+
         public async Task<WebApiMeetingDTO?> FetchById(string id, string language)
         {
             // fetch meeting by id
@@ -45,9 +52,10 @@ namespace Storage.Providers
             {
                 return null;
             }
+
             var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
             var attachments = await _agendaItemsRepository.FetchAgendaAttachmentsByMeetingId(meeting.MeetingID, language);
-            
+
             // map to DTO
             var agendaItemDTOs = MapAgendasToDTO(agendaItems, attachments);
             var meetingDTO = MapMeetingToDTO(meeting, agendaItemDTOs);
@@ -91,7 +99,9 @@ namespace Storage.Providers
             }
             string id = meeting.MeetingID;
             var agendaItems = await _agendaItemsRepository.FetchAgendasByMeetingId(id, language);
+
             var attachments = await _agendaItemsRepository.FetchAgendaAttachmentsByMeetingId(meeting.MeetingID, language);
+            
             // map to DTO
             var agendaItemDTOs = MapAgendasToDTO(agendaItems, attachments);
             var meetingDTO = MapMeetingToDTO(meeting, agendaItemDTOs);
@@ -128,13 +138,27 @@ namespace Storage.Providers
             return meetingDTO;
         }
 
-        private List<WebApiAgendaItemDTO> MapAgendasToDTO(List<AgendaItem> agendaItems, List<AgendaItemAttachment> attachments)
+        private List<WebApiAgendaSubItemDTO> MapAgendasSubItemsToDTO(List<AgendaSubItem> agendaSubItems)
         {
             var config = new MapperConfiguration(cfg =>
             {
+                cfg.CreateMap<AgendaSubItem, WebApiAgendaSubItemDTO>();
+            });
+            config.AssertConfigurationIsValid();
+            var mapper = config.CreateMapper();
+            return agendaSubItems.Select(item => mapper.Map<WebApiAgendaSubItemDTO>(item)).ToList();
+        }
+
+        private List<WebApiAgendaItemDTO> MapAgendasToDTO(
+            List<AgendaItem> agendaItems,
+            List<AgendaItemAttachment> attachments)
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+
                 cfg.CreateMap<AgendaItem, WebApiAgendaItemDTO>()
                     .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => attachments.Where(a => a.AgendaPoint == src.AgendaPoint)));
-    
+
                 cfg.CreateMap<AgendaItemAttachment, WebApiAttachmentDTO>();
             });
             config.AssertConfigurationIsValid();

@@ -22,6 +22,8 @@ namespace Storage.Repositories
         Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint);
 
         Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint);
+
+        Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint);
     }
 
     public class StatementsRepository : IStatementsRepository
@@ -83,7 +85,8 @@ namespace Storage.Repositories
                     speech_type,
                     duration_seconds,
                     additional_info_fi,
-                    additional_info_sv
+                    additional_info_sv,
+                    meeting_events.item_number
                 from
                     statements
                 join
@@ -121,7 +124,8 @@ namespace Storage.Repositories
                     additional_info_fi, 
                     additional_info_sv, 
                     ordinal, 
-                    seat_id
+                    seat_id,
+                    meeting_events.item_number
                 FROM 
                     statement_reservations
                 JOIN 
@@ -130,17 +134,31 @@ namespace Storage.Repositories
                 WHERE 
                     statement_reservations.meeting_id = @meetingId 
                     AND case_number = @agendaPoint 
-                    AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp}', 'DD.MM.YYYY HH24:MI:SS')";
+                    AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
-            var reservations = (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+            return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+        }
 
+        public async Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint)
+        {
             var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
-            foreach (var reservation in reservations)
+            if (activeStatement == null)
             {
-                reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
+                return null;
             }
 
-            return reservations;
+            return new ReplyReservation
+            {
+                Active = true,
+                AdditionalInfoFI = activeStatement.AdditionalInfoFI,
+                AdditionalInfoSV = activeStatement.AdditionalInfoSV,
+                CaseNumber = Int32.Parse(agendaPoint),
+                MeetingID = meetingId,
+                Ordinal = 0,
+                Person = activeStatement.Person,
+                SeatID = activeStatement.SeatID,
+                ItemNumber = activeStatement.ItemNumber
+            };
         }
 
         public async Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint)
@@ -166,7 +184,8 @@ namespace Storage.Repositories
                     additional_info_fi, 
                     additional_info_sv, 
                     ordinal, 
-                    seat_id
+                    seat_id,
+                    meeting_events.item_number
                 FROM 
                     reply_reservations
                 JOIN 
@@ -175,17 +194,9 @@ namespace Storage.Repositories
                 WHERE 
                     reply_reservations.meeting_id = @meetingId 
                     AND case_number = @agendaPoint 
-                    AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp}', 'DD.MM.YYYY HH24:MI:SS')";
+                    AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
-            var reservations = (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
-
-            var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
-            foreach (var reservation in reservations)
-            {
-                reservation.Active = activeStatement != null ? reservation.Person == activeStatement.Person : false;
-            }
-
-            return reservations;
+            return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
         } 
 
         public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)
@@ -293,14 +304,28 @@ namespace Storage.Repositories
                 WHERE meeting_id = @meetingId
                 AND case_number = @agendaPoint
                 AND event_type = '{(int)EventType.StatementEnded}'
+                ORDER BY timestamp desc
+                LIMIT 1
             ";
             var lastStatementEnded = await connection.QueryFirstOrDefaultAsync<DateTime>(sqlQuery1, new { meetingId, agendaPoint });
 
             var sqlQuery2 = $@"
-                SELECT started_statements.meeting_id, started_statements.event_id, started_statements.timestamp, person, speaking_time, speech_timer, start_time, direction, seat_id, speech_type, additional_info_fi, additional_info_sv FROM started_statements
-                JOIN meeting_events
+                SELECT
+                    started_statements.meeting_id,
+                    started_statements.event_id,
+                    started_statements.timestamp,
+                    person,
+                    speaking_time,
+                    speech_timer,
+                    start_time,
+                    direction, seat_id, speech_type, additional_info_fi, additional_info_sv,
+                    meeting_events.item_number
+                FROM
+                    started_statements
+                JOIN
+                    meeting_events
                 ON started_statements.event_id = meeting_events.event_id
-                WHERE start_time > TO_TIMESTAMP('{lastStatementEnded}', 'DD.MM.YYYY HH24:MI:SS')
+                WHERE start_time > TO_TIMESTAMP('{lastStatementEnded.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')
                 AND started_statements.meeting_id = @meetingId
                 AND meeting_events.case_number = @agendaPoint
                 ORDER BY timestamp DESC

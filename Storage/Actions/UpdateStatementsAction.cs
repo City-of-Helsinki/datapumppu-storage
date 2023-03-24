@@ -30,6 +30,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.Ended, opt => opt.MapFrom(src => src.EndTime))
                     .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
                     .ForMember(dest => dest.Title, opt => opt.Ignore())
+                    .ForMember(dest => dest.ItemNumber, opt => opt.Ignore())
                     .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.Duration));
             });
             config.AssertConfigurationIsValid();
