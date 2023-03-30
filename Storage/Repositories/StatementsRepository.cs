@@ -109,7 +109,6 @@ namespace Storage.Repositories
                 SELECT timestamp 
                 FROM meeting_events 
                 WHERE meeting_id = @meetingId 
-                AND case_number = @agendaPoint
                 AND event_type = '{(int)EventType.StatementReservationsCleared}'
                 ORDER BY timestamp DESC
                 LIMIT 1";
