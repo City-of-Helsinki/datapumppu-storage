@@ -14,17 +14,25 @@ namespace Storage.Providers
     {
         private readonly ILogger<ReservationsProvider> _logger;
         private readonly IStatementsRepository _statementsRepository;
+        private readonly IEventsRepository _eventsRepository;
 
         public ReservationsProvider(
             ILogger<ReservationsProvider> logger,
-            IStatementsRepository statementsRepository)
+            IStatementsRepository statementsRepository,
+            IEventsRepository eventsRepository)
         {
             _logger = logger;
             _statementsRepository = statementsRepository;
+            _eventsRepository = eventsRepository;
         }
 
         public async Task<List<WebApiReservationDTO>> GetReservations(string meetingId, string caseNumber)
         {
+            if (!await _eventsRepository.IsAgendaPointHandled(meetingId, caseNumber))
+            {
+                return new List<WebApiReservationDTO>();
+            }
+
             var statementReservations = await _statementsRepository.GetStatementReservations(meetingId, caseNumber);
             var replyReservations = await _statementsRepository.GetReplyReservations(meetingId, caseNumber);
             

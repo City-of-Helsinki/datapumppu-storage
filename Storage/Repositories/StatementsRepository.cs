@@ -114,6 +114,7 @@ namespace Storage.Repositories
                 LIMIT 1";
             var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
 
+            int integerAgendaPoint = Int32.Parse(agendaPoint);
             var sqlQuery = @$"
                 SELECT DISTINCT
                     statement_reservations.meeting_id, 
@@ -132,10 +133,10 @@ namespace Storage.Repositories
                     ON statement_reservations.event_id = meeting_events.event_id
                 WHERE 
                     statement_reservations.meeting_id = @meetingId 
-                    AND case_number = @agendaPoint 
+                    AND nullif(case_number, '')::int <= @integerAgendaPoint
                     AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
-            return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+            return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, integerAgendaPoint })).ToList();
         }
 
         public async Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint)
@@ -173,6 +174,7 @@ namespace Storage.Repositories
                 LIMIT 1";
             var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
 
+            int integerAgendaPoint = Int32.Parse(agendaPoint);
             var sqlQuery = @$"
                 SELECT DISTINCT
                     reply_reservations.meeting_id, 
@@ -191,10 +193,10 @@ namespace Storage.Repositories
                     ON reply_reservations.event_id = meeting_events.event_id
                 WHERE 
                     reply_reservations.meeting_id = @meetingId 
-                    AND case_number = @agendaPoint 
+                    AND nullif(case_number, '')::int <= @integerAgendaPoint
                     AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
-            return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, agendaPoint })).ToList();
+            return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, integerAgendaPoint })).ToList();
         } 
 
         public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)
