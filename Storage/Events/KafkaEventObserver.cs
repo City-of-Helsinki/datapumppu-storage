@@ -51,11 +51,19 @@ namespace Storage.Events
 
             using var connection = await _connectionFactory.CreateOpenConnection();
 
+            bool recreatedKafkaClients = false;
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var transaction = connection.BeginTransaction();
                 try
                 {
+                    if (recreatedKafkaClients)
+                    {
+                        consumer = _clientFactory.CreateConsumer();
+                        producer = _clientFactory.CreateProducer();
+                        recreatedKafkaClients = false;
+                    }
+
                     var cr = consumer.Consume(stoppingToken);
                     var body = JsonSerializer.Deserialize<EventDTO>(cr.Message.Value)!;
                     using var scope = _serviceProvider.CreateScope();
@@ -83,17 +91,19 @@ namespace Storage.Events
                 {
                     _logger.LogWarning("Consumer Operation Canceled.");
                     transaction.Rollback();
-                    break;
+                    recreatedKafkaClients = true;
                 }
                 catch (ConsumeException e)
                 {
                     _logger.LogError("Consumer Error: " + e.Message);
                     transaction.Rollback();
+                    recreatedKafkaClients = true;
                 }
                 catch (Exception e)
                 {
                     _logger.LogError("Kafka Unexpected Error: " + e.Message);
                     transaction.Rollback();
+                    recreatedKafkaClients = true;
                 }
             }
         }
