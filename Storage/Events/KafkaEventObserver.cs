@@ -70,8 +70,9 @@ namespace Storage.Events
                         await action.Execute(binaryBody, eventId, connection, transaction);
                     }
 
-                    consumer.Commit(cr);
                     transaction.Commit();
+                    consumer.Commit(cr);
+                    
                     _logger.LogInformation("Consumer Event successfully stored.");
 
                     // send MeetingID to WebApi
