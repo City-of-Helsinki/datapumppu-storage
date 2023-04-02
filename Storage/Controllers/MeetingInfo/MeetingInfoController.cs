@@ -45,6 +45,7 @@ namespace Storage.Controllers.MeetingInfo
         [HttpGet("meeting/{id}")]
         public async Task<IActionResult> GetMeetingById(string id, string language)
         {
+            _logger.LogInformation("GetMeetingById: {0} {1}", id, language);
             var meeting = await _meetingProvider.FetchById(id, language);
 
             return Ok(meeting);
@@ -63,6 +64,7 @@ namespace Storage.Controllers.MeetingInfo
         [HttpGet("meeting/{year}/{sequenceNumber}/{language}")]
         public async Task<IActionResult> GetMeeting(string year, string sequenceNumber, string language)
         {
+            _logger.LogInformation("GetMeeting {0} {1} {2}", year, sequenceNumber, language);
             var meeting = await _meetingProvider.FetchMeeting(year, sequenceNumber, language);
             return Ok(meeting);
         }
