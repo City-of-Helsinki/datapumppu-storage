@@ -27,7 +27,7 @@ namespace Storage
             if(now.Hour == 1)
             {
                 _logger.LogInformation("Removing test data from database.");
-                var sqlQuery = "DELETE FROM meetings WHERE meeting_id LIKE '%test%'";
+                var sqlQuery = "DELETE FROM meetings WHERE name LIKE '%TESTIKOKOUS%'";
                 using var connection = await _connectionFactory.CreateOpenConnection();
                 await connection.ExecuteAsync(sqlQuery);
             }
