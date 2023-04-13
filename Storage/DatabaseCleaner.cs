@@ -7,7 +7,6 @@ namespace Storage
     {
         private readonly ILogger<DatabaseCleaner> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
-        private Timer? _timer;
 
         public DatabaseCleaner(ILogger<DatabaseCleaner> logger, IDatabaseConnectionFactory connectionFactory)
         {
@@ -17,34 +16,39 @@ namespace Storage
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoCleaning, null, TimeSpan.Zero, TimeSpan.FromHours(1));
-            return Task.CompletedTask;
+            return Task.Run(() => DoCleaningLoop(cancellationToken), cancellationToken);
         }
 
-        private async void DoCleaning(object? state)
+        private async void DoCleaningLoop(CancellationToken cancellationToken)
         {
-            var now = DateTime.Now;
-            _logger.LogInformation("DoCleaning {0}", now);
-            if(now.Hour == 1)
+            const int LoopDelayMS = 1000 * 60 * 60; // 60 minutes
+            while (!cancellationToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Removing test data from database.");
-                var sqlQuery = "DELETE FROM meetings WHERE name LIKE '%TESTIKOKOUS%'";
+                var hours = DateTime.Now.Hour;
+                _logger.LogInformation("DoCleaning {0}", hours);
 
-                try
+                if (hours == 1)
                 {
-                    using var connection = await _connectionFactory.CreateOpenConnection();
-                    await connection.ExecuteAsync(sqlQuery);
+                    _logger.LogInformation("Removing test data from database.");
+                    var sqlQuery = "DELETE FROM meetings WHERE name LIKE '%TESTIKOKOUS%'";
+
+                    try
+                    {
+                        using var connection = await _connectionFactory.CreateOpenConnection();
+                        await connection.ExecuteAsync(sqlQuery);
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.LogError(exception, "DoCleaning failed");
+                    }
                 }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception, "DoCleaning failed");
-                }
+
+                await Task.Delay(LoopDelayMS);
             }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }
     }
