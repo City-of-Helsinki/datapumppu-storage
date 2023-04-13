@@ -21,7 +21,7 @@ namespace Storage
             return Task.CompletedTask;
         }
 
-        private async void DoCleaning(object state)
+        private async void DoCleaning(object? state)
         {
             var now = DateTime.Now;
             _logger.LogInformation("DoCleaning {0}", now);
