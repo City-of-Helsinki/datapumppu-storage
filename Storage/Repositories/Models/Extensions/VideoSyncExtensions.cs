@@ -5,6 +5,10 @@
         public static int GetVideoPosition(this List<VideoSync> videoSyncs, DateTime? startTime)
         {
             var sync = videoSyncs.Where(sync => sync.Timestamp < startTime).OrderBy(sync => sync.Timestamp).FirstOrDefault();
+            if (sync == null)
+            {
+                sync = videoSyncs.Where(sync => sync.Timestamp >= startTime).OrderByDescending(sync => sync.Timestamp).FirstOrDefault();
+            }
             return sync?.GetVideoPosition(startTime) ?? 0;
         }
 
