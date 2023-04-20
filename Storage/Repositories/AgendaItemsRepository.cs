@@ -76,12 +76,17 @@ namespace Storage.Repositories
                     cases.item_number
                 FROM
                     agenda_items
-                LEFT JOIN cases on
-                    cases.meeting_id = agenda_items.meeting_id
-                    and
-                    agenda_items.agenda_point = cases.case_number::int8
-                    and
-                    cases.item_number = '0'
+                LEFT JOIN
+                    cases on cases.event_id = (
+                        select event_id from cases
+                        where
+                            cases.meeting_id = agenda_items.meeting_id
+                            and
+                            agenda_items.agenda_point = cases.case_number::int8
+                            and
+                            (cases.item_number = '0' or cases.item_number = '1')
+                            order by item_number limit 1
+                    )
                 LEFT JOIN meeting_events on
                     cases.event_id = meeting_events.event_id
                 WHERE agenda_items.meeting_id = @id AND language = @language
