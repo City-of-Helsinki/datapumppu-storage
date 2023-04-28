@@ -102,7 +102,7 @@ namespace Storage.Providers
         {
             int year = Int32.Parse(statement.MeetingID.Substring(5, 4));
             int number = Int32.Parse(statement.MeetingID.Substring(9));
-            return @$"https://wwww.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{number}#T{videoPosition}";
+            return @$"https://www.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{number}#T{videoPosition}";
         }
     }
 }
