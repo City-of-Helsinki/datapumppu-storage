@@ -30,7 +30,7 @@ namespace Storage
                 if (hours == 1)
                 {
                     _logger.LogInformation("Removing test data from database.");
-                    var sqlQuery = "DELETE FROM meetings WHERE name LIKE '%TESTIKOKOUS%'";
+                    var sqlQuery = "DELETE FROM meetings WHERE name LIKE '%TESTIKOKOUS%' OR meeting_title_fi LIKE '*TESTI* %' OR meeting_title_sv LIKE '*TESTI* %'";
 
                     try
                     {
