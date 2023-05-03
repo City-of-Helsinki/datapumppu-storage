@@ -51,7 +51,7 @@ namespace Storage.Actions
 
             var producerTopic = _configuration["KAFKA_PRODUCER_TOPIC"];
 
-            var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(new { MeetingID = agendaDTO.MeetingId, CaseNumber = agendaDTO.AgendaPoint.ToString() });
+            var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(new { MeetingID = agendaDTO.MeetingId, CaseNumber = agendaDTO.AgendaPoint.ToString(), IsLiveEvent = false });
             await producer.ProduceAsync(producerTopic, new Message<Null, string> { Value = jsonBody });
         }
     }
