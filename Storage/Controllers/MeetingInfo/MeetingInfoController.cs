@@ -69,6 +69,15 @@ namespace Storage.Controllers.MeetingInfo
             return Ok(meeting);
         }
 
+        [HttpGet("meetingId/{year}/{sequenceNumber}")]
+        public async Task<IActionResult> GetMeetingId(string year, string sequenceNumber)
+        {
+            _logger.LogInformation("GetMeetingId {0} {1}", year, sequenceNumber);
+            var meeting = await _meetingProvider.FetchMeetingId(year, sequenceNumber);
+            return Ok(meeting);
+        }
+
+
         [HttpGet("upcoming")]
         public async Task<IActionResult> GetUpcomingMeeting(string language)
         {
