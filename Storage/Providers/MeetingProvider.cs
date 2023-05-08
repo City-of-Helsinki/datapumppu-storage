@@ -15,7 +15,10 @@ namespace Storage.Providers
         Task<List<WebApiAgendaSubItemDTO>> FetchAgendaSubItemsById(string id, int agendaPoint);
 
         Task<WebApiMeetingDTO?> FetchNextUpcomingMeeting(string language);
+        
         Task<WebApiMeetingDTO?> FetchMeeting(string year, string sequenceNumber, string language);
+
+        Task<string> FetchMeetingId(string year, string sequenceNumber);
     }
 
     public class MeetingProvider : IMeetingProvider
@@ -62,6 +65,12 @@ namespace Storage.Providers
             meetingDTO.Agendas = agendaItemDTOs;
 
             return meetingDTO;
+        }
+
+        public async Task<string> FetchMeetingId(string year, string sequenceNumber)
+        {
+            var meeting = await _meetingsRepository.FetchMeetingByYearAndSeuquenceNumber(year, sequenceNumber);
+            return meeting?.MeetingID ?? string.Empty;
         }
 
         public async Task<WebApiMeetingDTO?> FetchMeeting(string year, string sequenceNumber, string language)
