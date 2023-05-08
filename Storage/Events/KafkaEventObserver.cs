@@ -66,6 +66,8 @@ namespace Storage.Events
 
                     var cr = consumer.Consume(stoppingToken);
                     var body = JsonSerializer.Deserialize<EventDTO>(cr.Message.Value)!;
+                    _logger.LogInformation("event for meeting {0}", body.MeetingID);
+
                     using var scope = _serviceProvider.CreateScope();
 
                     var binaryBody = BinaryData.FromString(cr.Message.Value);
@@ -78,8 +80,8 @@ namespace Storage.Events
                         await action.Execute(binaryBody, eventId, connection, transaction);
                     }
 
-                    transaction.Commit();
                     consumer.Commit(cr);
+                    transaction.Commit();
                     
                     _logger.LogInformation("Consumer Event successfully stored.");
 
@@ -103,7 +105,6 @@ namespace Storage.Events
                 {
                     _logger.LogError("Kafka Unexpected Error: " + e.Message);
                     transaction.Rollback();
-                    recreatedKafkaClients = true;
                 }
             }
         }
