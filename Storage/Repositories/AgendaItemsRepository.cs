@@ -136,7 +136,8 @@ namespace Storage.Repositories
             
             var sqlQuery = @"
                 UPDATE agenda_items SET 
-                    html_content = @html
+                    html_content = @html,
+                    editor_user_name = @editor
                 WHERE
                     agenda_items.meeting_id = @meetingId
                     and
@@ -150,7 +151,8 @@ namespace Storage.Repositories
                 html = agendaItem.Html,
                 meetingId = agendaItem.MeetingID,
                 agendaPoint = agendaItem.AgendaPoint,
-                language = agendaItem.Language
+                language = agendaItem.Language,
+                editor = agendaItem.EditorUserName,
             });
         }
 
