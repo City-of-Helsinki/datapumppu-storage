@@ -42,7 +42,8 @@ namespace Storage.Actions
                 MeetingID = agendaDTO.MeetingId,
                 AgendaPoint = agendaDTO.AgendaPoint,
                 Html = agendaDTO.Html,
-                Language = agendaDTO.Language
+                Language = agendaDTO.Language,
+                EditorUserName = agendaDTO.EditorUserName,
             };
 
             await _agendaItemsRepository.UpsertAgendaItemHtml(agendaItem);

@@ -777,3 +777,14 @@ IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
 
 end if;
 end $$;
+
+DO $$
+DECLARE exec_id uuid = '1f4d1ecd-75e7-4808-bf01-3d51b1197dfc';
+BEGIN
+IF NOT EXISTS (SELECT id from database_updates WHERE id = exec_id) THEN
+
+    ALTER TABLE agenda_items ADD COLUMN EDITOR_USER_NAME VARCHAR(512);
+
+    INSERT INTO database_updates VALUES (exec_id);
+end if;
+end $$;
