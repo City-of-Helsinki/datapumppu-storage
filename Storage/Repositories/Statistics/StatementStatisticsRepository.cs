@@ -41,7 +41,7 @@ namespace Storage.Repositories.Statistics
                 left join agenda_items
                     on statements.meeting_id = agenda_items.meeting_id and case_number = agenda_items.agenda_point::varchar(10) and agenda_items.language = 'fi'
                 where
-                    statements.meeting_id like @meeting_id
+                    statements.meeting_id like @meetingId
                 group by
                     (
                         statements.meeting_id,
