@@ -3,9 +3,11 @@ using Storage.Events;
 using Storage.Events.Providers;
 using Storage.Mappers;
 using Storage.Providers;
+using Storage.Providers.Statistics;
 using Storage.Repositories;
 using Storage.Repositories.Migration;
 using Storage.Repositories.Providers;
+using Storage.Repositories.Statistics;
 
 namespace Storage
 {
@@ -41,6 +43,7 @@ namespace Storage
             builder.Services.AddScoped<IVotingsRepository, VotingsRepository>();
             builder.Services.AddScoped<IAdminUsersRepository, AdminUsersRepository>();
             builder.Services.AddScoped<IVideoSyncRepository, VideoSyncRepository>();
+            builder.Services.AddScoped<IStatementStatisticsRepository, StatementStatisticsRepository>();
 
             builder.Services.AddScoped<ISeatsProvider, SeatsProvider>();
             builder.Services.AddScoped<IVotesProvider, VotesProvider>();
@@ -48,6 +51,7 @@ namespace Storage
             builder.Services.AddScoped<IDecisionProvider, DecisionProvider>();
             builder.Services.AddScoped<IStatementProvider, StatementProvider>();
             builder.Services.AddScoped<IReservationsProvider, ReservationsProvider>();
+            builder.Services.AddScoped<IStatementStatisticsProvider, StatementStatisticsProvider>();
 
             builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
 
