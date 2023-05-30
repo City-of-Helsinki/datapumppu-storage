@@ -45,6 +45,7 @@ namespace Storage
             builder.Services.AddScoped<IVideoSyncRepository, VideoSyncRepository>();
             builder.Services.AddScoped<IStatementStatisticsRepository, StatementStatisticsRepository>();
             builder.Services.AddScoped<IVotingStatisticsRepository, VotingStatisticsRepository>();
+            builder.Services.AddScoped<IPersonStatementStatisticsRepository, PersonStatementStatisticsRepository>();
 
             builder.Services.AddScoped<ISeatsProvider, SeatsProvider>();
             builder.Services.AddScoped<IVotesProvider, VotesProvider>();
@@ -54,6 +55,7 @@ namespace Storage
             builder.Services.AddScoped<IReservationsProvider, ReservationsProvider>();
             builder.Services.AddScoped<IStatementStatisticsProvider, StatementStatisticsProvider>();
             builder.Services.AddScoped<IVotingStatisticsProvider, VotingStatisticsProvider>();
+            builder.Services.AddScoped<IPersonStatementStatisticsProvider, PersonStatementStatisticsProvider>();
 
             builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
 
