@@ -36,7 +36,7 @@ namespace Storage.Repositories.Statistics
                     sum(case when vote_Type = 3 then 1 else 0 end) as absent,
                     count(vote_Type) as sum
                 from
-                    votes where meeting_id = @meetingId group by (person, additional_info_fi);";
+                    votes where meeting_id like @meetingId group by (person, additional_info_fi);";
 
             using var connection = await _connectionFactory.CreateOpenConnection();
             return (await connection.QueryAsync<VotingStatistics>(query, new { meetingId })).ToList();
