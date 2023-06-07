@@ -35,9 +35,16 @@ namespace Storage.Repositories
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
             var sqlQuery = @"
-                SELECT meeting_id, name, location, meeting_date 
-                FROM meetings m 
-                WHERE meeting_id = @id
+                SELECT
+                    meeting_id,
+                    name,
+                    location,
+                    meeting_date,
+                    meeting_started
+                FROM
+                    meetings
+                WHERE
+                    meeting_id = @id
             ";
             var result = (await connection.QueryAsync<Meeting>(sqlQuery, new { @id })).ToList();
 
