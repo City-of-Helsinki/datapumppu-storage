@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Events.Providers;
 using Storage.Repositories;
@@ -41,8 +42,11 @@ namespace Storage.Actions
             var meeting = await _meetingsRepository.FetchMeetingById(agendaDTO.MeetingId);
             if (meeting == null || meeting.MeetingStarted < DateTime.Now.AddDays(-7))
             {
+                _logger.LogWarning("meeting {0} is too old {1} for editing", agendaDTO.MeetingId, meeting?.MeetingStarted.ToString());
                 return false;
             }
+
+            _logger.LogInformation("meeting {0} was started {1}", agendaDTO.MeetingId, meeting?.MeetingStarted.ToString());
 
             var agendaItem = new AgendaItem
             {
