@@ -62,7 +62,10 @@ namespace Storage.Providers.Statistics
             var participant = participations.FirstOrDefault(p => p.Person == person);
             if (participant == null)
             {
-                participant = new ParticipationsPersonDTO();
+                participant = new ParticipationsPersonDTO
+                {
+                    Person = person,
+                };
                 participations.Add(participant);
             }
 
