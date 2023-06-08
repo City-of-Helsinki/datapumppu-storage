@@ -51,6 +51,7 @@ namespace Storage.Providers.Statistics
                     var meeting = FindParticipationMeeting(participant, agenda.MeetingID);                    
                     meeting.AgendaPoint.Add(agenda.AgendaPoint);
                     meeting.AgendaPoint.Sort();
+                    meeting.AgendaPoint = meeting.AgendaPoint.Distinct().ToList();
                     _logger.LogInformation("Agenda point seats {0}/{1}/{2}", seat.Person, agenda.MeetingID, agenda.AgendaPoint);
                 }
             }
