@@ -14,6 +14,8 @@ namespace Storage.Repositories
 
         Task<List<AgendaItemAttachment>> FetchAgendaAttachmentsByMeetingId(string id, string language);
 
+        Task<List<AgendaItem>> FetchAgendasByYear(int year);
+
         Task UpsertAgendaItemHtml(AgendaItem agendaItem);
 
         Task UpsertAgendaItems(List<AgendaItem> agendasItems, IDbConnection connection, IDbTransaction transaction);
@@ -56,6 +58,27 @@ namespace Storage.Repositories
             var result = (await connection.QueryAsync<AgendaSubItem>(sqlQuery, new { meetingId, agendaPoint })).ToList();
 
             return result;
+        }
+
+        public async Task<List<AgendaItem>> FetchAgendasByYear(int year)
+        {
+            var meetingId = $"02900{year}%";
+            
+            var sqlQuery = @"
+                SELECT
+                    agenda_items.meeting_id,
+                    agenda_point,
+                    title
+                FROM
+                    agenda_items
+                WHERE
+                    agenda_items.meeting_id like @meetingId
+                    AND
+                    language = 'fi'
+            ";
+
+            using var connection = await _connectionFactory.CreateOpenConnection();
+            return (await connection.QueryAsync<AgendaItem>(sqlQuery, new { meetingId })).ToList();
         }
 
         public async Task<List<AgendaItem>> FetchAgendasByMeetingId(string id, string language)

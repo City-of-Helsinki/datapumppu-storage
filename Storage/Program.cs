@@ -46,6 +46,7 @@ namespace Storage
             builder.Services.AddScoped<IStatementStatisticsRepository, StatementStatisticsRepository>();
             builder.Services.AddScoped<IVotingStatisticsRepository, VotingStatisticsRepository>();
             builder.Services.AddScoped<IPersonStatementStatisticsRepository, PersonStatementStatisticsRepository>();
+            builder.Services.AddScoped<IParticipantsRepository, ParticipantsRepository>();
 
             builder.Services.AddScoped<ISeatsProvider, SeatsProvider>();
             builder.Services.AddScoped<IVotesProvider, VotesProvider>();
@@ -56,6 +57,7 @@ namespace Storage
             builder.Services.AddScoped<IStatementStatisticsProvider, StatementStatisticsProvider>();
             builder.Services.AddScoped<IVotingStatisticsProvider, VotingStatisticsProvider>();
             builder.Services.AddScoped<IPersonStatementStatisticsProvider, PersonStatementStatisticsProvider>();
+            builder.Services.AddScoped<IParticipantStatisticsProvider, ParticipantStatisticsProvider>();
 
             builder.Services.AddScoped<IFullDecisionMapper, FullDecisionMapper>();
 

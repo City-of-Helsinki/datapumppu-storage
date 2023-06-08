@@ -14,6 +14,8 @@ namespace Storage.Repositories
         Task<int> GetUpdateId(string meetingId, string caseNumber);
 
         Task<List<MeetingSeat>> GetSeats(int updateId);
+
+        Task<List<MeetingSeat>> GetSeats(string meetingId, string caseNumber);
     }
 
     public class MeetingSeatsRepository : IMeetingSeatsRepository
@@ -72,6 +74,12 @@ namespace Storage.Repositories
             using var dbConnection = await _databaseConnectionFactory.CreateOpenConnection();
             
             return (await dbConnection.QueryAsync<MeetingSeat>(sqlQuery, new { updateId })).ToList();
+        }
+
+        public async Task<List<MeetingSeat>> GetSeats(string meetingId, string caseNumber)
+        {
+            var updateId = await GetUpdateId(meetingId, caseNumber);
+            return await GetSeats(updateId);
         }
 
         public async Task InsertMeetingSeatUpdate(MeetingSeatUpdate meetingSeatUpdate, List<MeetingSeat> meetingSeats, IDbConnection connection, IDbTransaction transaction)
