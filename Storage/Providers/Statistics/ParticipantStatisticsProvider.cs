@@ -48,11 +48,14 @@ namespace Storage.Providers.Statistics
                 foreach (var seat in agendaPointSeats)
                 {
                     var participant = FindPersonParticipations(participations, seat.Person);
-                    var meeting = FindParticipationMeeting(participant, agenda.MeetingID);
+                    var meeting = FindParticipationMeeting(participant, agenda.MeetingID);                    
                     meeting.AgendaPoint.Add(agenda.AgendaPoint);
+                    meeting.AgendaPoint.Sort();
                     _logger.LogInformation("Agenda point seats {0}/{1}/{2}", seat.Person, agenda.MeetingID, agenda.AgendaPoint);
                 }
             }
+
+            participations.Sort((s1, s2) => s1.Person.CompareTo(s2));
 
             return participations ?? new List<ParticipationsPersonDTO>();
         }
