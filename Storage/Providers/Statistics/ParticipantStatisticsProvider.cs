@@ -56,7 +56,7 @@ namespace Storage.Providers.Statistics
                 }
             }
 
-            participations.Sort((s1, s2) => s1.Person.CompareTo(s2));
+            participations.Sort((s1, s2) => s1.Person.CompareTo(s2.Person));
 
             return participations ?? new List<ParticipationsPersonDTO>();
         }
