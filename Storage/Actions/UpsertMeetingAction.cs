@@ -37,6 +37,7 @@ namespace Storage.Actions
                     .ForMember(dest => dest.Timestamp, opt => opt.Ignore())
                     .ForMember(dest => dest.ItemTextFi, opt => opt.Ignore())
                     .ForMember(dest => dest.ItemNumber, opt => opt.Ignore())
+                    .ForMember(dest => dest.EditorUserName, opt => opt.Ignore())
                     .ForMember(dest => dest.VideoPosition, opt => opt.Ignore());
 
                 cfg.CreateMap<DecisionDTO, Decision>()

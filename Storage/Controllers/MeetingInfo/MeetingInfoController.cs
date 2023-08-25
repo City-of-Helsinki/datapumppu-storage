@@ -38,8 +38,9 @@ namespace Storage.Controllers.MeetingInfo
         public async Task<IActionResult> UpsertAgendaPoint([FromBody] AgendaPointEditDTO agendaPointDTO)
         {
             _logger.LogInformation("HTTP POST: UpsertAgendaPoint");
-            await _upsertAgendaPointAction.Execute(agendaPointDTO);
-            return Ok();
+            var success = await _upsertAgendaPointAction.Execute(agendaPointDTO);
+
+            return success ? Ok() : StatusCode(StatusCodes.Status412PreconditionFailed);
         }
 
         [HttpGet("meeting/{id}")]

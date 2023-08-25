@@ -6,6 +6,8 @@
 
         public int AgendaPoint { get; set; }
 
+        public string EditorUserName { get; set; } = string.Empty;
+
         public string Html { get; set; } = string.Empty;
 
         public string Language {  get; set; } = string.Empty;

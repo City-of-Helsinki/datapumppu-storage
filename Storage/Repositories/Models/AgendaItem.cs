@@ -14,6 +14,8 @@ namespace Storage.Repositories.Models
 
         public string? CaseIDLabel { get; set; }
 
+        public string EditorUserName { get; set; } = string.Empty;
+
         public string? Html { get; set; }
 
         public string? Language { get; set; }
