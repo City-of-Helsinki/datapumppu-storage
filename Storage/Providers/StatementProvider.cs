@@ -3,6 +3,7 @@ using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
 using Storage.Repositories.Models.Extensions;
+using System.Collections.Generic;
 
 namespace Storage.Providers
 {
@@ -38,8 +39,14 @@ namespace Storage.Providers
             var statements = await _statementsRepository.GetStatements(meetingId, caseNumber);
 
             var videoSync = await GetVideoSync(meetingId, statements);
+            var statementList = new List<WebApiStatementsDTO>();
+            foreach (var statement in statements)
+            {
+                statementList.Add(await MapToDTO(statement, videoSync));
+            }
 
-            return statements.Select(turn => MapToDTO(turn, videoSync)).ToList();
+
+            return statementList;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang)
@@ -61,7 +68,7 @@ namespace Storage.Providers
                 var syncs = videoSyncs[statement.MeetingID];
                 var sync = syncs.Where(sync => sync.Timestamp < statement.Started).OrderBy(sync => sync.Timestamp).FirstOrDefault();
 
-                dtos.Add(MapToDTO(statement, sync));
+                dtos.Add(await MapToDTO(statement, sync));
             }
 
             return dtos;
