@@ -107,8 +107,6 @@ namespace Storage.Providers
                 return new WebApiStatementsDTO();
             }
 
-            _logger.LogInformation($"MapToDTO {statement.MeetingID} {meeting.MeetingSequenceNumber}");
-
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Statement, WebApiStatementsDTO>()
