@@ -60,6 +60,12 @@ namespace Storage.Providers
             var videoSyncs = new Dictionary<string, List<VideoSync>>();
             foreach (var statement in statements)
             {
+                // ignore meetings in 2010 (these are test meetings)
+                if (statement.MeetingID.StartsWith("029002010"))
+                {
+                    continue;
+                }
+
                 if (!videoSyncs.ContainsKey(statement.MeetingID))
                 {
                     videoSyncs.Add(statement.MeetingID, await _videoSyncRepository.GetVideoPositions(statement.MeetingID));
