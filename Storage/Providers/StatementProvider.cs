@@ -100,11 +100,14 @@ namespace Storage.Providers
         private async Task<WebApiStatementsDTO> MapToDTO(Statement statement, VideoSync? videoSync)
         {
             var videoPosition = videoSync.GetVideoPosition(statement.Started);
+            
             var meeting = await _meetingRepository.FetchMeetingById(statement.MeetingID);
             if (meeting == null)
             {
                 return new WebApiStatementsDTO();
             }
+
+            _logger.LogInformation($"MapToDTO {statement.MeetingID} {meeting.MeetingSequenceNumber}");
 
             var config = new MapperConfiguration(cfg =>
             {
