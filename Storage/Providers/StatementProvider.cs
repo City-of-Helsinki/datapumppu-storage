@@ -3,6 +3,7 @@ using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
 using Storage.Repositories.Models.Extensions;
+using System.Collections.Generic;
 
 namespace Storage.Providers
 {
@@ -18,14 +19,17 @@ namespace Storage.Providers
         private readonly ILogger<StatementProvider> _logger;
         private readonly IStatementsRepository _statementsRepository;
         private readonly IVideoSyncRepository _videoSyncRepository;
+        private readonly IMeetingsRepository _meetingRepository;
 
         public StatementProvider(ILogger<StatementProvider> logger,
             IStatementsRepository statementsRepository,
-            IVideoSyncRepository videoSyncRepository)
+            IVideoSyncRepository videoSyncRepository,
+            IMeetingsRepository meetingRepository)
         {
             _logger = logger;
             _statementsRepository = statementsRepository;
             _videoSyncRepository = videoSyncRepository;
+            _meetingRepository = meetingRepository;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatements(string meetingId, string caseNumber)
@@ -35,8 +39,14 @@ namespace Storage.Providers
             var statements = await _statementsRepository.GetStatements(meetingId, caseNumber);
 
             var videoSync = await GetVideoSync(meetingId, statements);
+            var statementList = new List<WebApiStatementsDTO>();
+            foreach (var statement in statements)
+            {
+                statementList.Add(await MapToDTO(statement, videoSync));
+            }
 
-            return statements.Select(turn => MapToDTO(turn, videoSync)).ToList();
+
+            return statementList;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang)
@@ -50,6 +60,12 @@ namespace Storage.Providers
             var videoSyncs = new Dictionary<string, List<VideoSync>>();
             foreach (var statement in statements)
             {
+                // ignore meetings in 2010 (these are test meetings)
+                if (statement.MeetingID.StartsWith("029002010"))
+                {
+                    continue;
+                }
+
                 if (!videoSyncs.ContainsKey(statement.MeetingID))
                 {
                     videoSyncs.Add(statement.MeetingID, await _videoSyncRepository.GetVideoPositions(statement.MeetingID));
@@ -58,7 +74,7 @@ namespace Storage.Providers
                 var syncs = videoSyncs[statement.MeetingID];
                 var sync = syncs.Where(sync => sync.Timestamp < statement.Started).OrderBy(sync => sync.Timestamp).FirstOrDefault();
 
-                dtos.Add(MapToDTO(statement, sync));
+                dtos.Add(await MapToDTO(statement, sync));
             }
 
             return dtos;
@@ -81,9 +97,16 @@ namespace Storage.Providers
             return _videoSyncRepository.GetVideoPosition(meetingId, startTime.Value);
         }
 
-        private WebApiStatementsDTO MapToDTO(Statement statement, VideoSync? videoSync)
+        private async Task<WebApiStatementsDTO> MapToDTO(Statement statement, VideoSync? videoSync)
         {
             var videoPosition = videoSync.GetVideoPosition(statement.Started);
+            
+            var meeting = await _meetingRepository.FetchMeetingById(statement.MeetingID);
+            if (meeting == null)
+            {
+                return new WebApiStatementsDTO();
+            }
+
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Statement, WebApiStatementsDTO>()
@@ -91,18 +114,17 @@ namespace Storage.Providers
                     .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Ended))
                     .ForMember(dest => dest.DurationSeconds, opt => opt.MapFrom(src => src.DurationSeconds))
                     .ForMember(dest => dest.VideoPosition, opt => opt.MapFrom(_ => videoPosition))
-                    .ForMember(dest => dest.VideoLink, opt => opt.MapFrom(src => CreateVideoLink(src, videoPosition)));
+                    .ForMember(dest => dest.VideoLink, opt => opt.MapFrom(src => CreateVideoLink(src, meeting.MeetingSequenceNumber, videoPosition)));
             });
             config.AssertConfigurationIsValid();
 
             return config.CreateMapper().Map<WebApiStatementsDTO>(statement);
         }
 
-        private string CreateVideoLink(Statement statement, int videoPosition)
+        private string CreateVideoLink(Statement statement, int sequenceNumber, int videoPosition)
         {
             int year = Int32.Parse(statement.MeetingID.Substring(5, 4));
-            int number = Int32.Parse(statement.MeetingID.Substring(9));
-            return @$"https://www.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{number}#T{videoPosition}";
+            return @$"https://www.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{sequenceNumber}#T{videoPosition}";
         }
     }
 }

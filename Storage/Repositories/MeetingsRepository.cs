@@ -40,7 +40,8 @@ namespace Storage.Repositories
                     name,
                     location,
                     meeting_date,
-                    meeting_started
+                    meeting_started,
+                    meeting_sequence_number
                 FROM
                     meetings
                 WHERE
