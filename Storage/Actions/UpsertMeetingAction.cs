@@ -156,9 +156,10 @@ namespace Storage.Actions
                     await _agendaItemsRepository.UpsertAgendaItems(agendas, connection, transaction);
                 }
 
-                if (agendaItemAttachments?.Count > 0)
+                var validAttachments = agendaItemAttachments?.Where(attachment => attachment.AttachmentNumber != null).ToList();
+                if (validAttachments?.Count > 0)
                 {
-                    await _agendaItemsRepository.UpsertAgendaItemAttachments(agendaItemAttachments, connection, transaction);
+                    await _agendaItemsRepository.UpsertAgendaItemAttachments(validAttachments, connection, transaction);
                 }
                 await _agendaItemsRepository.UpsertAgendaItemPdfs(agendaItemPdfs, connection, transaction);
                 await _agendaItemsRepository.UpsertAgendaItemDecisionHistoryPdfs(agendaItemPdfs, connection, transaction);
