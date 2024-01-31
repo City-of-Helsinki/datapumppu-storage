@@ -249,7 +249,6 @@ namespace Storage.Repositories
             ;";
 
             return connection.ExecuteAsync(sqlQuery, attachments.Select(item => {
-                Console.WriteLine("working on " + JsonConvert.SerializeObject(item));
                 return new
                 {
                     meetingId = item.MeetingID,

@@ -5,7 +5,7 @@ using Storage.Events.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
 
-namespace StorageServiceUnitTests.Storage
+namespace StorageServiceUnitTests.Storage.Actions
 {
     public class InsertPersonEventActionTest
     {
