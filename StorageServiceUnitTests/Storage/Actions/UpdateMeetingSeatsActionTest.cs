@@ -45,7 +45,7 @@ namespace StorageServiceUnitTests.Storage.Actions
       await insertMeetingSeatUpdateAction.Execute(eventBody, eventId, connection.Object, transaction.Object);
 
       meetingSeatUpdateRepository.Verify(x => x.InsertMeetingSeatUpdate(
-        It.IsAny<MeetingSeatUpdate?>(), meetingSeats, connection.Object, transaction.Object),
+        It.IsAny<MeetingSeatUpdate?>(), It.IsAny<List<MeetingSeat>?>(), connection.Object, transaction.Object),
         Times.Once);
     }
   }
