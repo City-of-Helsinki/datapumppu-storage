@@ -1,40 +1,57 @@
 using System.Data;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Storage.Actions;
-using Storage.Events.DTOs;
+using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
+using Storage.Repositories.Providers;
 
 namespace StorageServiceUnitTests.Storage.Actions
 {
     public class UpsertCaseActionTest
   {
     [Fact]
-    public async Task ExecuteShouldCallUpsertCase()
+    public async Task ExecuteShouldCallMakeTransaction()
     {
-      var eventId = new Guid();
-      var caseEventDto = new CaseEventDTO
+      var meetingDto = new MeetingDTO
       {
         MeetingID = "meetingId",
       };
 
-      var eventBody = BinaryData.FromObjectAsJson(caseEventDto);
+      var agendaDto = new AgendaItemDTO();
+      var decisionDto = new DecisionDTO();
+
+      var mapper = new Mock<IMapper>();
+      var eventBody = BinaryData.FromObjectAsJson(meetingDto);
       var connection = new Mock<IDbConnection>();
       var transaction = new Mock<IDbTransaction>();
-      var caseRepository = new Mock<ICaseRepository>();
-      var mapper = new Mock<IMapper>();
-      var caseEvent = new Case();
-      var upsertCaseAction = new UpsertCaseAction(caseRepository.Object);
+      var upsertMeeting = new Mock<IUpsertMeetingAction>();
+      var meeting = new Meeting();
+      var agendaItem = new AgendaItem();
+      var decision = new Decision();
 
-      caseRepository.Setup(x => x.UpsertCase(caseEvent, connection.Object, transaction.Object))
-        .Returns(Task.CompletedTask);
+      var meetingsRepository = new Mock<IMeetingsRepository>();
+      var agendasRepository = new Mock<IAgendaItemsRepository>();
+      var decisionsRepository = new Mock<IDecisionsRepository>();
+      var connectionFactory = new Mock<IDatabaseConnectionFactory>();
+      var logger = new Mock<ILogger<UpsertMeetingAction>>();
+      var upsertMeetingAction = new UpsertMeetingAction(connectionFactory.Object, meetingsRepository.Object,
+        agendasRepository.Object, decisionsRepository.Object,
+        logger.Object);
 
-      mapper.Setup(x => x.Map<Case>(caseEventDto)).Returns(caseEvent);
+      connectionFactory.Setup(x => x.CreateOpenConnection()).Returns(() => {return Task.FromResult(connection.Object);});
+      connection.Setup(x => x.BeginTransaction()).Returns(transaction.Object);
+      upsertMeeting.Setup(x => x.Execute(meetingDto)).Returns(Task.CompletedTask);
 
-      await upsertCaseAction.Execute(eventBody, eventId, connection.Object, transaction.Object);
+      mapper.Setup(x => x.Map<Meeting>(meetingDto)).Returns(meeting);
+      mapper.Setup(x => x.Map<AgendaItem>(agendaDto)).Returns(agendaItem);
+      mapper.Setup(x => x.Map<Decision>(decisionDto)).Returns(decision);
 
-      caseRepository.Verify(x => x.UpsertCase(
-        It.IsAny<Case?>(), connection.Object, transaction.Object),
+      await upsertMeetingAction.Execute(meetingDto);
+
+      upsertMeeting.Verify(x => x.Execute(
+        It.IsAny<MeetingDTO?>()),
         Times.Once);
     }
   }
