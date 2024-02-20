@@ -1,4 +1,6 @@
+using System.IO.Compression;
 using AutoMapper;
+using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Storage.Actions;
@@ -41,14 +43,23 @@ namespace StorageServiceUnitTests.Storage.Actions
       var logger = new Mock<ILogger<UpsertAgendaPointAction>>();
       var mapper = new Mock<IMapper>();
       var agendaItem2 = new AgendaItem();
+      var producer = new Mock<IProducer<Null, string>>();
 
       var upsertAgendaPointAction = new UpsertAgendaPointAction(
         connectionFactory.Object, agendaItemsRepository.Object,
         meetingsRepository.Object, kafkaClientFactory.Object,
         configuration.Object, logger.Object);
 
+      var mockedMeeting = new Meeting
+      {
+        MeetingID = "meetingA",
+        MeetingStarted = DateTime.Now
+      };
+
+      producer.Setup(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<Message<Null, string>>(), It.IsAny<CancellationToken>()));
       agendaItemsRepository.Setup(x => x.UpsertAgendaItemHtml(agendaItem)).Returns(Task.CompletedTask);
-      meetingsRepository.Setup(x => x.FetchMeetingById(It.IsAny<string>())).Returns(Task.FromResult(new Meeting { MeetingStarted = new DateTime() }));
+      meetingsRepository.Setup(x => x.FetchMeetingById(It.IsAny<string>())).Returns(Task.FromResult<Meeting?>(mockedMeeting));
+      kafkaClientFactory.Setup(x => x.CreateProducer()).Returns(producer.Object);
 
       await upsertAgendaPointAction.Execute(agendaDto);
 
