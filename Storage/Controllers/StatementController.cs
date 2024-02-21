@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Providers;
 
 namespace Storage.Controllers
@@ -24,7 +25,8 @@ namespace Storage.Controllers
             {
                 _logger.LogInformation($"GetStatements {meetingId}, {caseNumber}");
                 var turns = await _statementProvider.GetStatements(meetingId, caseNumber);
-                return new OkObjectResult(turns);
+                var filteredTurns = turns.Where(x => x.VideoPosition != 0).ToList();
+                return new OkObjectResult(filteredTurns);
             }
             catch (Exception ex)
             {
@@ -43,7 +45,8 @@ namespace Storage.Controllers
             {
                 _logger.LogInformation($"GetStatementsByPerson {name}, {year} {lang}");
                 var turns = await _statementProvider.GetStatementsByPerson(name, year, lang);
-                return new OkObjectResult(turns);
+                var filteredTurns = turns.Where(x => x.VideoPosition != 0).ToList();
+                return new OkObjectResult(filteredTurns);
             }
             catch (Exception ex)
             {
