@@ -26,7 +26,7 @@ namespace StorageServiceUnitTests.Storage.Actions
                 CaseNumber = "caseNumber",
                 ItemNumber = "itemNumber"
             };
-            var eventBody  = BinaryData.FromObjectAsJson(eventDto);
+            var eventBody = BinaryData.FromObjectAsJson(eventDto);
 
             var connection = new Mock<IDbConnection>();
             var transaction = new Mock<IDbTransaction>();
