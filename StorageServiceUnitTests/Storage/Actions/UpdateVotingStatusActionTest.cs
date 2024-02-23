@@ -15,9 +15,9 @@ namespace StorageServiceUnitTests.Storage.Actions
             var eventId = new Guid();
             var votingEventDto = new VotingEventDTO
             {
-            VotingNumber = 3,
-            MeetingID = "meetingId",
-            EventType = (global::Storage.EventType)2,
+                VotingNumber = 3,
+                MeetingID = "meetingId",
+                EventType = (global::Storage.EventType)2,
             };
 
             var eventBody = BinaryData.FromObjectAsJson(votingEventDto);

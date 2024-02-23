@@ -24,11 +24,11 @@ namespace StorageServiceUnitTests.Storage.Actions
                 {
                     new PropositionDTO
                     {
-                        
+
                     }
                 }
             };
-            var eventBody  = BinaryData.FromObjectAsJson(propositionsEventDto);
+            var eventBody = BinaryData.FromObjectAsJson(propositionsEventDto);
 
             var connection = new Mock<IDbConnection>();
             var transaction = new Mock<IDbTransaction>();
@@ -50,5 +50,5 @@ namespace StorageServiceUnitTests.Storage.Actions
                 It.IsAny<List<Proposition>>(), connection.Object, transaction.Object),
                 Times.Once);
         }
-    }    
+    }
 }

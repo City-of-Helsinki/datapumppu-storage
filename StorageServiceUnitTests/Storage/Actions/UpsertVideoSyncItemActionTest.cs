@@ -14,9 +14,9 @@ namespace StorageServiceUnitTests.Storage.Actions
             var eventId = new Guid();
             var videoSyncDto = new VideoSyncDTO
             {
-            MeetingID = "meetingId",
-            Timestamp = DateTime.UtcNow,
-            VideoPosition = 54
+                MeetingID = "meetingId",
+                Timestamp = DateTime.UtcNow,
+                VideoPosition = 54
             };
 
             var eventBody = BinaryData.FromObjectAsJson(videoSyncDto);

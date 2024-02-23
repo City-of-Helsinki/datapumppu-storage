@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using AutoMapper;
 using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
@@ -19,20 +18,20 @@ namespace StorageServiceUnitTests.Storage.Actions
         {
             var agendaDto = new AgendaPointEditDTO
             {
-            MeetingId = "meetingId",
-            AgendaPoint = 1,
-            Html = "<p>Hello from test</p>",
-            Language = "Finnish",
-            EditorUserName = "editorA"
+                MeetingId = "meetingId",
+                AgendaPoint = 1,
+                Html = "<p>Hello from test</p>",
+                Language = "Finnish",
+                EditorUserName = "editorA"
             };
 
             var agendaItem = new AgendaItem
             {
-            MeetingID = agendaDto.MeetingId,
-            AgendaPoint = agendaDto.AgendaPoint,
-            Html = agendaDto.Html,
-            Language = agendaDto.Language,
-            EditorUserName = agendaDto.EditorUserName
+                MeetingID = agendaDto.MeetingId,
+                AgendaPoint = agendaDto.AgendaPoint,
+                Html = agendaDto.Html,
+                Language = agendaDto.Language,
+                EditorUserName = agendaDto.EditorUserName
             };
 
             var agendaItemsRepository = new Mock<IAgendaItemsRepository>();
@@ -52,8 +51,8 @@ namespace StorageServiceUnitTests.Storage.Actions
 
             var mockedMeeting = new Meeting
             {
-            MeetingID = "meetingA",
-            MeetingStarted = DateTime.Now
+                MeetingID = "meetingA",
+                MeetingStarted = DateTime.Now
             };
 
             producer.Setup(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<Message<Null, string>>(), It.IsAny<CancellationToken>()));

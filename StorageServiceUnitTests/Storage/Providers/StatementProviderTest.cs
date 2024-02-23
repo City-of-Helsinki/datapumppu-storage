@@ -34,19 +34,19 @@ namespace StorageServiceUnitTests.Storage.Providers
         {
             var expectedData = new WebApiStatementsDTO
             {
-            Person = "personA",
-            StartTime = DateTime.UtcNow,
-            EndTime = DateTime.UtcNow,
-            SpeechType = 1,
-            DurationSeconds = 54,
-            AdditionalInfoFI = "",
-            AdditionalInfoSV = "",
-            Title = "Kohta 1",
-            CaseNumber = 3,
-            ItemNumber = "3",
-            MeetingId = "meetingA",
-            VideoPosition = 52,
-            VideoLink = "videoLink"
+                Person = "personA",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow,
+                SpeechType = 1,
+                DurationSeconds = 54,
+                AdditionalInfoFI = "",
+                AdditionalInfoSV = "",
+                Title = "Kohta 1",
+                CaseNumber = 3,
+                ItemNumber = "3",
+                MeetingId = "meetingA",
+                VideoPosition = 52,
+                VideoLink = "videoLink"
             };
 
             _statementsRepository.Setup(x => x.GetStatements(expectedData.MeetingId, expectedData.CaseNumber.ToString())).Returns(Task.FromResult(new List<Statement>()));

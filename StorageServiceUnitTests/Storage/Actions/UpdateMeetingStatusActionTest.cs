@@ -2,7 +2,6 @@ using System.Data;
 using AutoMapper;
 using Storage.Actions;
 using Storage.Controllers.Event.DTOs;
-using Storage.Events.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
 
@@ -16,10 +15,10 @@ namespace StorageServiceUnitTests.Storage.Actions
             var eventId = new Guid();
             var meetingStatusDto = new SimpleEventDTO
             {
-            MeetingID = "meetingId",
-            EventType = 0,
-            SequenceNumber = 1,
-            CaseNumber = "caseA"
+                MeetingID = "meetingId",
+                EventType = 0,
+                SequenceNumber = 1,
+                CaseNumber = "caseA"
             };
 
             var eventBody = BinaryData.FromObjectAsJson(meetingStatusDto);

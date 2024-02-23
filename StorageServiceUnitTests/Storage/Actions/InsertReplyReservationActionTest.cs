@@ -21,7 +21,7 @@ namespace StorageServiceUnitTests.Storage.Actions
                 Timestamp = DateTime.UtcNow,
                 SequenceNumber = 1,
             };
-            var eventBody  = BinaryData.FromObjectAsJson(replyReservationEventDto);
+            var eventBody = BinaryData.FromObjectAsJson(replyReservationEventDto);
 
             var connection = new Mock<IDbConnection>();
             var transaction = new Mock<IDbTransaction>();
@@ -43,5 +43,5 @@ namespace StorageServiceUnitTests.Storage.Actions
                 It.IsAny<ReplyReservation?>(), connection.Object, transaction.Object),
                 Times.Once);
         }
-    }    
+    }
 }

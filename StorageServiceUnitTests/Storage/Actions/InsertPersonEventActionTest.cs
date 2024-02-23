@@ -23,7 +23,7 @@ namespace StorageServiceUnitTests.Storage.Actions
                 Person = "person",
                 SeatID = "1",
             };
-            var eventBody  = BinaryData.FromObjectAsJson(personEventDto);
+            var eventBody = BinaryData.FromObjectAsJson(personEventDto);
 
             var connection = new Mock<IDbConnection>();
             var transaction = new Mock<IDbTransaction>();

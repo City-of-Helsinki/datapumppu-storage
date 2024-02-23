@@ -15,7 +15,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var eventId = new Guid();
             var caseEventDto = new CaseEventDTO
             {
-            MeetingID = "meetingId",
+                MeetingID = "meetingId",
             };
 
             var eventBody = BinaryData.FromObjectAsJson(caseEventDto);

@@ -15,8 +15,8 @@ namespace StorageServiceUnitTests.Storage.Actions
             var eventId = new Guid();
             var rollCallEventDto = new RollCallEventDTO
             {
-            MeetingID = "meetingId",
-            EventType = (global::Storage.EventType)7
+                MeetingID = "meetingId",
+                EventType = (global::Storage.EventType)7
             };
 
             var eventBody = BinaryData.FromObjectAsJson(rollCallEventDto);

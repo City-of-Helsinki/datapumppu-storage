@@ -26,7 +26,7 @@ namespace StorageServiceUnitTests.Storage.Actions
 
             var attendeesEventDto = new AttendeesEventDTO
             {
-            MeetingSeats = attendees,
+                MeetingSeats = attendees,
             };
 
             var eventBody = BinaryData.FromObjectAsJson(attendeesEventDto);

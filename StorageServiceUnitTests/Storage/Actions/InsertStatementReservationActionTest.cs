@@ -16,9 +16,9 @@ namespace StorageServiceUnitTests.Storage.Actions
 
             var statementReservationDTO = new StatementReservationEventDTO
             {
-            Person = "Person A",
-            SeatID = "seatA",
-            Ordinal = 1,
+                Person = "Person A",
+                SeatID = "seatA",
+                Ordinal = 1,
             };
 
             var eventBody = BinaryData.FromObjectAsJson(statementReservationDTO);

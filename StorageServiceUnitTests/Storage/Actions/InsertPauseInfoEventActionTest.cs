@@ -1,9 +1,6 @@
-
 using System.Data;
 using AutoMapper;
-using Storage;
 using Storage.Actions;
-using Storage.Controllers.Event.DTOs;
 using Storage.Events.DTOs;
 using Storage.Repositories;
 using Storage.Repositories.Models;
@@ -25,7 +22,7 @@ namespace StorageServiceUnitTests.Storage.Actions
                 SequenceNumber = 1,
                 Info = "info"
             };
-            var eventBody  = BinaryData.FromObjectAsJson(pauseInfoDto);
+            var eventBody = BinaryData.FromObjectAsJson(pauseInfoDto);
 
             var connection = new Mock<IDbConnection>();
             var transaction = new Mock<IDbTransaction>();

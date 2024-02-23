@@ -23,7 +23,7 @@ namespace StorageServiceUnitTests.Storage.Actions
 
             var statementsDto = new StatementsEventDTO
             {
-            Statements = statementDtos
+                Statements = statementDtos
             };
 
             List<Statement> statements = new()
