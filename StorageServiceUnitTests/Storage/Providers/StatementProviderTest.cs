@@ -64,13 +64,13 @@ namespace StorageServiceUnitTests.Storage.Providers
         {
             var statements = new List<Statement>
             {
-            new() { MeetingID = "meetingA", EventID = new Guid(), Started = DateTime.UtcNow },
-            new() { MeetingID = "meetingB", EventID = new Guid() },
+                new Statement { MeetingID = "meetingA", EventID = new Guid(), Started = DateTime.UtcNow },
+                new Statement { MeetingID = "meetingB", EventID = new Guid() },
             };
             var videoSyncs = new List<VideoSync>
             {
-            new() { MeetingID = "meetingA", Timestamp = DateTime.UtcNow, VideoPosition = 0 },
-            new() { MeetingID = "meetingA", Timestamp = null, VideoPosition = 43 }
+                new VideoSync { MeetingID = "meetingA", Timestamp = DateTime.UtcNow, VideoPosition = 0 },
+                new VideoSync { MeetingID = "meetingA", Timestamp = null, VideoPosition = 43 }
             };
 
             _statementsRepository.Setup(x => x.GetSatementsByName(personName, year, lang)).Returns(Task.FromResult(statements));
@@ -87,13 +87,13 @@ namespace StorageServiceUnitTests.Storage.Providers
         {
             var statements = new List<Statement>
             {
-            new() { MeetingID = "meetingA", EventID = new Guid(), Started = new DateTime(2023, 5, 15) },
-            new() { MeetingID = "meetingB", EventID = new Guid(), Started = new DateTime(2023, 5, 27) },
+                new Statement { MeetingID = "meetingA", EventID = new Guid(), Started = new DateTime(2023, 5, 15) },
+                new Statement { MeetingID = "meetingB", EventID = new Guid(), Started = new DateTime(2023, 5, 27) },
             };
             var videoSyncs = new List<VideoSync>
             {
-            new() { MeetingID = "meetingA", Timestamp = null, VideoPosition = 0 },
-            new() { MeetingID = "meetingA", Timestamp = null, VideoPosition = 43 }
+                new VideoSync { MeetingID = "meetingA", Timestamp = null, VideoPosition = 0 },
+                new VideoSync { MeetingID = "meetingA", Timestamp = null, VideoPosition = 43 }
             };
 
             _statementsRepository.Setup(x => x.GetSatementsByName(personName, year, lang)).Returns(Task.FromResult(statements));

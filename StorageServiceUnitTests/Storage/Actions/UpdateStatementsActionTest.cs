@@ -16,9 +16,9 @@ namespace StorageServiceUnitTests.Storage.Actions
 
             List<StatementDTO> statementDtos = new()
             {
-            new StatementDTO { Person = "personA", Duration = 432 },
-            new StatementDTO { Person = "personB", Duration = 35 },
-            new StatementDTO { Person = "personC", Duration = 235 },
+                new StatementDTO { Person = "personA", Duration = 432 },
+                new StatementDTO { Person = "personB", Duration = 35 },
+                new StatementDTO { Person = "personC", Duration = 235 },
             };
 
             var statementsDto = new StatementsEventDTO
@@ -28,9 +28,9 @@ namespace StorageServiceUnitTests.Storage.Actions
 
             List<Statement> statements = new()
             {
-            new Statement { MeetingID = "meetingId", EventID = new Guid() },
-            new Statement { MeetingID = "meetingId1", EventID = new Guid() },
-            new Statement { MeetingID = "meetingId2", EventID = new Guid() },
+                new Statement { MeetingID = "meetingId", EventID = new Guid() },
+                new Statement { MeetingID = "meetingId1", EventID = new Guid() },
+                new Statement { MeetingID = "meetingId2", EventID = new Guid() },
             };
 
             var eventBody = BinaryData.FromObjectAsJson(statementsDto);

@@ -20,8 +20,8 @@ namespace StorageServiceUnitTests.Storage.Actions
             };
             List<MeetingSeat> meetingSeats = new()
             {
-            new MeetingSeat { SeatID = "seatA", Person = "personA" },
-            new MeetingSeat { SeatID = "seatB", Person = "personB" },
+                new MeetingSeat { SeatID = "seatA", Person = "personA" },
+                new MeetingSeat { SeatID = "seatB", Person = "personB" },
             };
 
             var attendeesEventDto = new AttendeesEventDTO
