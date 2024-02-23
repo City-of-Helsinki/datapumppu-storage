@@ -45,8 +45,9 @@ namespace Storage.Providers
                 statementList.Add(await MapToDTO(statement, videoSync));
             }
 
+            var filteredStatements = statementList.Where(x => x.VideoPosition != 0).ToList();
 
-            return statementList;
+            return filteredStatements;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang)
@@ -55,7 +56,6 @@ namespace Storage.Providers
 
             var statements = await _statementsRepository.GetSatementsByName(name, year, lang);
 
-            
             var dtos = new List<WebApiStatementsDTO>();
             var videoSyncs = new Dictionary<string, List<VideoSync>>();
             foreach (var statement in statements)
@@ -77,7 +77,9 @@ namespace Storage.Providers
                 dtos.Add(await MapToDTO(statement, sync));
             }
 
-            return dtos;
+            var filteredDtos = dtos.Where(x => x.VideoPosition != 0).ToList();
+
+            return filteredDtos;
         }
 
         private Task<VideoSync?> GetVideoSync(string meetingId, List<Statement> statements)

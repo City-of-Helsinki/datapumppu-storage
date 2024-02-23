@@ -24,8 +24,7 @@ namespace Storage.Controllers
             {
                 _logger.LogInformation($"GetStatements {meetingId}, {caseNumber}");
                 var turns = await _statementProvider.GetStatements(meetingId, caseNumber);
-                var filteredTurns = turns.Where(x => x.VideoPosition != 0).ToList();
-                return new OkObjectResult(filteredTurns);
+                return new OkObjectResult(turns);
             }
             catch (Exception ex)
             {
@@ -44,8 +43,7 @@ namespace Storage.Controllers
             {
                 _logger.LogInformation($"GetStatementsByPerson {name}, {year} {lang}");
                 var turns = await _statementProvider.GetStatementsByPerson(name, year, lang);
-                var filteredTurns = turns.Where(x => x.VideoPosition != 0).ToList();
-                return new OkObjectResult(filteredTurns);
+                return new OkObjectResult(turns);
             }
             catch (Exception ex)
             {
