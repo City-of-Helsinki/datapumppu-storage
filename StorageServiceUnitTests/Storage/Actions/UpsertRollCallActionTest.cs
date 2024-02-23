@@ -28,7 +28,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var upsertRollCall = new UpsertRollCallAction(rollCallRepository.Object);
 
             rollCallRepository.Setup(x => x.UpsertRollCallStarted(rollCallEvent, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<RollCall>(rollCallEventDto)).Returns(rollCallEvent);
 

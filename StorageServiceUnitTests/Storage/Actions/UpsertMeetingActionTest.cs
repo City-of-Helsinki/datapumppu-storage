@@ -27,7 +27,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var upsertCaseAction = new UpsertCaseAction(caseRepository.Object);
 
             caseRepository.Setup(x => x.UpsertCase(caseEvent, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<Case>(caseEventDto)).Returns(caseEvent);
 

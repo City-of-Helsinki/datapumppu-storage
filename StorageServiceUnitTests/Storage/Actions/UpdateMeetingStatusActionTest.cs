@@ -30,7 +30,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var updateMeetingAction = new UpdateMeetingStatusAction(meetingRepository.Object);
 
             meetingRepository.Setup(x => x.UpsertMeetingStartTime(meeting, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<Meeting>(meetingStatusDto)).Returns(meeting);
 

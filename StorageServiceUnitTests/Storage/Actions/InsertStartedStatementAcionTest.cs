@@ -32,7 +32,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var insertStartedStatementAction = new InsertStartedStatementAction(startedStatementRepository.Object);
 
             startedStatementRepository.Setup(x => x.InsertStartedStatement(startedStatement, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<StartedStatement>(statementStartedDto)).Returns(startedStatement);
 

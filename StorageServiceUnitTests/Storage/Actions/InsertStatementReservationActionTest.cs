@@ -30,7 +30,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var insertStatementReservationAction = new InsertStatementReservationAction(statementReservationRepository.Object);
 
             statementReservationRepository.Setup(x => x.InsertStatementReservation(statementReservation, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<StatementReservation>(statementReservationDTO)).Returns(statementReservation);
 

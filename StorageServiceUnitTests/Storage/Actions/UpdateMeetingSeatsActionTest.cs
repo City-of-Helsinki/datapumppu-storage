@@ -38,7 +38,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var insertMeetingSeatUpdateAction = new UpdateMeetingSeatsAction(meetingSeatUpdateRepository.Object);
 
             meetingSeatUpdateRepository.Setup(x => x.InsertMeetingSeatUpdate(meetingSeatUpdate, meetingSeats, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<MeetingSeatUpdate>(attendeesEventDto)).Returns(meetingSeatUpdate);
 

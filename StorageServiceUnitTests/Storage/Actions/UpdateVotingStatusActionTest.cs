@@ -29,7 +29,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var upsertVotingStartedAction = new UpdateVotingStatusAction(votingEventRepository.Object);
 
             votingEventRepository.Setup(x => x.UpsertVotingStartedEvent(votingEvent, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<VotingEvent>(votingEventDto)).Returns(votingEvent);
 

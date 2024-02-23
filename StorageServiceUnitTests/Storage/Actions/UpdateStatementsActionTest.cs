@@ -42,7 +42,7 @@ namespace StorageServiceUnitTests.Storage.Actions
             var updateStatementAction = new UpdateStatementsAction(statementRepository.Object);
 
             statementRepository.Setup(x => x.UpsertStatements(statements, connection.Object, transaction.Object))
-            .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             mapper.Setup(x => x.Map<Statement>(statementsDto)).Returns(statement);
 
