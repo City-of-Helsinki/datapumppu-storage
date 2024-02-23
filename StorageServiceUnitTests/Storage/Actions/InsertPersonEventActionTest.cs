@@ -46,8 +46,4 @@ namespace StorageServiceUnitTests.Storage.Actions
                 Times.Once);
         }
     }
-
-    internal interface IPersonEventRepository
-    {
-    }
 }
