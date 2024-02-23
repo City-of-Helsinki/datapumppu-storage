@@ -71,7 +71,7 @@ namespace Storage.Providers
                     videoSyncs.Add(statement.MeetingID, await _videoSyncRepository.GetVideoPositions(statement.MeetingID));
                 }
 
-                var syncs = videoSyncs[statement.MeetingID];
+                var syncs = videoSyncs[statement.MeetingID] ?? new List<VideoSync>();
                 var sync = syncs.Where(sync => sync.Timestamp < statement.Started).OrderBy(sync => sync.Timestamp).FirstOrDefault();
 
                 dtos.Add(await MapToDTO(statement, sync));
