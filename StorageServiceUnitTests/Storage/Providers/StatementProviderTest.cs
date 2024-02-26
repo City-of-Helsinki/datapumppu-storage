@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Providers;
@@ -29,6 +28,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             _videoSyncRepository.Object,
             _meetingsRepository.Object);
         }
+        
         [Fact]
         public async void GetStatements_ReturnsExpectedData()
         {
