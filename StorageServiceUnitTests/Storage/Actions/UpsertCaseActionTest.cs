@@ -7,7 +7,7 @@ using Storage.Repositories.Models;
 
 namespace StorageServiceUnitTests.Storage.Actions
 {
-    public class UpsertMeetingActionTest
+    public class UpsertCaseActionTest
     {
         [Fact]
         public async Task ExecuteShouldCallUpsertCase()
