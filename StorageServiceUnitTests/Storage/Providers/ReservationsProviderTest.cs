@@ -24,6 +24,7 @@ namespace StorageServiceUnitTests.Storage.Providers
                 _statementsRepository.Object,
                 _eventsRepository.Object);
         }
+        
         [Fact]
         public async void GetReservations_ReturnsExpectedData()
         {

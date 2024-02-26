@@ -35,6 +35,7 @@ namespace StorageServiceUnitTests.Storage.Providers
                 _fullDecisionMapper.Object
             );
         }
+        
         [Fact]
         public async void FetchAgendaSubItemsById_ReturnsExpectedData()
         {

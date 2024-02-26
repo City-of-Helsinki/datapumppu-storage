@@ -20,6 +20,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             _votingsRepository = new Mock<IVotingsRepository>();
             _votesProvider = new VotesProvider(_logger.Object, _votingsRepository.Object);
         }
+        
         [Fact]
         public async void GetVoting_ReturnsExpectedData()
         {

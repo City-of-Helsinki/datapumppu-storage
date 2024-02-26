@@ -28,6 +28,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             _fullDecisionMapper = new Mock<IFullDecisionMapper>();
             _decisionProvider = new DecisionProvider(_logger.Object, _decisionsRepository.Object, _fullDecisionMapper.Object);
         }
+        
         [Fact]
         public async void GetDecision_ReturnsExpectedData()
         {

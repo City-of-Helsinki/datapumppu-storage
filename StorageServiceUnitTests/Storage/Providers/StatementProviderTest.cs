@@ -28,6 +28,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             _videoSyncRepository.Object,
             _meetingsRepository.Object);
         }
+        
         [Fact]
         public async void GetStatements_ReturnsExpectedData()
         {

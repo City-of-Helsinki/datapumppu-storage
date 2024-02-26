@@ -20,6 +20,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             _meetingSeatsRepository = new Mock<IMeetingSeatsRepository>();
             _seatsProvider = new SeatsProvider(_logger.Object, _meetingSeatsRepository.Object);
         }
+        
         [Fact]
         public async void GetSeats_ReturnsExpectedData()
         {
