@@ -1,5 +1,4 @@
 
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Providers;
@@ -11,7 +10,6 @@ namespace StorageServiceUnitTests.Storage.Providers
     public class StatementProviderTests
     {
         private readonly Mock<IStatementsRepository> _statementsRepository;
-        private readonly Mock<IMapper> _mapper;
         private readonly Mock<IVideoSyncRepository> _videoSyncRepository;
         private readonly Mock<IMeetingsRepository> _meetingsRepository;
         private readonly Mock<ILogger<StatementProvider>> _logger;
@@ -26,7 +24,6 @@ namespace StorageServiceUnitTests.Storage.Providers
             _videoSyncRepository = new Mock<IVideoSyncRepository>();
             _meetingsRepository = new Mock<IMeetingsRepository>();
             _logger = new Mock<ILogger<StatementProvider>>();
-            _mapper = new Mock<IMapper>();
             _statementProvider = new StatementProvider(_logger.Object,
             _statementsRepository.Object,
             _videoSyncRepository.Object,
@@ -100,7 +97,6 @@ namespace StorageServiceUnitTests.Storage.Providers
             _statementsRepository.Setup(x => x.GetSatementsByName(personName, year, lang)).Returns(Task.FromResult(statements));
             _videoSyncRepository.Setup(x => x.GetVideoPositions("1234567890")).Returns(Task.FromResult(videoSyncs));
             _meetingsRepository.Setup(x => x.FetchMeetingById("1234567890")).Returns(Task.FromResult(meeting));
-            _mapper.Setup(x => x.Map<WebApiStatementsDTO>(statement)).Returns(webApiStatementsDTO);
 
             var result = await _statementProvider.GetStatementsByPerson(personName, year, lang);
 
