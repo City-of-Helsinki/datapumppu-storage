@@ -1,5 +1,3 @@
-
-using Microsoft.Extensions.Logging;
 using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Mappers;
 using Storage.Providers;
@@ -176,6 +174,43 @@ namespace StorageServiceUnitTests.Storage.Providers
             _agendaItemsRepository.Verify(x => x.FetchAgendaAttachmentsByMeetingId(meeting.MeetingID, lang), Times.Once);
             _videoSyncRepository.Verify(x => x.GetVideoPositions(meeting.MeetingID), Times.Once);
             _decisionsRepository.Verify(x => x.FetchDecisionsByMeetingId(meeting.MeetingID, lang), Times.Once);
+            Assert.NotNull(result);
+            Assert.IsType<WebApiMeetingDTO>(result);
+        }
+
+        [Fact]
+        public async void FetchNextUpcomingMeeting_ReturnsExpectedData()
+        {
+            Meeting meeting = new()
+            {
+                MeetingDate = DateTime.UtcNow.AddDays(1),
+                MeetingID = "meetingA"
+            };
+
+            List<AgendaItem> agendaItems = new()
+            {
+                new AgendaItem(),
+                new AgendaItem(),
+                new AgendaItem(),
+            };
+
+            List<AgendaItemAttachment> agendaItemAttachments = new()
+            {
+                new AgendaItemAttachment(),
+                new AgendaItemAttachment(),
+                new AgendaItemAttachment(),
+            };
+
+            _meetingsRepository.Setup(x => x.FetchNextUpcomingMeeting()).Returns(Task.FromResult(meeting));
+            _agendaItemsRepository.Setup(x => x.FetchAgendasByMeetingId(meeting.MeetingID, lang)).Returns(Task.FromResult(agendaItems));
+            _agendaItemsRepository.Setup(x => x.FetchAgendaAttachmentsByMeetingId(meeting.MeetingID, lang)).Returns(Task.FromResult(agendaItemAttachments));
+
+            var result = await _meetingsProvider.FetchNextUpcomingMeeting(lang);
+
+            _meetingsRepository.Verify(x => x.FetchNextUpcomingMeeting(), Times.Once);
+            _agendaItemsRepository.Verify(x => x.FetchAgendasByMeetingId(meeting.MeetingID, lang), Times.Once);
+            _agendaItemsRepository.Verify(x => x.FetchAgendaAttachmentsByMeetingId(meeting.MeetingID, lang), Times.Once);
+
             Assert.NotNull(result);
             Assert.IsType<WebApiMeetingDTO>(result);
         }
