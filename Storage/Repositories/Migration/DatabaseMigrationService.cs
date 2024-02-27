@@ -21,7 +21,7 @@ namespace Storage.Repositories.Migration
             {
                 using var connection = await _databaseConnectionFactory.CreateOpenConnection();
                 var sqlScript = File.ReadAllText("./SqlScripts/CreateTables.sql");
-                NpgsqlCommand command = new NpgsqlCommand(sqlScript, connection);
+                NpgsqlCommand command = new NpgsqlCommand(sqlScript, connection as NpgsqlConnection);
                 await command.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
