@@ -27,7 +27,7 @@ namespace StorageServiceUnitTests.Storage.Providers.Statistics
                 _agendaItemsRepository.Object,
                 _meetingSeatsRepository.Object);
         }
-        
+
         [Fact]
         public async void GetStatistics_ReturnsExpectedData()
         {

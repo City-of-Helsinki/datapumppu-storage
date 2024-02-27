@@ -1,8 +1,5 @@
-using Microsoft.Extensions.Logging;
 using Storage.Providers.Statistics;
 using Storage.Providers.Statistics.DTOs;
-using Storage.Repositories;
-using Storage.Repositories.Models;
 using Storage.Repositories.Models.Statistics;
 using Storage.Repositories.Statistics;
 
@@ -21,17 +18,17 @@ namespace StorageServiceUnitTests.Storage.Providers.Statistics
                 _personStatementStatisticsRepositoy.Object
             );
         }
-        
+
         [Fact]
         public async void GetStatementStatistics_ReturnsExpectedData()
         {
-            List<PersonStatementStatistics> personStatementStatisticsDtos = new()
+            List<PersonStatementStatistics> personStatementStatistics = new()
             {
                 new PersonStatementStatistics(),
                 new PersonStatementStatistics(),
             };
 
-            _personStatementStatisticsRepositoy.Setup(x => x.GetStatistics(year)).Returns(Task.FromResult(personStatementStatisticsDtos));
+            _personStatementStatisticsRepositoy.Setup(x => x.GetStatistics(year)).Returns(Task.FromResult(personStatementStatistics));
 
             var result = await _personStatementStatisticsProvider.GetStatementStatistics(year);
 
