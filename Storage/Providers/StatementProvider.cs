@@ -45,9 +45,7 @@ namespace Storage.Providers
                 statementList.Add(await MapToDTO(statement, videoSync));
             }
 
-            var filteredStatements = statementList.Where(x => x.VideoPosition != 0).ToList();
-
-            return filteredStatements;
+            return statementList;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang)
