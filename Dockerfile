@@ -7,6 +7,9 @@ LABEL io.openshift.expose-services="8080:http"
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://*:8080
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Upgrade packages in the runtime base image
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean && \
@@ -16,6 +19,15 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["./Storage/Storage.csproj", "./"]
 RUN dotnet restore "Storage.csproj"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Upgrade packages in the runtime base image
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+    
 COPY . .
 WORKDIR "/src"
 RUN dotnet build "Storage/Storage.csproj" -c Release -o /app/build
