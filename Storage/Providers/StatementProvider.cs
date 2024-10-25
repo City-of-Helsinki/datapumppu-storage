@@ -12,6 +12,8 @@ namespace Storage.Providers
         Task<List<WebApiStatementsDTO>> GetStatements(string meetingId, string caseNumber);
 
         Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang);
+
+        Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate );
     }
 
     public class StatementProvider : IStatementProvider
@@ -30,6 +32,38 @@ namespace Storage.Providers
             _statementsRepository = statementsRepository;
             _videoSyncRepository = videoSyncRepository;
             _meetingRepository = meetingRepository;
+        }
+
+        public async Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate)
+        {
+            _logger.LogInformation($"GetStatementsByPersonOrDate {names} {startDate} {endDate}");
+
+            var statements = await _statementsRepository.GetStatementsByPersonOrDate(names, startDate, endDate);
+
+            var dtos = new List<WebApiStatementsDTO>();
+            var videoSyncs = new Dictionary<string, List<VideoSync>>();
+            foreach (var statement in statements)
+            {
+                // ignore meetings in 2010 (these are test meetings)
+                if (statement.MeetingID.StartsWith("029002010"))
+                {
+                    continue;
+                }
+
+                if (!videoSyncs.ContainsKey(statement.MeetingID))
+                {
+                    videoSyncs.Add(statement.MeetingID, await _videoSyncRepository.GetVideoPositions(statement.MeetingID));
+                }
+
+                var syncs = videoSyncs[statement.MeetingID] ?? new List<VideoSync>();
+                var sync = syncs.Where(sync => sync.Timestamp < statement.Started).OrderBy(sync => sync.Timestamp).FirstOrDefault();
+
+                dtos.Add(await MapToDTO(statement, sync));
+            }
+
+            var filteredDtos = dtos.Where(x => x.VideoPosition != 0).ToList();
+
+            return filteredDtos;
         }
 
         public async Task<List<WebApiStatementsDTO>> GetStatements(string meetingId, string caseNumber)

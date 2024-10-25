@@ -19,6 +19,8 @@ namespace Storage.Repositories
 
         Task<List<Statement>> GetSatementsByName(string name, int year, string lang);
 
+        Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate);
+
         Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint);
 
         Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint);
@@ -38,6 +40,61 @@ namespace Storage.Repositories
             _logger = logger;
             _databaseConnectionFactory = databaseConnectionFactory;
         }
+
+        public async Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate)
+        {
+            var sqlQuery = @"
+                select
+                    statements.meeting_id,
+                    person,
+                    started,
+                    ended,
+                    speech_type,
+                    duration_seconds,
+                    additional_info_fi,
+                    additional_info_sv,
+                    agenda_items.title as title,
+                    agenda_items.agenda_point as case_number
+                from
+                    statements
+                join
+                    meeting_events on statements.event_id = meeting_events.event_id
+                join
+                    agenda_items on 
+                        meeting_events.meeting_id = agenda_items.meeting_id and
+                        agenda_items.agenda_point = meeting_events.case_number::int8
+                where 1=1
+            ";
+
+            if (names != null && names.Any())
+            {
+                var nameConditions = new List<string>();
+
+                foreach (var name in names)
+                {
+                    var words = name.Split(' ').Select(word => word.Trim());
+                    var wordConditions = words.Select(word => $"person ILIKE '%{word}%'");
+
+                    nameConditions.Add("(" + string.Join(" AND ", wordConditions) + ")");
+                }
+
+                sqlQuery += " AND (" + string.Join(" OR ", nameConditions) + ")";
+            }
+
+            if (startDate.HasValue)
+            {
+                sqlQuery += " AND started >= '" + startDate.Value.ToString("yyyy-MM-dd") + "'";
+            }
+            if (endDate.HasValue)
+            {
+                sqlQuery += " AND ended <= '" + endDate.Value.ToString("yyyy-MM-dd") + "'";
+            }
+
+            using var connection = await _databaseConnectionFactory.CreateOpenConnection();
+
+            return (await connection.QueryAsync<Statement>(sqlQuery)).ToList();
+        }
+
 
         public async Task<List<Statement>> GetSatementsByName(string name, int year, string lang)
         {

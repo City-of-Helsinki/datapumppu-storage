@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Storage.Controllers.MeetingInfo.DTOs;
 using Storage.Providers;
@@ -124,6 +125,102 @@ namespace StorageServiceUnitTests.Storage.Providers
             var result = await _statementProvider.GetStatementsByPerson(personName, year, lang);
 
             _statementsRepository.Verify(x => x.GetSatementsByName(personName, year, lang), Times.Once);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async void GetStatementsByPersonOrDate_ReturnsExpectedData()
+        {
+            var statements = new List<Statement>
+            {
+                new Statement { MeetingID = "1234567890", EventID = new Guid(), Started = new DateTime(2023, 5, 15), Ended = new DateTime(2023, 5, 15), DurationSeconds = 54, Person = "Matt" },
+                new Statement { MeetingID = "meetingB", EventID = new Guid(), Started = new DateTime(2023, 5, 15), Ended = new DateTime(2023, 5, 15), DurationSeconds = 54, Person = "Steve" },
+            };
+
+            var nameList = new List<string> { "Matt", "Steve" };
+            DateTime? startDate = new DateTime(2023, 5, 15);
+            DateTime? endDate = new DateTime(2023, 5, 15).AddDays(1).AddTicks(-1);
+
+            var videoSyncs = new List<VideoSync>
+            {
+                new VideoSync { MeetingID = "1234567890", Timestamp = new DateTime(2023, 5, 14), VideoPosition = 34 },
+                new VideoSync { MeetingID = "meetingA", Timestamp = null, VideoPosition = 43 }
+            };
+            var meeting = new Meeting
+            {
+                MeetingID = "meetingA",
+                MeetingStarted = new DateTime(2023, 5, 15),
+                MeetingEnded = new DateTime(2023, 5, 15),
+                MeetingSequenceNumber = 1,
+            };
+            var statement = new Statement
+            {
+                MeetingID = "meetingA",
+                EventID = new Guid(),
+                Started = DateTime.UtcNow,
+                Ended = DateTime.UtcNow,
+                DurationSeconds = 45,
+            };
+            var webApiStatementsDTO = new WebApiStatementsDTO
+            {
+                MeetingId = "meetingA",
+                VideoPosition = 54,
+                VideoLink = "videoLink",
+            };
+
+            _statementsRepository.Setup(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate)).Returns(Task.FromResult(statements));
+            _videoSyncRepository.Setup(x => x.GetVideoPositions("1234567890")).Returns(Task.FromResult(videoSyncs));
+            _meetingsRepository.Setup(x => x.FetchMeetingById("1234567890")).Returns(Task.FromResult(meeting));
+
+            var result = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate);
+
+            _statementsRepository.Verify(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate), Times.Once);
+            Assert.NotEmpty(result);
+        }
+
+        [Fact]
+        public async void GetStatementsByPersonOrDate_ReturnsEmpty()
+        {
+            var statements = new List<Statement>();
+
+            var nameList = new List<string> { "Matt", "Steve" };
+            DateTime? startDate = null;
+            DateTime? endDate = null;
+
+            var videoSyncs = new List<VideoSync>
+            {
+                new VideoSync { MeetingID = "1234567890", Timestamp = new DateTime(2023, 5, 14), VideoPosition = 34 },
+                new VideoSync { MeetingID = "meetingA", Timestamp = null, VideoPosition = 43 }
+            };
+            var meeting = new Meeting
+            {
+                MeetingID = "meetingA",
+                MeetingStarted = new DateTime(2023, 5, 15),
+                MeetingEnded = new DateTime(2023, 5, 15),
+                MeetingSequenceNumber = 1,
+            };
+            var statement = new Statement
+            {
+                MeetingID = "meetingA",
+                EventID = new Guid(),
+                Started = DateTime.UtcNow,
+                Ended = DateTime.UtcNow,
+                DurationSeconds = 45,
+            };
+            var webApiStatementsDTO = new WebApiStatementsDTO
+            {
+                MeetingId = "meetingA",
+                VideoPosition = 54,
+                VideoLink = "videoLink",
+            };
+
+            _statementsRepository.Setup(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate)).Returns(Task.FromResult(statements));
+            _videoSyncRepository.Setup(x => x.GetVideoPositions("1234567890")).Returns(Task.FromResult(videoSyncs));
+            _meetingsRepository.Setup(x => x.FetchMeetingById("1234567890")).Returns(Task.FromResult(meeting));
+
+            var result = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate);
+
+            _statementsRepository.Verify(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate), Times.Once);
             Assert.Empty(result);
         }
     }
