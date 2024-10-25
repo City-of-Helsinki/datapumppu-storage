@@ -54,15 +54,29 @@ namespace Storage.Controllers
 
         [HttpGet("lookup")]
         public async Task<IActionResult> GetStatementsByPersonOrDate(
-            [FromQuery]List<string> names,
+            [FromQuery]string? names,
             [FromQuery]DateTime? startDate,
             [FromQuery]DateTime? endDate)
         {
             try
             {
-                if ((names == null || !names.Any()) && !startDate.HasValue && !endDate.HasValue)
+                var nameList = string.IsNullOrWhiteSpace(names) 
+                       ? new List<string>() 
+                       : names.Split(',')
+                              .Select(name => name.Trim())
+                              .Where(name => !string.IsNullOrEmpty(name))
+                              .ToList();
+
+                // Check if both dates are provided together or none at all
+                if ((startDate.HasValue && !endDate.HasValue) || (!startDate.HasValue && endDate.HasValue))
                 {
-                    return BadRequest(new { Message = "Vähintään yksi hakusuodatin on oltava asetettuna (nimilista (names) tai päivämäärien väli (startDate ja endDate))"});
+                    return BadRequest(new { Message = "Sekä startDate että endDate on asetettava, jos päivämääräsuodatus on käytössä" });
+                }
+
+                // Ensure at least one filter is provided (either names or complete date range)
+                if (!nameList.Any() && !startDate.HasValue && !endDate.HasValue)
+                {
+                    return BadRequest(new { Message = "Vähintään yksi hakusuodatin on oltava asetettuna (nimilista (names) tai päivämäärien väli (startDate ja endDate))" });
                 }
 
                 if (endDate.HasValue)
@@ -70,8 +84,9 @@ namespace Storage.Controllers
                     endDate = endDate.Value.Date.AddDays(1).AddTicks(-1);
                 }
 
-                _logger.LogInformation($"GetStatementsByPersonOrDate {string.Join(", ", names)}, {startDate} {endDate}");
-                var statements = await _statementProvider.GetStatementsByPersonOrDate(names, startDate, endDate);
+                _logger.LogInformation($"GetStatementsByPersonOrDate {string.Join(", ", nameList)}, {startDate} {endDate}");
+
+                var statements = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate);
                 return new OkObjectResult(statements);
             }
             catch (Exception ex)
