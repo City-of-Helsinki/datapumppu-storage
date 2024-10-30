@@ -13,7 +13,7 @@ namespace Storage.Providers
 
         Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang);
 
-        Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate );
+        Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang);
     }
 
     public class StatementProvider : IStatementProvider
@@ -34,11 +34,11 @@ namespace Storage.Providers
             _meetingRepository = meetingRepository;
         }
 
-        public async Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate)
+        public async Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang)
         {
-            _logger.LogInformation($"GetStatementsByPersonOrDate {names} {startDate} {endDate}");
+            _logger.LogInformation($"GetStatementsByPersonOrDate {names} {startDate} {endDate} {lang}");
 
-            var statements = await _statementsRepository.GetStatementsByPersonOrDate(names, startDate, endDate);
+            var statements = await _statementsRepository.GetStatementsByPersonOrDate(names, startDate, endDate, lang);
 
             var dtos = new List<WebApiStatementsDTO>();
             var videoSyncs = new Dictionary<string, List<VideoSync>>();
