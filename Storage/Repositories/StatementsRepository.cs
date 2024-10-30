@@ -19,7 +19,7 @@ namespace Storage.Repositories
 
         Task<List<Statement>> GetSatementsByName(string name, int year, string lang);
 
-        Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate);
+        Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang);
 
         Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint);
 
@@ -41,7 +41,7 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
-        public async Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate)
+        public async Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang)
         {
             var sqlQuery = @"
                 select
@@ -90,9 +90,12 @@ namespace Storage.Repositories
                 sqlQuery += " AND ended <= '" + endDate.Value.ToString("yyyy-MM-dd") + "'";
             }
 
+            sqlQuery += " AND agenda_items.language = @Language";
+            var parameters = new { Language = lang };
+
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
-            return (await connection.QueryAsync<Statement>(sqlQuery)).ToList();
+            return (await connection.QueryAsync<Statement>(sqlQuery, parameters)).ToList();
         }
 
 
