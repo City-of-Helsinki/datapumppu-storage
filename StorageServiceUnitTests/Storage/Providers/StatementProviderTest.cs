@@ -140,6 +140,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             var nameList = new List<string> { "Matt", "Steve" };
             DateTime? startDate = new DateTime(2023, 5, 15);
             DateTime? endDate = new DateTime(2023, 5, 15).AddDays(1).AddTicks(-1);
+            string lang = "fi";
 
             var videoSyncs = new List<VideoSync>
             {
@@ -168,13 +169,13 @@ namespace StorageServiceUnitTests.Storage.Providers
                 VideoLink = "videoLink",
             };
 
-            _statementsRepository.Setup(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate)).Returns(Task.FromResult(statements));
+            _statementsRepository.Setup(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang)).Returns(Task.FromResult(statements));
             _videoSyncRepository.Setup(x => x.GetVideoPositions("1234567890")).Returns(Task.FromResult(videoSyncs));
             _meetingsRepository.Setup(x => x.FetchMeetingById("1234567890")).Returns(Task.FromResult(meeting));
 
-            var result = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate);
+            var result = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang);
 
-            _statementsRepository.Verify(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate), Times.Once);
+            _statementsRepository.Verify(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang), Times.Once);
             Assert.NotEmpty(result);
         }
 
@@ -186,6 +187,7 @@ namespace StorageServiceUnitTests.Storage.Providers
             var nameList = new List<string> { "Matt", "Steve" };
             DateTime? startDate = null;
             DateTime? endDate = null;
+            string lang = "fi";
 
             var videoSyncs = new List<VideoSync>
             {
@@ -214,13 +216,13 @@ namespace StorageServiceUnitTests.Storage.Providers
                 VideoLink = "videoLink",
             };
 
-            _statementsRepository.Setup(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate)).Returns(Task.FromResult(statements));
+            _statementsRepository.Setup(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang)).Returns(Task.FromResult(statements));
             _videoSyncRepository.Setup(x => x.GetVideoPositions("1234567890")).Returns(Task.FromResult(videoSyncs));
             _meetingsRepository.Setup(x => x.FetchMeetingById("1234567890")).Returns(Task.FromResult(meeting));
 
-            var result = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate);
+            var result = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang);
 
-            _statementsRepository.Verify(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate), Times.Once);
+            _statementsRepository.Verify(x => x.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang), Times.Once);
             Assert.Empty(result);
         }
     }

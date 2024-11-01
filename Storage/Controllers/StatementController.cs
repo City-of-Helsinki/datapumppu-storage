@@ -56,7 +56,8 @@ namespace Storage.Controllers
         public async Task<IActionResult> GetStatementsByPersonOrDate(
             [FromQuery]string? names,
             [FromQuery]DateTime? startDate,
-            [FromQuery]DateTime? endDate)
+            [FromQuery]DateTime? endDate,
+            [FromQuery]string lang)
         {
             try
             {
@@ -84,9 +85,9 @@ namespace Storage.Controllers
                     endDate = endDate.Value.Date.AddDays(1).AddTicks(-1);
                 }
 
-                _logger.LogInformation($"GetStatementsByPersonOrDate {string.Join(", ", nameList)}, {startDate} {endDate}");
+                _logger.LogInformation($"GetStatementsByPersonOrDate {string.Join(", ", nameList)}, {startDate} {endDate} {lang}");
 
-                var statements = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate);
+                var statements = await _statementProvider.GetStatementsByPersonOrDate(nameList, startDate, endDate, lang);
                 return new OkObjectResult(statements);
             }
             catch (Exception ex)
