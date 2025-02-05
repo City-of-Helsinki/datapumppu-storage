@@ -158,7 +158,7 @@ namespace Storage.Providers
         private string CreateVideoLink(Statement statement, int sequenceNumber, int videoPosition)
         {
             int year = Int32.Parse(statement.MeetingID.Substring(5, 4));
-            return @$"https://www.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{sequenceNumber}#T{videoPosition}";
+            return @$"https://www.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{sequenceNumber}?t={videoPosition}";
         }
     }
 }
