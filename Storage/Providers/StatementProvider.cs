@@ -134,7 +134,7 @@ namespace Storage.Providers
         private async Task<WebApiStatementsDTO> MapToDTO(Statement statement, VideoSync? videoSync)
         {
             var videoPosition = videoSync.GetVideoPosition(statement.Started);
-            
+
             var meeting = await _meetingRepository.FetchMeetingById(statement.MeetingID);
             if (meeting == null)
             {
@@ -157,7 +157,18 @@ namespace Storage.Providers
 
         private string CreateVideoLink(Statement statement, int sequenceNumber, int videoPosition)
         {
-            int year = Int32.Parse(statement.MeetingID.Substring(5, 4));
+            string meetingId = statement.MeetingID;
+            int year;
+
+            if (meetingId.Equals("02900202424") || meetingId.Equals("02900202423"))
+            {
+                year = 2025;
+            }
+            else
+            {
+                year = Int32.Parse(statement.MeetingID.Substring(5, 4));
+            }
+
             return @$"https://www.helsinkikanava.fi/fi/player/event/view?meeting=kvsto-{year}-{sequenceNumber}?t={videoPosition}";
         }
     }
