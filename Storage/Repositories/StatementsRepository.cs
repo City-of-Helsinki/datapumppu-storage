@@ -118,9 +118,10 @@ namespace Storage.Repositories
                 join
                     meeting_events on statements.event_id = meeting_events.event_id
                 join
-                    agenda_items on 
-                        meeting_events.meeting_id = agenda_items.meeting_id and
-                        agenda_items.agenda_point = meeting_events.case_number::int8
+                    agenda_items
+                        ON meeting_events.meeting_id = agenda_items.meeting_id
+                        AND meeting_events.case_number ~ '^\d+(\.\d+)?$'
+                        AND FLOOR(CAST(meeting_events.case_number AS numeric))::BIGINT = agenda_items.agenda_point
                 where
                     person = @name
                     and
