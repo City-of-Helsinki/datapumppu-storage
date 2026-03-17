@@ -5,6 +5,9 @@ using Storage.Controllers.MeetingInfo.DTOs;
 
 namespace Storage.Controllers.MeetingInfo
 {
+    /// <summary>
+    /// Provides API endpoints for managing and retrieving detailed meeting information including agendas and decisions.
+    /// </summary>
     [ApiController]
     [Route("api/meetinginfo")]
     public class MeetingInfoController : ControllerBase
@@ -14,6 +17,13 @@ namespace Storage.Controllers.MeetingInfo
         private readonly IUpsertAgendaPointAction _upsertAgendaPointAction;
         private readonly IMeetingProvider _meetingProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MeetingInfoController"/> class.
+        /// </summary>
+        /// <param name="logger">Logger for recording controller operations.</param>
+        /// <param name="upsertMeetingAction">Action for creating or updating meeting data.</param>
+        /// <param name="upsertAgendaPointAction">Action for creating or updating agenda point data.</param>
+        /// <param name="meetingProvider">Provider for meeting data operations.</param>
         public MeetingInfoController(
             ILogger<MeetingInfoController> logger,
             IUpsertMeetingAction upsertMeetingAction,
@@ -26,6 +36,11 @@ namespace Storage.Controllers.MeetingInfo
             _upsertAgendaPointAction = upsertAgendaPointAction;
         }
 
+        /// <summary>
+        /// Creates or updates meeting information including agendas and decisions.
+        /// </summary>
+        /// <param name="meetingDTO">The meeting data to be saved.</param>
+        /// <returns>Returns 200 OK if the meeting was saved successfully.</returns>
         [HttpPost("meeting")]
         public async Task<IActionResult> UpsertMeeting([FromBody] MeetingDTO meetingDTO)
         {
@@ -34,6 +49,11 @@ namespace Storage.Controllers.MeetingInfo
             return Ok();
         }
 
+        /// <summary>
+        /// Creates or updates a specific agenda point with editor information.
+        /// </summary>
+        /// <param name="agendaPointDTO">The agenda point data including meeting ID, agenda point number, editor details, and HTML content.</param>
+        /// <returns>Returns 200 OK if successful, or 412 Precondition Failed if the operation could not be completed.</returns>
         [HttpPost("agendaPoint")]
         public async Task<IActionResult> UpsertAgendaPoint([FromBody] AgendaPointEditDTO agendaPointDTO)
         {
@@ -43,6 +63,12 @@ namespace Storage.Controllers.MeetingInfo
             return success ? Ok() : StatusCode(StatusCodes.Status412PreconditionFailed);
         }
 
+        /// <summary>
+        /// Retrieves detailed meeting information by meeting ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the meeting.</param>
+        /// <param name="language">The language code (e.g., 'fi' for Finnish, 'sv' for Swedish) for localized content.</param>
+        /// <returns>Returns 200 OK with the meeting details including agendas and decisions.</returns>
         [HttpGet("meeting/{id}")]
         public async Task<IActionResult> GetMeetingById(string id, string language)
         {
@@ -52,6 +78,12 @@ namespace Storage.Controllers.MeetingInfo
             return Ok(meeting);
         }
 
+        /// <summary>
+        /// Retrieves sub-items for a specific agenda point within a meeting.
+        /// </summary>
+        /// <param name="id">The unique identifier of the meeting.</param>
+        /// <param name="agendaPoint">The agenda point number.</param>
+        /// <returns>Returns 200 OK with the list of agenda sub-items.</returns>
         [HttpGet("meeting/{id}/{agendaPoint}")]
         public async Task<IActionResult> GetMeetingAgendaSubItems(string id, int agendaPoint)
         {
@@ -62,6 +94,13 @@ namespace Storage.Controllers.MeetingInfo
             return Ok(items);
         }
 
+        /// <summary>
+        /// Retrieves meeting information by year and sequence number.
+        /// </summary>
+        /// <param name="year">The year of the meeting.</param>
+        /// <param name="sequenceNumber">The sequence number of the meeting within the year.</param>
+        /// <param name="language">The language code (e.g., 'fi' for Finnish, 'sv' for Swedish) for localized content.</param>
+        /// <returns>Returns 200 OK with the meeting details.</returns>
         [HttpGet("meeting/{year}/{sequenceNumber}/{language}")]
         public async Task<IActionResult> GetMeeting(string year, string sequenceNumber, string language)
         {
@@ -70,6 +109,12 @@ namespace Storage.Controllers.MeetingInfo
             return Ok(meeting);
         }
 
+        /// <summary>
+        /// Retrieves the meeting ID for a meeting identified by year and sequence number.
+        /// </summary>
+        /// <param name="year">The year of the meeting.</param>
+        /// <param name="sequenceNumber">The sequence number of the meeting within the year.</param>
+        /// <returns>Returns 200 OK with the meeting ID.</returns>
         [HttpGet("meetingId/{year}/{sequenceNumber}")]
         public async Task<IActionResult> GetMeetingId(string year, string sequenceNumber)
         {
@@ -79,6 +124,11 @@ namespace Storage.Controllers.MeetingInfo
         }
 
 
+        /// <summary>
+        /// Retrieves information about the next upcoming scheduled meeting.
+        /// </summary>
+        /// <param name="language">The language code (e.g., 'fi' for Finnish, 'sv' for Swedish) for localized content.</param>
+        /// <returns>Returns 200 OK with the upcoming meeting details, or null if no upcoming meeting is scheduled.</returns>
         [HttpGet("upcoming")]
         public async Task<IActionResult> GetUpcomingMeeting(string language)
         {

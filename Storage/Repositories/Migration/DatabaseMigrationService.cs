@@ -26,8 +26,8 @@ namespace Storage.Repositories.Migration
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to migrage database", ex);
-                throw new Exception("Failed to migrage database", ex);
+                _logger.LogError("Failed to migrate database", ex);
+                throw new Exception("Failed to migrate database", ex);
             }
         }
 

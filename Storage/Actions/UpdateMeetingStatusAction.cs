@@ -6,18 +6,39 @@ using Storage.Repositories.Models;
 
 namespace Storage.Actions
 {
+    /// <summary>
+    /// Handles MeetingStarted and MeetingEnded events that track the lifecycle of a meeting.
+    /// Updates meeting status and timestamps when meetings begin or conclude.
+    /// </summary>
     public class UpdateMeetingStatusAction : IEventAction
     {
+        /// <summary>
+        /// Gets the event types handled by this action. Processes MeetingStarted and MeetingEnded events.
+        /// </summary>
         public List<EventType> EventTypes { get; } = new()
             { EventType.MeetingStarted, EventType.MeetingEnded };
 
         private readonly IMeetingsRepository _meetingsRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the UpdateMeetingStatusAction with the required repository.
+        /// </summary>
+        /// <param name="meetingsRepository">Repository for managing meeting data.</param>
         public UpdateMeetingStatusAction(IMeetingsRepository meetingsRepository)
         {
             _meetingsRepository = meetingsRepository;
         }
 
+        /// <summary>
+        /// Executes the action to update meeting status.
+        /// For MeetingStarted events, upserts the meeting start time.
+        /// For MeetingEnded events, updates the meeting end time.
+        /// </summary>
+        /// <param name="eventBody">The binary event payload containing meeting status data.</param>
+        /// <param name="eventId">The unique identifier for this event.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">The database transaction.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task Execute(BinaryData eventBody, Guid eventId, IDbConnection connection, IDbTransaction transaction)
         {
             var meetingStatusEvent = eventBody.ToObjectFromJson<SimpleEventDTO>();

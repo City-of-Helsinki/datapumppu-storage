@@ -6,22 +6,60 @@ using Storage.Repositories.Providers;
 
 namespace Storage.Repositories
 {
+    /// <summary>
+    /// Provides data access methods for voting event and vote management.
+    /// </summary>
     public interface IVotingsRepository
     {
+        /// <summary>
+        /// Inserts or updates voting start event information.
+        /// </summary>
+        /// <param name="votingEvent">The voting start event to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task UpsertVotingStartedEvent(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Saves voting results including vote counts and individual votes.
+        /// </summary>
+        /// <param name="votingEvent">The voting event with results and individual votes.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task SaveVotingResult(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Retrieves all voting events for a specific case in a meeting.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="caseId">The case identifier.</param>
+        /// <returns>A list of voting events with vote counts and bilingual descriptions.</returns>
         Task<List<VotingEvent>> GetVoting(string meetingId, string caseId);
 
+        /// <summary>
+        /// Retrieves individual votes for a specific voting number in a meeting.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="votingNumber">The voting number within the meeting.</param>
+        /// <returns>A list of votes with person names and vote types.</returns>
         Task<List<Vote>> GetVotes(string meetingId, int votingNumber);
     }
 
+    /// <summary>
+    /// Implements voting data access operations using Dapper for PostgreSQL queries.
+    /// Manages voting events, results, and individual vote tracking with bilingual support.
+    /// </summary>
     public class VotingsRepository : IVotingsRepository
     {
         private readonly ILogger<VotingsRepository> _logger;
         private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the VotingsRepository class.
+        /// </summary>
+        /// <param name="logger">Logger for diagnostic information.</param>
+        /// <param name="databaseConnectionFactory">Factory for creating database connections.</param>
         public VotingsRepository(ILogger<VotingsRepository> logger,
             IDatabaseConnectionFactory databaseConnectionFactory)
         {
@@ -29,6 +67,12 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
+        /// <summary>
+        /// Retrieves all voting events for a case, including vote counts and bilingual descriptions.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="caseId">The case identifier to filter by.</param>
+        /// <returns>A list of voting events with counts for for, against, empty, and absent votes.</returns>
         public async Task<List<VotingEvent>> GetVoting(string meetingId, string caseId)
         {
             _logger.LogInformation("Executing GetVoting()");
@@ -59,6 +103,12 @@ namespace Storage.Repositories
             return (await connection.QueryAsync<VotingEvent>(sqlQuery, new { meetingId, caseId })).ToList();
         }
 
+        /// <summary>
+        /// Retrieves individual votes for a voting event.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="votingNumber">The voting number within the meeting.</param>
+        /// <returns>A list of votes with person names, seat numbers, and vote types.</returns>
         public async Task<List<Vote>> GetVotes(string meetingId, int votingNumber)
         {
             _logger.LogInformation("Executing GetVotes()");
@@ -75,6 +125,13 @@ namespace Storage.Repositories
             return votes?.ToList() ?? new List<Vote>();
         }
 
+        /// <summary>
+        /// Inserts or updates a voting start event including voting type, title, and option.
+        /// Updates existing entries based on meeting_id, voting_number, and case_id.
+        /// </summary>
+        /// <param name="votingEvent">The voting event with type, title, and option, in Finnish and Swedish.</param>
+        /// <param name="connection">The database connection within a transaction context.</param>
+        /// <param name="transaction">The active transaction for consistency.</param>
         public Task UpsertVotingStartedEvent(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing InsertVoting()");
@@ -116,6 +173,13 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, votingEvent, transaction);
         }
 
+        /// <summary>
+        /// Saves complete voting results including vote counts and individual votes.
+        /// Updates voting event with counts then inserts individual votes.
+        /// </summary>
+        /// <param name="votingEvent">The voting event with result counts and individual votes.</param>
+        /// <param name="connection">The database connection within a transaction context.</param>
+        /// <param name="transaction">The active transaction for consistency.</param>
         public async Task SaveVotingResult(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation(("Executing SaveVotingResult()"));
@@ -123,6 +187,13 @@ namespace Storage.Repositories
             await InsertVotes(votingEvent.Votes, connection, transaction);
         }
 
+        /// <summary>
+        /// Upserts voting event information including vote counts.
+        /// Inserts or updates based on meeting_id and voting_number.
+        /// </summary>
+        /// <param name="votingEvent">The voting event with result counts.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">The active transaction.</param>
         private Task UpsertVoting(VotingEvent votingEvent, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("event : " + JsonSerializer.Serialize(votingEvent));
@@ -172,6 +243,12 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, votingEvent, transaction);
         }
 
+        /// <summary>
+        /// Inserts individual votes in a batch operation.
+        /// </summary>
+        /// <param name="votes">The list of votes to insert.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">The active transaction.</param>
         private Task InsertVotes(List<Vote> votes, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"insert into votes (meeting_id, voting_number, person, vote_type, additional_info_fi, additional_info_sv) values (

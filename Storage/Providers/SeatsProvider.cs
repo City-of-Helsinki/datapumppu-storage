@@ -7,8 +7,18 @@ using Storage.Repositories.Models;
 
 namespace Storage.Providers
 {
+    /// <summary>
+    /// Provides business logic for retrieving meeting seat allocations.
+    /// Maps seat assignments to API-ready DTOs for participant positioning.
+    /// </summary>
     public interface ISeatsProvider
     {
+        /// <summary>
+        /// Retrieves seat allocations for a specific meeting and case.
+        /// </summary>
+        /// <param name="meetingId">The unique meeting identifier.</param>
+        /// <param name="caseNumber">The case number within the meeting.</param>
+        /// <returns>A list of WebApiSeatDTO containing seat allocation details.</returns>
         Task<List<WebApiSeatDTO>> GetSeats(string meetingId, string caseNumber);
     }
 

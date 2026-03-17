@@ -6,23 +6,46 @@ using System.Data;
 
 namespace Storage.Repositories.Statistics
 {
+    /// <summary>
+    /// Provides data access methods for statement statistics aggregated by meeting and case.
+    /// </summary>
     public interface IStatementStatisticsRepository
     {
+        /// <summary>
+        /// Retrieves statement statistics for a specific year.
+        /// </summary>
+        /// <param name="year">The year to retrieve statistics for.</param>
+        /// <returns>A list of statement statistics with counts and durations per case.</returns>
         Task<List<StatementStatistics>> GetStatistics(int year);
     }
 
 
+    /// <summary>
+    /// Implements statement statistics data access using Dapper for PostgreSQL queries.
+    /// Aggregates statement counts and durations by meeting and case, identifies motions.
+    /// </summary>
     public class StatementStatisticsRepository : IStatementStatisticsRepository
     {
         private readonly ILogger<StatementStatisticsRepository> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the StatementStatisticsRepository class.
+        /// </summary>
+        /// <param name="logger">Logger for diagnostic information.</param>
+        /// <param name="connectionFactory">Factory for creating database connections.</param>
         public StatementStatisticsRepository(ILogger<StatementStatisticsRepository> logger, IDatabaseConnectionFactory connectionFactory)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
         }
 
+        /// <summary>
+        /// Retrieves statement statistics aggregated by meeting and case for a year.
+        /// Includes count, total duration, and identifies motions (title contains 'aloite').
+        /// </summary>
+        /// <param name="year">The year to retrieve statistics for (4-digit year).</param>
+        /// <returns>A list of statement statistics grouped by meeting and case.</returns>
         public async Task<List<StatementStatistics>> GetStatistics(int year)
         {
             var meetingId = $"02900{year}%";
