@@ -36,8 +36,6 @@ Backend storage service for City of Helsinki's meeting management system (Datapu
     - [Project Structure](#project-structure)
     - [Code Documentation](#code-documentation)
     - [Testing](#testing)
-  - [Troubleshooting](#troubleshooting)
-    - [Common Issues](#common-issues)
 
 ## About
 
@@ -513,65 +511,6 @@ dotnet test /p:CollectCoverage=true
 # Run specific test file
 dotnet test --filter "FullyQualifiedName~YourTestClassName"
 ```
-
-**Build Tasks:**
-- `dotnet build` — Build solution
-- `dotnet publish` — Publish for deployment
-- `dotnet watch` — Watch mode for development
-
-Available as VS Code tasks in [.vscode/tasks.json](.vscode/tasks.json).
-
-## Troubleshooting
-
-### Common Issues
-
-**1. Kafka Connection Failures**
-
-**Solution:**
-- Verify `KAFKA_BOOTSTRAP_SERVER` is correct
-- Ensure Kafka broker is running: `docker ps | grep kafka`
-- Check network connectivity to Kafka
-- Verify topic exists: `kafka-topics --list --bootstrap-server localhost:9092`
-
-**2. Database Migration Errors**
-```
-Error: Failed to migrate database
-```
-**Solution:**
-- Verify PostgreSQL is running and accessible
-- Check `STORAGE_DB_CONNECTION_STRING` is correct
-- Ensure database user has CREATE/ALTER permissions
-- Review logs for specific SQL errors
-- Manually verify database connection: `psql -h localhost -U root -d datapumppu`
-
-**3. Port Conflicts**
-```
-Error: Address already in use (port 8080)
-```
-**Solution:**
-- Change port via `ASPNETCORE_URLS` environment variable: `export ASPNETCORE_URLS=http://*:8081`
-- Find and stop process using port: `lsof -i :8080` or `netstat -ano | findstr :8080`
-
-**4. Health Check Failures**
-```
-/readiness returns Unhealthy
-```
-**Solution:**
-- Check database connectivity: `dotnet run` logs will show connection errors
-- Verify PostgreSQL is accepting connections
-- Check firewall/network rules
-- Review NpgSql health check configuration in [Program.cs](Storage/Program.cs)
-
-**5. Event Processing Not Working**
-```
-Events not being consumed from Kafka
-```
-**Solution:**
-- Verify event observer is registered (check startup logs)
-- Ensure `KAFKA_BOOTSTRAP_SERVER` is configured correctly
-- Check consumer group ID is unique: `KAFKA_GROUP_ID`
-- Verify topic exists and has messages: `kafka-console-consumer --topic meeting-room-observer-topic --bootstrap-server localhost:9092`
-- Review action registrations in [Program.cs](Storage/Program.cs)
 
 ---
 
