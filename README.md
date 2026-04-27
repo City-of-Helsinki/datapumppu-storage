@@ -382,35 +382,13 @@ The `DatabaseCleaner` background service runs periodically to clean up old data 
 
 ## Deployment
 
-### Kubernetes
+### Dev/test environment
 
-Kubernetes manifests are located in the [k8s/](k8s/) directory:
+Open a PR and target the **develop** branch. Once the branch gets merged, Azure pipelines will take care of deployment.
 
-**Deploy to Kubernetes:**
-```bash
-# Apply ConfigMap (environment configuration)
-kubectl apply -f k8s/storage-configmap.yml
+### Staging/Production environment
 
-# Apply Secrets (sensitive configuration)
-kubectl apply -f k8s/storage-secret.yml
-
-# Deploy the application
-kubectl apply -f k8s/storage-deploy.yml
-
-# Verify deployment
-kubectl get pods -l app=storage
-kubectl logs -f deployment/storage
-```
-
-**Kafka Resources:**
-```bash
-# Create Kafka internal user
-kubectl apply -f kafka/internal-user.yml
-
-# Create Kafka topics
-kubectl apply -f kafka/meeting-room-observer-topic.yml
-kubectl apply -f kafka/webapi-topic.yml
-```
+Open a PR from **develop** and target the **master** branch. Once the branch gets merged, Azure pipelines will take care of deployment.
 
 ### CI/CD Pipeline
 
