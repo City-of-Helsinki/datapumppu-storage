@@ -8,35 +8,96 @@ using Microsoft.Azure.ServiceBus;
 
 namespace Storage.Repositories
 {
+    /// <summary>
+    /// Provides data access methods for writing decision data to the database.
+    /// </summary>
     public interface IDecisionsRepository
     {
+        /// <summary>
+        /// Inserts or updates multiple decisions within a transaction.
+        /// </summary>
+        /// <param name="decisions">The list of decisions to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Inserts or updates decision attachments within a transaction.
+        /// </summary>
+        /// <param name="attachments">The list of decision attachments to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task UpsertDecisionAttachments(List<DecisionAttachment> attachments, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Inserts or updates decision PDF documents within a transaction.
+        /// </summary>
+        /// <param name="decisionPdfs">The list of decision PDFs to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task UpsertDecisionPdfs(List<DecisionAttachment> decisionPdfs, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Inserts or updates decision history PDF documents within a transaction.
+        /// </summary>
+        /// <param name="decisionHistoryPdfs">The list of decision history PDFs to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs, IDbConnection connection, IDbTransaction transaction);
     }
 
+    /// <summary>
+    /// Provides read-only data access methods for querying decision data.
+    /// </summary>
     public interface IDecisionsReadOnlyRepository
     {
+        /// <summary>
+        /// Retrieves all decisions for a meeting in the specified language.
+        /// </summary>
+        /// <param name="id">The meeting identifier.</param>
+        /// <param name="language">The language code for filtering decisions ('fi' or 'sv').</param>
+        /// <returns>A list of full decision objects including decisions, attachments, and PDFs.</returns>
         Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language);
 
+        /// <summary>
+        /// Retrieves a specific decision by its case ID label in the specified language.
+        /// </summary>
+        /// <param name="caseLabelId">The case label identifier.</param>
+        /// <param name="language">The language code for filtering the decision.</param>
+        /// <returns>A full decision object if found, otherwise null.</returns>
         Task<FullDecision?> FetchDecisionsByCaseIdLabel(string caseLabelId, string language);
     }
 
+    /// <summary>
+    /// Implements decision data access operations using Dapper for PostgreSQL queries.
+    /// Manages meeting decisions, attachments, and PDFs with bilingual support.
+    /// </summary>
     public class DecisionsRepository: IDecisionsRepository, IDecisionsReadOnlyRepository
     {
         private readonly ILogger<DecisionsRepository> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the DecisionsRepository class.
+        /// </summary>
+        /// <param name="logger">Logger for diagnostic information.</param>
+        /// <param name="connectionFactory">Factory for creating database connections.</param>
         public DecisionsRepository(ILogger<DecisionsRepository> logger, IDatabaseConnectionFactory connectionFactory)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
         }
 
+        /// <summary>
+        /// Retrieves a complete decision by case ID label, including attachments and PDF documents.
+        /// </summary>
+        /// <param name="caseLabelId">The case label identifier to search for.</param>
+        /// <param name="language">The language code for filtering the decision.</param>
+        /// <returns>A full decision object with all associated data, or null if not found.</returns>
         public async Task<FullDecision?> FetchDecisionsByCaseIdLabel(string caseLabelId, string language)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
@@ -64,6 +125,13 @@ namespace Storage.Repositories
             };
         }
 
+        /// <summary>
+        /// Retrieves all decisions for a meeting in the specified language.
+        /// Note: Attachments and PDFs are currently commented out for performance optimization.
+        /// </summary>
+        /// <param name="id">The meeting identifier.</param>
+        /// <param name="language">The language code ('fi' or 'sv').</param>
+        /// <returns>A list of full decision objects containing decision data.</returns>
         public async Task<List<FullDecision>> FetchDecisionsByMeetingId(string id, string language)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
@@ -128,6 +196,14 @@ namespace Storage.Repositories
             return (await connection.QueryAsync<DecisionAttachment>(sqlQuery, new { @nativeId })).SingleOrDefault();
         }
 
+        /// <summary>
+        /// Inserts or updates multiple decisions using a batch upsert operation.
+        /// Updates are performed based on the native_id (unique identifier).
+        /// </summary>
+        /// <param name="decisions">The list of decision entities to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task UpsertDecisions(List<Decision> decisions, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Upserting decisions");
@@ -177,6 +253,14 @@ namespace Storage.Repositories
             }), transaction);
         }
 
+        /// <summary>
+        /// Inserts or updates decision attachments using batch upsert operations.
+        /// Updates are based on decision_id and attachment_number.
+        /// </summary>
+        /// <param name="attachments">The list of attachment entities to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task UpsertDecisionAttachments(List<DecisionAttachment> attachments,
             IDbConnection connection, IDbTransaction transaction)
         {
@@ -223,6 +307,14 @@ namespace Storage.Repositories
             }), transaction);
         }
 
+        /// <summary>
+        /// Inserts or updates decision PDF documents. One PDF per decision.
+        /// Updates are based on decision_id.
+        /// </summary>
+        /// <param name="decisionPdfs">The list of decision PDF entities to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task UpsertDecisionPdfs(List<DecisionAttachment> decisionPdfs,
             IDbConnection connection, IDbTransaction transaction)
         {
@@ -271,6 +363,14 @@ namespace Storage.Repositories
             }), transaction);
         }
 
+        /// <summary>
+        /// Inserts or updates decision history PDF documents. One history PDF per decision.
+        /// Updates are based on decision_id.
+        /// </summary>
+        /// <param name="decisionHistoryPdfs">The list of decision history PDF entities to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task UpsertDecisionHistoryPdfs(List<DecisionAttachment> decisionHistoryPdfs,
             IDbConnection connection, IDbTransaction transaction)
         {

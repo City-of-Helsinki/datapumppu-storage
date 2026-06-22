@@ -5,11 +5,25 @@ using Storage.Repositories.Models.Statistics;
 
 namespace Storage.Providers.Statistics
 {
+    /// <summary>
+    /// Provides business logic for retrieving participant attendance statistics by year.
+    /// Aggregates meeting attendance data with agenda point participation details.
+    /// </summary>
     public interface IParticipantStatisticsProvider
     {
+        /// <summary>
+        /// Retrieves attendance statistics for all participants within a given year.
+        /// Returns meeting attendance and agenda point participation organized by person.
+        /// </summary>
+        /// <param name="year">The year to retrieve statistics for.</param>
+        /// <returns>A list of ParticipationsPersonDTO containing attendance and participation details by person.</returns>
         Task<List<ParticipationsPersonDTO>> GetStatistics(int year);
     }
 
+    /// <summary>
+    /// Implementation of IParticipantStatisticsProvider that aggregates participant attendance data.
+    /// Coordinates between participants, agenda items, and meeting seats repositories to build comprehensive participation statistics.
+    /// </summary>
     public class ParticipantStatisticsProvider : IParticipantStatisticsProvider
     {
         private readonly IParticipantsRepository _participantsRepository;
@@ -18,6 +32,13 @@ namespace Storage.Providers.Statistics
         private readonly ILogger<ParticipantStatisticsProvider> _logger;
 
 
+        /// <summary>
+        /// Initializes a new instance of the ParticipantStatisticsProvider class.
+        /// </summary>
+        /// <param name="logger">The logger for diagnostic information.</param>
+        /// <param name="participantsRepository">The repository for accessing participant data.</param>
+        /// <param name="agendaItemsRepository">The repository for accessing agenda item data.</param>
+        /// <param name="meetingSeatsRepository">The repository for accessing meeting seat data.</param>
         public ParticipantStatisticsProvider(
             ILogger<ParticipantStatisticsProvider> logger,
             IParticipantsRepository participantsRepository,

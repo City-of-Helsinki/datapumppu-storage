@@ -11,8 +11,18 @@ using Storage.Repositories.Statistics;
 
 namespace Storage
 {
+    /// <summary>
+    /// Application entry point that configures services, middleware, and starts the web API host.
+    /// Registers all repositories, providers, actions, and event observers for dependency injection.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Configures and starts the web application.
+        /// Sets up dependency injection, health checks, event processing (Kafka),
+        /// database migration, automatic cleanup, logging, and HTTP request pipeline.
+        /// </summary>
+        /// <param name="args">Command-line arguments passed to the application.</param>
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);

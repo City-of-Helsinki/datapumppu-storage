@@ -3,6 +3,9 @@ using Storage.Providers;
 
 namespace Storage.Controllers
 {
+    /// <summary>
+    /// Provides API endpoints for retrieving meeting statements and speeches.
+    /// </summary>
     [ApiController]
     [Route("api/statements/")]
     public class StatementController : ControllerBase
@@ -10,6 +13,11 @@ namespace Storage.Controllers
         private readonly ILogger<StatementController> _logger;
         private readonly IStatementProvider _statementProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StatementController"/> class.
+        /// </summary>
+        /// <param name="logger">Logger for recording controller operations.</param>
+        /// <param name="statementProvider">Provider for statement data operations.</param>
         public StatementController(ILogger<StatementController> logger,
             IStatementProvider statementProvider)
         {
@@ -17,6 +25,12 @@ namespace Storage.Controllers
             _statementProvider = statementProvider;
         }
 
+        /// <summary>
+        /// Retrieves all statements for a specific case within a meeting.
+        /// </summary>
+        /// <param name="meetingId">The unique identifier of the meeting.</param>
+        /// <param name="caseNumber">The case number within the meeting.</param>
+        /// <returns>Returns 200 OK with the list of statements, or 500 Internal Server Error if the operation fails.</returns>
         [HttpGet("{meetingId}/{caseNumber}")]
         public async Task<IActionResult> GetStatements(string meetingId, string caseNumber)
         {
@@ -33,6 +47,13 @@ namespace Storage.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all statements made by a specific person during a given year.
+        /// </summary>
+        /// <param name="name">The name of the person whose statements to retrieve.</param>
+        /// <param name="year">The year for which to retrieve statements.</param>
+        /// <param name="lang">The language code (e.g., 'fi' for Finnish, 'sv' for Swedish) for localized content.</param>
+        /// <returns>Returns 200 OK with the list of statements, or 500 Internal Server Error if the operation fails.</returns>
         [HttpGet("person")]
         public async Task<IActionResult> GetStatementsByPerson(
             [FromQuery]string name,
@@ -52,6 +73,15 @@ namespace Storage.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves statements filtered by person names and/or date range.
+        /// At least one filter (names or complete date range) must be provided.
+        /// </summary>
+        /// <param name="names">Comma-separated list of person names to filter by (optional).</param>
+        /// <param name="startDate">Start date of the date range filter (optional, must be used with endDate).</param>
+        /// <param name="endDate">End date of the date range filter (optional, must be used with startDate).</param>
+        /// <param name="lang">The language code (e.g., 'fi' for Finnish, 'sv' for Swedish) for localized content.</param>
+        /// <returns>Returns 200 OK with filtered statements, 400 Bad Request if filter criteria are invalid, or 500 Internal Server Error if the operation fails.</returns>
         [HttpGet("lookup")]
         public async Task<IActionResult> GetStatementsByPersonOrDate(
             [FromQuery]string? names,

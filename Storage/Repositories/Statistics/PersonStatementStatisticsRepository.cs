@@ -6,21 +6,43 @@ using System.Data;
 
 namespace Storage.Repositories.Statistics
 {
+    /// <summary>
+    /// Provides data access methods for person-level statement statistics.
+    /// </summary>
     public interface IPersonStatementStatisticsRepository
     {
+        /// <summary>
+        /// Retrieves statement statistics for all persons for a specific year.
+        /// </summary>
+        /// <param name="year">The year to retrieve statistics for.</param>
+        /// <returns>A list of person statement statistics with durations and agenda titles.</returns>
         Task<List<PersonStatementStatistics>> GetStatistics(int year);
     }
 
 
+    /// <summary>
+    /// Implements person statement statistics data access using Dapper for PostgreSQL queries.
+    /// Aggregates statement data per person showing speaking time and agenda context.
+    /// </summary>
     public class PersonStatementStatisticsRepository : IPersonStatementStatisticsRepository
     {
         private readonly IDatabaseConnectionFactory _connectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the PersonStatementStatisticsRepository class.
+        /// </summary>
+        /// <param name="connectionFactory">Factory for creating database connections.</param>
         public PersonStatementStatisticsRepository(IDatabaseConnectionFactory connectionFactory)
         {
             _connectionFactory = connectionFactory;
         }
 
+        /// <summary>
+        /// Retrieves statement statistics for all persons in a year, including duration and agenda titles.
+        /// Joins statements with meeting events and agenda items (Finnish titles).
+        /// </summary>
+        /// <param name="year">The year to retrieve statistics for (4-digit year).</param>
+        /// <returns>A list of person statement statistics ordered by person, meeting, and title.</returns>
         public async Task<List<PersonStatementStatistics>> GetStatistics(int year)
         {
             var meetingId = $"02900{year}%";

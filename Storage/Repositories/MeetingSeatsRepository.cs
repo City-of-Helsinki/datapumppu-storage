@@ -7,22 +7,59 @@ using System.Transactions;
 
 namespace Storage.Repositories
 {
+    /// <summary>
+    /// Provides data access methods for meeting seat allocation management.
+    /// </summary>
     public interface IMeetingSeatsRepository
     {
+        /// <summary>
+        /// Inserts a meeting seat update event with the associated seat allocations.
+        /// </summary>
+        /// <param name="meetingSeatUpdate">The seat update event information.</param>
+        /// <param name="meetingSeats">The list of seat allocations for this update.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task InsertMeetingSeatUpdate(MeetingSeatUpdate meetingSeatUpdate, List<MeetingSeat> meetingSeats, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Retrieves the most recent seat update ID for a specific case number.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="caseNumber">The case number to find the latest seat update for.</param>
+        /// <returns>The update ID of the most recent seat allocation.</returns>
         Task<int> GetUpdateId(string meetingId, string caseNumber);
 
+        /// <summary>
+        /// Retrieves all seats for a specific seat update.
+        /// </summary>
+        /// <param name="updateId">The seat update identifier.</param>
+        /// <returns>A list of meeting seats with person and position information.</returns>
         Task<List<MeetingSeat>> GetSeats(int updateId);
 
+        /// <summary>
+        /// Retrieves all seats for a specific meeting and case number.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="caseNumber">The case number.</param>
+        /// <returns>A list of meeting seats for the specified case.</returns>
         Task<List<MeetingSeat>> GetSeats(string meetingId, string caseNumber);
     }
 
+    /// <summary>
+    /// Implements meeting seat allocation data access operations using Dapper for PostgreSQL queries.
+    /// Manages seat arrangements and participant positions during meetings.
+    /// </summary>
     public class MeetingSeatsRepository : IMeetingSeatsRepository
     {
         private readonly ILogger<MeetingSeatsRepository> _logger;
         private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the MeetingSeatsRepository class.
+        /// </summary>
+        /// <param name="logger">Logger for diagnostic information.</param>
+        /// <param name="databaseConnectionFactory">Factory for creating database connections.</param>
         public MeetingSeatsRepository(ILogger<MeetingSeatsRepository> logger,
             IDatabaseConnectionFactory databaseConnectionFactory)
         {
@@ -30,6 +67,13 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
+        /// <summary>
+        /// Retrieves the most recent seat update ID for a meeting up to and including the specified case number.
+        /// Searches through all case numbers from 1 to the specified case number.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="caseNumber">The case number to search up to.</param>
+        /// <returns>The ID of the most recent seat update, or 0 if none found.</returns>
         public async Task<int> GetUpdateId(string meetingId, string caseNumber)
         {
             List<string> caseNumbers = new List<string>();
@@ -57,6 +101,11 @@ namespace Storage.Repositories
             return (await dbConnection.QueryAsync<int>(sqlQuery, new { meetingId, caseNumbers    })).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves all seat allocations for a specific seat update.
+        /// </summary>
+        /// <param name="updateId">The seat update identifier.</param>
+        /// <returns>A list of seat allocations with person names, seat IDs, and bilingual additional information.</returns>
         public async Task<List<MeetingSeat>> GetSeats(int updateId)
         {
             var sqlQuery = @"
@@ -76,12 +125,27 @@ namespace Storage.Repositories
             return (await dbConnection.QueryAsync<MeetingSeat>(sqlQuery, new { updateId })).ToList();
         }
 
+        /// <summary>
+        /// Retrieves seats for a meeting and case number by first finding the update ID, then fetching the seats.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="caseNumber">The case number.</param>
+        /// <returns>A list of meeting seats for the specified case.</returns>
         public async Task<List<MeetingSeat>> GetSeats(string meetingId, string caseNumber)
         {
             var updateId = await GetUpdateId(meetingId, caseNumber);
             return await GetSeats(updateId);
         }
 
+        /// <summary>
+        /// Inserts a meeting seat update and its associated seat allocations in a single transaction.
+        /// Returns the generated update ID which is used to link the seats to the update.
+        /// </summary>
+        /// <param name="meetingSeatUpdate">The seat update event containing meeting ID, event ID, and timestamp.</param>
+        /// <param name="meetingSeats">The list of seat allocations for this update.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task InsertMeetingSeatUpdate(MeetingSeatUpdate meetingSeatUpdate, List<MeetingSeat> meetingSeats, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"insert into meeting_seat_updates (meeting_id, attendees_eventid, sequence_number, timestamp) values (

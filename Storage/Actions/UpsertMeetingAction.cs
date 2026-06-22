@@ -6,11 +6,25 @@ using Storage.Repositories.Providers;
 
 namespace Storage.Actions
 {
+    /// <summary>
+    /// Defines the contract for upserting comprehensive meeting data including agendas, decisions, and attachments.
+    /// </summary>
     public interface IUpsertMeetingAction
     {
+        /// <summary>
+        /// Executes the meeting upsert operation with all related data.
+        /// </summary>
+        /// <param name="meetingDTO">The complete meeting data including metadata, agenda items, decisions, and attachments.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task Execute(MeetingDTO meetingDTO);
     }
 
+    /// <summary>
+    /// Handles bulk import or update of comprehensive meeting data from the API.
+    /// Processes meeting metadata, agenda items with attachments and PDFs, decisions with attachments and PDFs,
+    /// all within a single database transaction to ensure data consistency.
+    /// This action is invoked directly from controllers, not through event processing.
+    /// </summary>
     public class UpsertMeetingAction : IUpsertMeetingAction
     {
         private readonly IDatabaseConnectionFactory _connectionFactory;
@@ -19,6 +33,14 @@ namespace Storage.Actions
         private readonly IDecisionsRepository _decisionsRepository;
         private readonly ILogger<UpsertMeetingAction> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the UpsertMeetingAction with required dependencies.
+        /// </summary>
+        /// <param name="connectionFactory">Factory for creating database connections.</param>
+        /// <param name="meetingsRepository">Repository for managing meeting data.</param>
+        /// <param name="agendaItemsRepository">Repository for managing agenda item data and attachments.</param>
+        /// <param name="decisionsRepository">Repository for managing decision data and attachments.</param>
+        /// <param name="logger">Logger for recording operation status and errors.</param>
         public UpsertMeetingAction(IDatabaseConnectionFactory connectionFactory, IMeetingsRepository meetingsRepository,IAgendaItemsRepository agendaItemsRepository, IDecisionsRepository decisionsRepository, ILogger<UpsertMeetingAction> logger)
         {
             _connectionFactory = connectionFactory;
@@ -28,6 +50,13 @@ namespace Storage.Actions
             _logger = logger;
         }
 
+        /// <summary>
+        /// Executes the comprehensive meeting upsert operation.
+        /// Maps the meeting DTO to repository models, processes all related entities (agendas, decisions, attachments),
+        /// and executes the entire operation within a database transaction.
+        /// </summary>
+        /// <param name="meetingDTO">The complete meeting data transfer object.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task Execute(MeetingDTO meetingDTO)
         {
             var config = new MapperConfiguration(cfg =>
@@ -95,6 +124,14 @@ namespace Storage.Actions
                 decisionHistoryPdfs ?? new List<DecisionAttachment>());
         }
 
+        /// <summary>
+        /// Maps an AttachmentDTO to an AgendaItemAttachment model.
+        /// Validates and normalizes the language code to ensure only valid values (fi, sv, en, null) are stored.
+        /// </summary>
+        /// <param name="attachmentDto">The attachment data transfer object.</param>
+        /// <param name="agendaPoint">The agenda point number this attachment belongs to.</param>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <returns>An AgendaItemAttachment model instance.</returns>
         private AgendaItemAttachment MapToAgendaItemAttachment(AttachmentDTO attachmentDto, int agendaPoint, string meetingId)
         {
             var config = new MapperConfiguration(cfg =>
@@ -110,6 +147,12 @@ namespace Storage.Actions
             return mapper.Map<AgendaItemAttachment>(attachmentDto);
         }
 
+        /// <summary>
+        /// Validates and normalizes language codes for attachments.
+        /// Ensures only supported language codes (fi, sv, en) or null are returned.
+        /// </summary>
+        /// <param name="language">The language code to validate.</param>
+        /// <returns>The validated language code, or null if the input is invalid.</returns>
         private string GetLanguage(string language)
         {
             var correctLanguages = new List<string?> { "fi", "sv", "en", null };
@@ -121,6 +164,12 @@ namespace Storage.Actions
             return null;
         }
 
+        /// <summary>
+        /// Maps an AttachmentDTO to a DecisionAttachment model.
+        /// </summary>
+        /// <param name="attachmentDto">The attachment data transfer object.</param>
+        /// <param name="decisionId">The native decision identifier this attachment belongs to.</param>
+        /// <returns>A DecisionAttachment model instance.</returns>
         private DecisionAttachment MapToDecisionAttachment(AttachmentDTO attachmentDto, string decisionId)
         {
             var config = new MapperConfiguration(cfg =>
@@ -134,6 +183,20 @@ namespace Storage.Actions
             return mapper.Map<DecisionAttachment>(attachmentDto);
         }
 
+        /// <summary>
+        /// Executes all meeting-related database operations within a single transaction.
+        /// Upserts meeting metadata, agenda items with attachments and PDFs, and decisions with attachments and PDFs.
+        /// Commits the transaction if all operations succeed, or rolls back on any failure.
+        /// </summary>
+        /// <param name="meeting">The meeting metadata.</param>
+        /// <param name="agendas">The list of agenda items.</param>
+        /// <param name="agendaItemAttachments">The list of agenda item attachments.</param>
+        /// <param name="agendaItemPdfs">The list of agenda item PDF documents.</param>
+        /// <param name="decisions">The list of decisions.</param>
+        /// <param name="decisionAttachments">The list of decision attachments.</param>
+        /// <param name="decisionPdfs">The list of decision PDF documents.</param>
+        /// <param name="decisionHistoryPdfs">The list of decision history PDF documents.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task MakeTransaction(
             Meeting meeting,
             List<AgendaItem>? agendas,

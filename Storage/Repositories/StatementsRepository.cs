@@ -5,34 +5,116 @@ using System.Data;
 
 namespace Storage.Repositories
 {
+    /// <summary>
+    /// Provides data access methods for statement, reservation, and active speaker management.
+    /// </summary>
     public interface IStatementsRepository
     {
+        /// <summary>
+        /// Inserts a started statement record into the database.
+        /// </summary>
+        /// <param name="startedStatement">The started statement to insert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task InsertStartedStatement(StartedStatement startedStatement, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Inserts or updates completed statements with start and end times.
+        /// </summary>
+        /// <param name="statements">The list of statements to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task UpsertStatements(List<Statement> statements, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Inserts a statement reservation into the database.
+        /// </summary>
+        /// <param name="statementReservation">The statement reservation to insert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task InsertStatementReservation(StatementReservation statementReservation, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Inserts a reply reservation into the database.
+        /// </summary>
+        /// <param name="replyReservation">The reply reservation to insert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction);
 
+        /// <summary>
+        /// Retrieves all statements for a specific agenda point in a meeting.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number.</param>
+        /// <returns>A list of statements ordered by start time.</returns>
         Task<List<Statement>> GetStatements(string meetingId, string agendaPoint);
 
+        /// <summary>
+        /// Retrieves statements made by a specific person in a given year and language.
+        /// </summary>
+        /// <param name="name">The person's name to search for.</param>
+        /// <param name="year">The year to filter statements.</param>
+        /// <param name="lang">The language code for agenda item titles.</param>
+        /// <returns>A list of statements with agenda titles.</returns>
         Task<List<Statement>> GetSatementsByName(string name, int year, string lang);
 
+        /// <summary>
+        /// Retrieves statements filtered by person names and/or date range.
+        /// </summary>
+        /// <param name="names">List of person names to filter by (supports partial matching).</param>
+        /// <param name="startDate">Optional start date filter.</param>
+        /// <param name="endDate">Optional end date filter.</param>
+        /// <param name="lang">The language code for agenda item titles.</param>
+        /// <returns>A list of statements matching the filters.</returns>
         Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang);
 
+        /// <summary>
+        /// Retrieves all statement reservations for a specific agenda point up to and including the given point.
+        /// Filters out reservations cleared before the last StatementReservationsCleared event.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number.</param>
+        /// <returns>A list of statement reservations.</returns>
         Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint);
 
+        /// <summary>
+        /// Retrieves all reply reservations for a specific agenda point up to and including the given point.
+        /// Filters out reservations cleared before the last ReplyReservationsCleared event.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number.</param>
+        /// <returns>A list of reply reservations.</returns>
         Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint);
 
+        /// <summary>
+        /// Retrieves the currently active speaker for an agenda point.
+        /// Determines the active speaker from the most recent started statement after the last ended statement.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number.</param>
+        /// <returns>A reply reservation representing the active speaker, or null if no active speaker.</returns>
         Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint);
     }
 
+    /// <summary>
+    /// Implements statement and reservation data access operations using Dapper for PostgreSQL queries.
+    /// Manages meeting statements, reservations, and active speaker tracking with complex temporal queries.
+    /// </summary>
     public class StatementsRepository : IStatementsRepository
     {
         private readonly ILogger<StatementsRepository> _logger;
         private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the StatementsRepository class.
+        /// </summary>
+        /// <param name="logger">Logger for diagnostic information.</param>
+        /// <param name="databaseConnectionFactory">Factory for creating database connections.</param>
         public StatementsRepository(
             ILogger<StatementsRepository> logger,
             IDatabaseConnectionFactory databaseConnectionFactory)
@@ -41,6 +123,15 @@ namespace Storage.Repositories
             _databaseConnectionFactory = databaseConnectionFactory;
         }
 
+        /// <summary>
+        /// Retrieves statements filtered by person names and optional date range.
+        /// Performs case-insensitive partial matching on person names, supporting multiple word names.
+        /// </summary>
+        /// <param name="names">List of person names to search for (partial matches supported).</param>
+        /// <param name="startDate">Optional start date to filter statements (inclusive).</param>
+        /// <param name="endDate">Optional end date to filter statements (inclusive).</param>
+        /// <param name="lang">Language code for agenda item titles ('fi' or 'sv').</param>
+        /// <returns>A list of statements with associated agenda information.</returns>
         public async Task<List<Statement>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang)
         {
             var sqlQuery = @"
@@ -99,6 +190,14 @@ namespace Storage.Repositories
         }
 
 
+        /// <summary>
+        /// Retrieves all statements made by a specific person in a given year.
+        /// Joins with agenda items to include agenda titles in the specified language.
+        /// </summary>
+        /// <param name="name">The exact name of the person to search for.</param>
+        /// <param name="year">The year to filter statements.</param>
+        /// <param name="lang">Language code for agenda item titles.</param>
+        /// <returns>A list of statements with agenda point and title information.</returns>
         public async Task<List<Statement>> GetSatementsByName(string name, int year, string lang)
         {
             var sqlQuery = @"
@@ -135,6 +234,12 @@ namespace Storage.Repositories
             return (await connection.QueryAsync<Statement>(sqlQuery, new { name, year, lang })).ToList();
         }
 
+        /// <summary>
+        /// Retrieves all statements for a specific agenda point, ordered by start time.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number as a string.</param>
+        /// <returns>A list of statements with person, timing, and additional bilingual information.</returns>
         public async Task<List<Statement>> GetStatements(string meetingId, string agendaPoint)
         {
             var sqlQuery = @"
@@ -162,6 +267,13 @@ namespace Storage.Repositories
             return (await connection.QueryAsync<Statement>(sqlQuery, new { meetingId, agendaPoint })).ToList();
         }
 
+        /// <summary>
+        /// Retrieves statement reservations for an agenda point, excluding those cleared by StatementReservationsCleared events.
+        /// Returns all reservations for agenda points up to and including the specified point.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number as a string.</param>
+        /// <returns>A list of active statement reservations with person and seat information.</returns>
         public async Task<List<StatementReservation>> GetStatementReservations(string meetingId, string agendaPoint)
         {
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
@@ -200,6 +312,13 @@ namespace Storage.Repositories
             return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, integerAgendaPoint })).ToList();
         }
 
+        /// <summary>
+        /// Retrieves the currently active speaker by finding the most recent started statement after the last ended statement.
+        /// Converts the active statement to a ReplyReservation with the Active flag set.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number as a string.</param>
+        /// <returns>A reply reservation representing the active speaker, or null if no active speaker.</returns>
         public async Task<ReplyReservation?> GetActiveSpeaker(string meetingId, string agendaPoint)
         {
             var activeStatement = await GetActiveStatement(meetingId, agendaPoint);
@@ -222,6 +341,13 @@ namespace Storage.Repositories
             };
         }
 
+        /// <summary>
+        /// Retrieves reply reservations for an agenda point, excluding those cleared by ReplyReservationsCleared events.
+        /// Returns all reservations for agenda points up to and including the specified point.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="agendaPoint">The agenda point number as a string.</param>
+        /// <returns>A list of active reply reservations with person and seat information.</returns>
         public async Task<List<ReplyReservation>> GetReplyReservations(string meetingId, string agendaPoint)
         {
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
@@ -258,8 +384,15 @@ namespace Storage.Repositories
                     AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
 
             return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, integerAgendaPoint })).ToList();
-        } 
+        }
 
+        /// <summary>
+        /// Inserts a started statement record indicating when a person begins speaking.
+        /// </summary>
+        /// <param name="startedStatements">The started statement entity with timing and speaker information.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task InsertStartedStatement(StartedStatement startedStatements, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"insert into started_statements (meeting_id, event_id, timestamp, person, speaking_time, speech_timer, start_time, 
@@ -281,6 +414,14 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, startedStatements, transaction);
         }
 
+        /// <summary>
+        /// Inserts or updates completed statements with start and end times.
+        /// Updates are based on meeting_id and started timestamp.
+        /// </summary>
+        /// <param name="statements">The list of completed statement entities to upsert.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task UpsertStatements(List<Statement> statements, IDbConnection connection, IDbTransaction transaction)
         {
             _logger.LogInformation("Executing UpsertStatements()");
@@ -322,6 +463,13 @@ namespace Storage.Repositories
             }), transaction);
         }
 
+        /// <summary>
+        /// Inserts a statement reservation indicating someone has reserved to speak.
+        /// </summary>
+        /// <param name="statementReservation">The statement reservation entity with person and ordinal position.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task InsertStatementReservation(StatementReservation statementReservation, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"insert into statement_reservations (meeting_id, event_id, timestamp, person, ordinal, seat_id, additional_info_fi, 
@@ -339,6 +487,13 @@ namespace Storage.Repositories
             return connection.ExecuteAsync(sqlQuery, statementReservation, transaction);
         }
 
+        /// <summary>
+        /// Inserts a reply reservation indicating someone has reserved to reply to a statement.
+        /// </summary>
+        /// <param name="replyReservation">The reply reservation entity with person and ordinal position.</param>
+        /// <param name="connection">The database connection to use.</param>
+        /// <param name="transaction">The database transaction to participate in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public Task InsertReplyReservation(ReplyReservation replyReservation, IDbConnection connection, IDbTransaction transaction)
         {
             var sqlQuery = @"INSERT INTO reply_reservations (meeting_id, event_id, person, additional_info_fi, additional_info_sv, ordinal, seat_id, timestamp) values(
