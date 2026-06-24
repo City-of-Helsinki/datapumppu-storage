@@ -1,0 +1,60 @@
+name: datapumppu
+
+services:
+  storage-db:
+    image: postgres:15-alpine
+    container_name: storage-db
+    environment:
+      POSTGRES_USER: datapumppu
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: storage
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U datapumppu -d storage"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - datapumppu-network
+
+  # Optional: Database Management UI
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: storage-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@datapumppu.fi
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - storage-db
+    networks:
+      - datapumppu-network
+
+  storage-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: storage-service
+    ports:
+      - "8080:80"
+    environment:
+      - STORAGE_DB_CONNECTION_STRING=Host=storage-db;Port=5432;Database=storage;Username=datapumppu;Password=password
+      - PASSWORD_SALT=REPLACE_WITH_YOUR_LOCAL_PEPPER
+      - KAFKA_BOOTSTRAP_SERVER=shared-kafka:9092 # Uses the container name from the infra project
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      storage-db:
+        condition: service_healthy
+    networks:
+      - datapumppu-network
+
+networks:
+  datapumppu-network:
+    external: true
+
+volumes:
+  postgres_data:

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Storage.Actions;
 using Storage.Events;
 using Storage.Events.Providers;
@@ -31,8 +32,18 @@ namespace Storage
 
             builder.Services.AddControllers();
 
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddFixedWindowLimiter(policyName: "login", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 10;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueLimit = 0;
+                });
+            });
+
             builder.Services.AddHealthChecks()
-                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
+                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"] ?? builder.Configuration["Database:ConnectionString"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
             builder.Services.AddSingleton<IKafkaClientFactory, KafkaClientFactory>();
@@ -91,7 +102,7 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]))
+            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]) || !string.IsNullOrEmpty(builder.Configuration["ServiceBus:ConnectionString"]))
             {
                 builder.Services.AddHostedService<EventObserver>();
             }
@@ -116,6 +127,8 @@ namespace Storage
             var app = builder.Build();
 
             app.UseRouting();
+
+            app.UseRateLimiter();
 
             // Configure the HTTP request pipeline.
 

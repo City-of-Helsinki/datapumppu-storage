@@ -45,7 +45,8 @@ namespace Storage.Repositories.Providers
         public async Task<IDbConnection> CreateOpenConnection()
         {
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-            var connection = new NpgsqlConnection(_configuration["STORAGE_DB_CONNECTION_STRING"]);
+            var connectionString = _configuration["STORAGE_DB_CONNECTION_STRING"] ?? _configuration["Database:ConnectionString"];
+            var connection = new NpgsqlConnection(connectionString);
             await connection.OpenAsync();
             return connection;
         }

@@ -76,6 +76,7 @@ namespace Storage.Events.Providers
                 {
                     BootstrapServers = _configuration["KAFKA_BOOTSTRAP_SERVER"],
                     GroupId = _configuration["KAFKA_GROUP_ID"],
+                    AllowAutoCreateTopics = true,
                 };
             }
 

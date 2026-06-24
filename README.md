@@ -1,6 +1,6 @@
 # Datapumppu Storage Service
 
-![.NET](https://img.shields.io/badge/.NET-6.0-512BD4)
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-316192)
 ![Kafka](https://img.shields.io/badge/Kafka-Confluent-231F20)
 
@@ -40,7 +40,7 @@ Backend storage service for City of Helsinki's meeting management system (Datapu
 
 ## About
 
-The **Datapumppu Storage Service** is a .NET 6 microservice that serves as the central data persistence and API layer for City of Helsinki's meeting management system. It processes real-time events from meeting room observers via Kafka, stores meeting data in PostgreSQL, and provides RESTful APIs for accessing meeting information, decisions, voting results, statements, and statistics.
+The **Datapumppu Storage Service** is a .NET 10 microservice that serves as the central data persistence and API layer for City of Helsinki's meeting management system. It processes real-time events from meeting room observers via Kafka, stores meeting data in PostgreSQL, and provides RESTful APIs for accessing meeting information, decisions, voting results, statements, and statistics.
 
 This service handles:
 - **Event Processing**: Consumes events from Kafka topics and processes them through specialized action handlers
@@ -146,7 +146,7 @@ sequenceDiagram
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| [.NET](https://dotnet.microsoft.com/) | 6.0 | Application framework |
+| [.NET](https://dotnet.microsoft.com/) | 10.0 | Application framework |
 | [PostgreSQL](https://www.postgresql.org/) | 14+ | Relational database |
 | [Kafka](https://kafka.apache.org/) | via Confluent.Kafka 2.8.0 | Event streaming |
 | [Dapper](https://github.com/DapperLib/Dapper) | 2.0.123 | Micro ORM for data access |
@@ -158,7 +158,7 @@ sequenceDiagram
 
 Before you begin, ensure you have the following installed:
 
-- **[.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)** — Required to build and run the application
+- **[.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)** — Required to build and run the application
 - **[Docker](https://www.docker.com/get-started)** — For containerized development and deployment
 - **[PostgreSQL 14+](https://www.postgresql.org/download/)** — Database server (local or via Docker)
 - **[Apache Kafka](https://kafka.apache.org/downloads)** — Event streaming platform (local or via Docker)
@@ -170,44 +170,60 @@ Before you begin, ensure you have the following installed:
 
 ## Getting Started
 
-### Installation
+### Docker Local Startup
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd datapumppu-storage
-   ```
+To run the complete Datapumppu stack locally using Docker, follow these steps in order:
 
-2. **Set up PostgreSQL database:**
+1. **Create the shared Docker Network:**
+   Before running any services, create the external bridged network that allows all Datapumppu containers to communicate with each other:
    ```bash
-   # Using Docker
-   docker run --name datapumppu-postgres \
-     -e POSTGRES_USER=root \
-     -e POSTGRES_PASSWORD=root \
-     -e POSTGRES_DB=datapumppu \
-     -p 5432:5432 \
-     -d postgres:14
-   ```
-   
-   Alternatively, create a database manually:
-   ```sql
-   CREATE DATABASE datapumppu;
+   docker network create datapumppu-network
    ```
 
-3. **Set up Kafka:**
+2. **Start the Kafka Infrastructure:**
+   Spin up the shared Kafka broker and the automatic topic-initialization helper:
    ```bash
-   # Using Docker Compose is recommended
-   # See kafka/ folder for topic configurations
+   docker compose -f docker-compose.kafka.yml up -d
    ```
+   *This starts the Kafka broker and executes the `init-kafka` sidecar container to pre-create all necessary development topics (`meeting-room-observer-topic`, `webapi-topic`, and `ahjosali-topic`).*
 
-4. **Restore dependencies:**
+3. **Start the Storage Services:**
+   Run the PostgreSQL database, pgAdmin, and the storage microservice:
    ```bash
-   dotnet restore
+   docker compose -f docker-compose.yml up -d
    ```
+   *The database schema and tables are automatically migrated on startup.*
+
+### Database Management (pgAdmin)
+
+A containerized instance of **pgAdmin 4** is automatically spun up alongside the PostgreSQL database to let you easily view and query your data.
+
+1. **Access pgAdmin:**
+   Open your web browser and navigate to **`http://localhost:5050`**.
+
+2. **Login Credentials:**
+   Use the default credentials defined in the `docker-compose.yml` file:
+   * **Email:** `admin@datapumppu.fi`
+   * **Password:** `admin`
+
+3. **Register/Set up your Local Database Server:**
+   Once logged in, register your local PostgreSQL database by doing the following:
+   * Right-click **"Servers"** on the left menu ➔ select **Register** ➔ click **Server...**
+   * Under the **General** tab:
+     * **Name:** Enter `Datapumppu Local` (or any name you prefer).
+   * Under the **Connection** tab:
+     * **Host name/address:** Enter **`storage-db`** (this is the container service name on the internal `datapumppu-network`). Do *not* use `localhost` here since pgAdmin is running inside a Docker network.
+     * **Port:** `5432`
+     * **Maintenance database:** `storage`
+     * **Username:** `datapumppu`
+     * **Password:** `password`
+   * Click **Save**. You can now browse the tables and run SQL scripts directly on your local database!
 
 ### Configuration
 
-Configure the application using environment variables or `appsettings.Development.json`:
+> **Note:** For local development, **you do not need to perform any manual configuration** before running the stack in Docker! The default settings in the compose files are pre-configured to work out-of-the-box.
+
+If you do need to customize settings, configure the application using environment variables or `appsettings.Development.json`:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
@@ -229,59 +245,6 @@ Configure the application using environment variables or `appsettings.Developmen
   "PASSWORD_SALT": "your-secret-salt"
 }
 ```
-
-### Running Locally
-
-1. **Restore packages:**
-   ```bash
-   dotnet restore
-   ```
-
-2. **Build the solution:**
-   ```bash
-   dotnet build Storage.sln
-   ```
-
-3. **Run the application:**
-   ```bash
-   dotnet run --project Storage/Storage.csproj
-   ```
-
-The application will start on `http://localhost:8080` by default.
-
-**Verify the application is running:**
-```bash
-curl http://localhost:8080/healthz
-# Expected: Healthy
-
-curl http://localhost:8080/readiness
-# Expected: Healthy (if database is connected)
-```
-
-> **Auto-Migration:** Database tables and schema are automatically created/migrated on startup via `DatabaseMigrationService`.
-
-### Docker Setup
-
-**Build Docker image:**
-```bash
-docker build -t datapumppu-storage:latest .
-```
-
-**Run container:**
-```bash
-docker run -d \
-  --name datapumppu-storage \
-  -p 8080:8080 \
-  -e STORAGE_DB_CONNECTION_STRING="Host=host.docker.internal:5432;User Id=root;Password=root;Database=datapumppu" \
-  -e KAFKA_BOOTSTRAP_SERVER="host.docker.internal:9092" \
-  -e KAFKA_CONSUMER_TOPIC="meeting-room-observer-topic" \
-  -e KAFKA_PRODUCER_TOPIC="webapi-topic" \
-  -e KAFKA_GROUP_ID="storage-consumer" \
-  -e PASSWORD_SALT="your-secret-salt" \
-  datapumppu-storage:latest
-```
-
-> **Tip:** For local development, use `host.docker.internal` to access services running on your host machine from within Docker containers.
 
 ## API Documentation
 

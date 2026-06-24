@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Storage.Repositories.Providers;
 
 namespace Storage
@@ -7,7 +7,7 @@ namespace Storage
     /// Background service that periodically removes test meeting data from the database.
     /// Runs at 1:00 AM daily to clean up meetings marked with test identifiers.
     /// </summary>
-    public class DatabaseCleaner : IHostedService
+    public class DatabaseCleaner : BackgroundService
     {
         private readonly ILogger<DatabaseCleaner> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
@@ -24,25 +24,15 @@ namespace Storage
         }
 
         /// <summary>
-        /// Starts the database cleaning background service.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token for graceful shutdown.</param>
-        /// <returns>A task representing the startup operation.</returns>
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            return Task.Run(() => DoCleaningLoop(cancellationToken), cancellationToken);
-        }
-
-        /// <summary>
         /// Main cleanup loop that runs continuously until cancellation is requested.
         /// Checks the current hour every 60 minutes and performs cleanup at 1:00 AM.
         /// Deletes meetings with names containing 'TESTIKOKOUS' or titles containing '*TESTI*'.
         /// </summary>
-        /// <param name="cancellationToken">Cancellation token for shutting down the loop.</param>
-        private async void DoCleaningLoop(CancellationToken cancellationToken)
+        /// <param name="stoppingToken">Cancellation token for shutting down the loop.</param>
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             const int LoopDelayMS = 1000 * 60 * 60; // 60 minutes
-            while (!cancellationToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 var hours = DateTime.Now.Hour;
                 _logger.LogInformation("DoCleaning {0}", hours);
@@ -63,18 +53,8 @@ namespace Storage
                     }
                 }
 
-                await Task.Delay(LoopDelayMS);
+                await Task.Delay(LoopDelayMS, stoppingToken);
             }
-        }
-
-        /// <summary>
-        /// Stops the database cleaning service.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token for the stop operation.</param>
-        /// <returns>A completed task.</returns>
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
     }
 }

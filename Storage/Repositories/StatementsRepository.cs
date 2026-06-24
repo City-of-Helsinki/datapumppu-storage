@@ -157,14 +157,24 @@ namespace Storage.Repositories
                 where 1=1
             ";
 
+            var parameters = new DynamicParameters();
+            parameters.Add("Language", lang);
+
             if (names != null && names.Any())
             {
                 var nameConditions = new List<string>();
 
-                foreach (var name in names)
+                for (int i = 0; i < names.Count; i++)
                 {
-                    var words = name.Split(' ').Select(word => word.Trim());
-                    var wordConditions = words.Select(word => $"person ILIKE '%{word}%'");
+                    var name = names[i];
+                    var words = name.Split(' ').Select(word => word.Trim()).ToList();
+                    var wordConditions = new List<string>();
+                    for (int j = 0; j < words.Count; j++)
+                    {
+                        var paramName = $"name_{i}_{j}";
+                        parameters.Add(paramName, $"%{words[j]}%");
+                        wordConditions.Add($"person ILIKE @{paramName}");
+                    }
 
                     nameConditions.Add("(" + string.Join(" AND ", wordConditions) + ")");
                 }
@@ -174,15 +184,16 @@ namespace Storage.Repositories
 
             if (startDate.HasValue)
             {
-                sqlQuery += " AND started >= '" + startDate.Value.ToString("yyyy-MM-dd") + "'";
+                sqlQuery += " AND started >= @StartDate";
+                parameters.Add("StartDate", startDate.Value);
             }
             if (endDate.HasValue)
             {
-                sqlQuery += " AND ended <= '" + endDate.Value.ToString("yyyy-MM-dd") + "'";
+                sqlQuery += " AND ended <= @EndDate";
+                parameters.Add("EndDate", endDate.Value);
             }
 
             sqlQuery += " AND agenda_items.language = @Language";
-            var parameters = new { Language = lang };
 
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
@@ -278,17 +289,17 @@ namespace Storage.Repositories
         {
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
-            var timestampQuery = @$"
+            var timestampQuery = @"
                 SELECT timestamp 
                 FROM meeting_events 
                 WHERE meeting_id = @meetingId 
-                AND event_type = '{(int)EventType.StatementReservationsCleared}'
+                AND event_type = @eventType
                 ORDER BY timestamp DESC
                 LIMIT 1";
-            var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
+            var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, eventType = ((int)EventType.StatementReservationsCleared).ToString() });
 
             int integerAgendaPoint = Int32.Parse(agendaPoint);
-            var sqlQuery = @$"
+            var sqlQuery = @"
                 SELECT DISTINCT
                     statement_reservations.meeting_id, 
                     case_number, 
@@ -307,9 +318,9 @@ namespace Storage.Repositories
                 WHERE 
                     statement_reservations.meeting_id = @meetingId 
                     AND nullif(case_number, '')::int <= @integerAgendaPoint
-                    AND statement_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
+                    AND statement_reservations.timestamp >= @lastClearedTimestamp";
 
-            return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, integerAgendaPoint })).ToList();
+            return (await connection.QueryAsync<StatementReservation>(sqlQuery, new { meetingId, integerAgendaPoint, lastClearedTimestamp })).ToList();
         }
 
         /// <summary>
@@ -352,17 +363,17 @@ namespace Storage.Repositories
         {
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
 
-            var timestampQuery = @$"
+            var timestampQuery = @"
                 SELECT timestamp 
                 FROM meeting_events 
                 WHERE meeting_id = @meetingId 
-                AND event_type = '{(int)EventType.ReplyReservationsCleared}'
+                AND event_type = @eventType
                 ORDER BY timestamp DESC
                 LIMIT 1";
-            var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, agendaPoint });
+            var lastClearedTimestamp = await connection.QueryFirstOrDefaultAsync<DateTime>(timestampQuery, new { meetingId, eventType = ((int)EventType.ReplyReservationsCleared).ToString() });
 
             int integerAgendaPoint = Int32.Parse(agendaPoint);
-            var sqlQuery = @$"
+            var sqlQuery = @"
                 SELECT DISTINCT
                     reply_reservations.meeting_id, 
                     case_number, 
@@ -381,9 +392,9 @@ namespace Storage.Repositories
                 WHERE 
                     reply_reservations.meeting_id = @meetingId 
                     AND nullif(case_number, '')::int <= @integerAgendaPoint
-                    AND reply_reservations.timestamp >= TO_TIMESTAMP('{lastClearedTimestamp.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')";
+                    AND reply_reservations.timestamp >= @lastClearedTimestamp";
 
-            return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, integerAgendaPoint })).ToList();
+            return (await connection.QueryAsync<ReplyReservation>(sqlQuery, new { meetingId, integerAgendaPoint, lastClearedTimestamp })).ToList();
         }
 
         /// <summary>
@@ -514,18 +525,18 @@ namespace Storage.Repositories
         {
             using var connection = await _databaseConnectionFactory.CreateOpenConnection();
             _logger.LogInformation("Executing GetActiveStatement()");
-            var sqlQuery1 = @$"
+            var sqlQuery1 = @"
                 SELECT timestamp 
                 FROM meeting_events
                 WHERE meeting_id = @meetingId
                 AND case_number = @agendaPoint
-                AND event_type = '{(int)EventType.StatementEnded}'
+                AND event_type = @eventType
                 ORDER BY timestamp desc
                 LIMIT 1
             ";
-            var lastStatementEnded = await connection.QueryFirstOrDefaultAsync<DateTime>(sqlQuery1, new { meetingId, agendaPoint });
+            var lastStatementEnded = await connection.QueryFirstOrDefaultAsync<DateTime>(sqlQuery1, new { meetingId, agendaPoint, eventType = ((int)EventType.StatementEnded).ToString() });
 
-            var sqlQuery2 = $@"
+            var sqlQuery2 = @"
                 SELECT
                     started_statements.meeting_id,
                     started_statements.event_id,
@@ -541,13 +552,13 @@ namespace Storage.Repositories
                 JOIN
                     meeting_events
                 ON started_statements.event_id = meeting_events.event_id
-                WHERE start_time > TO_TIMESTAMP('{lastStatementEnded.ToString("dd.MM.yyyy HH:mm:ss")}', 'DD.MM.YYYY HH24:MI:SS')
+                WHERE start_time > @lastStatementEnded
                 AND started_statements.meeting_id = @meetingId
                 AND meeting_events.case_number = @agendaPoint
                 ORDER BY timestamp DESC
                 LIMIT 1
             ";
-            var result = await connection.QueryAsync<StartedStatement>(sqlQuery2, new { meetingId, agendaPoint });
+            var result = await connection.QueryAsync<StartedStatement>(sqlQuery2, new { meetingId, agendaPoint, lastStatementEnded });
             
             if (result.Any())
             {

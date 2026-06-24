@@ -3,8 +3,6 @@ using System.Data;
 using Dapper;
 using Storage.Repositories.Providers;
 using Storage.Providers.DTOs;
-using System.Text.Json;
-using Microsoft.Azure.ServiceBus;
 
 namespace Storage.Repositories
 {

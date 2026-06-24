@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Newtonsoft.Json;
 using Storage.Repositories.Models;
 using Storage.Repositories.Providers;
 using System.Data;
