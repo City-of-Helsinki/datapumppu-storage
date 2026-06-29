@@ -44,6 +44,22 @@ namespace Storage.Repositories
         /// <param name="caseNumber">The case number.</param>
         /// <returns>A list of meeting seats for the specified case.</returns>
         Task<List<MeetingSeat>> GetSeats(string meetingId, string caseNumber);
+
+        /// <summary>
+        /// Retrieves the most recent seat update ID for a specific voting number on or before the voting started.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="votingNumber">The voting number within the meeting.</param>
+        /// <returns>The update ID of the most recent seat allocation on or before the voting started.</returns>
+        Task<int> GetUpdateIdForVoting(string meetingId, int votingNumber);
+
+        /// <summary>
+        /// Retrieves all seats for a specific meeting and voting number.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="votingNumber">The voting number within the meeting.</param>
+        /// <returns>A list of meeting seats for the specified voting session.</returns>
+        Task<List<MeetingSeat>> GetSeatsForVoting(string meetingId, int votingNumber);
     }
 
     /// <summary>
@@ -134,6 +150,45 @@ namespace Storage.Repositories
         public async Task<List<MeetingSeat>> GetSeats(string meetingId, string caseNumber)
         {
             var updateId = await GetUpdateId(meetingId, caseNumber);
+            return await GetSeats(updateId);
+        }
+
+        /// <summary>
+        /// Retrieves the most recent seat update ID for a specific voting number on or before the voting started.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="votingNumber">The voting number within the meeting.</param>
+        /// <returns>The update ID of the most recent seat allocation, or 0 if none found.</returns>
+        public async Task<int> GetUpdateIdForVoting(string meetingId, int votingNumber)
+        {
+            var sqlQuery = @"
+                select msu.id 
+                from meeting_seat_updates msu
+                join meeting_events me_msu on msu.attendees_eventid = me_msu.event_id
+                where msu.meeting_id = @meetingId
+                  and me_msu.sequence_number <= (
+                      select me_v.sequence_number 
+                      from votings v
+                      join meeting_events me_v on v.voting_started_eventid = me_v.event_id
+                      where v.meeting_id = @meetingId and v.voting_number = @votingNumber
+                  )
+                order by me_msu.sequence_number desc, msu.id desc
+                limit 1;
+            ";
+
+            using var dbConnection = await _databaseConnectionFactory.CreateOpenConnection();
+            return (await dbConnection.QueryAsync<int>(sqlQuery, new { meetingId, votingNumber })).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Retrieves all seats for a specific meeting and voting number.
+        /// </summary>
+        /// <param name="meetingId">The meeting identifier.</param>
+        /// <param name="votingNumber">The voting number within the meeting.</param>
+        /// <returns>A list of meeting seats for the specified voting session.</returns>
+        public async Task<List<MeetingSeat>> GetSeatsForVoting(string meetingId, int votingNumber)
+        {
+            var updateId = await GetUpdateIdForVoting(meetingId, votingNumber);
             return await GetSeats(updateId);
         }
 
