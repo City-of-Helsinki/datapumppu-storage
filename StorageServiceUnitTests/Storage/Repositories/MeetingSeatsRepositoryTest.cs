@@ -18,6 +18,11 @@ namespace StorageServiceUnitTests.Storage.Repositories
         [Fact]
         public async Task GetUpdateIdForVoting_ReturnsClosestSeatUpdateBeforeVoting_BasedOnSequenceNumber()
         {
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")))
+            {
+                return; // Skip database integration tests on Azure Pipelines
+            }
+
             // Arrange
             var configMock = new Mock<IConfiguration>();
             configMock.Setup(c => c["STORAGE_DB_CONNECTION_STRING"]).Returns(_connectionString);
