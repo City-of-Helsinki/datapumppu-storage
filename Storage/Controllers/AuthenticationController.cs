@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Storage.Repositories;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,7 +34,6 @@ namespace Storage.Controllers
         /// <param name="login">Login data containing username and password.</param>
         /// <returns>Returns 200 OK on success, 401 Unauthorized on failure.</returns>
         [HttpPost("login")]
-        [EnableRateLimiting("login")]
         public async Task<IActionResult> Login([FromBody] DTOs.LoginDTO login)
         {
             var user = await _adminUsersRepository.GetUserByUsername(login.Username);

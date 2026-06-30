@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.RateLimiting;
 using Storage.Actions;
 using Storage.Events;
 using Storage.Events.Providers;
@@ -31,16 +30,6 @@ namespace Storage
             // Add services to the container.
 
             builder.Services.AddControllers();
-
-            builder.Services.AddRateLimiter(options =>
-            {
-                options.AddFixedWindowLimiter(policyName: "login", limiterOptions =>
-                {
-                    limiterOptions.PermitLimit = 10;
-                    limiterOptions.Window = TimeSpan.FromMinutes(1);
-                    limiterOptions.QueueLimit = 0;
-                });
-            });
 
             builder.Services.AddHealthChecks()
                 .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"] ?? builder.Configuration["Database:ConnectionString"]);
@@ -127,8 +116,6 @@ namespace Storage
             var app = builder.Build();
 
             app.UseRouting();
-
-            app.UseRateLimiter();
 
             // Configure the HTTP request pipeline.
 
