@@ -4,9 +4,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 
 LABEL io.openshift.expose-services="8080:http"
-EXPOSE 80
-ENV ASPNETCORE_HTTP_PORTS=80
-ENV ASPNETCORE_URLS=http://*:80
+EXPOSE 8080
+ENV ASPNETCORE_HTTP_PORTS=8080
+ENV ASPNETCORE_URLS=http://*:8080
 
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
