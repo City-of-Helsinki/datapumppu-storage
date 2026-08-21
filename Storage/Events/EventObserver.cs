@@ -44,8 +44,10 @@ namespace Storage.Events
             {
                 TransportType = ServiceBusTransportType.AmqpWebSockets
             };
-            var client = new ServiceBusClient(_configuration["SB_CONNECTION_STRING"], clientOptions);
-            var processor = client.CreateProcessor(_configuration["SB_QUEUE_NAME"], new ServiceBusProcessorOptions());
+            var connectionString = _configuration["SB_CONNECTION_STRING"] ?? _configuration["ServiceBus:ConnectionString"];
+            var queueName = _configuration["SB_QUEUE_NAME"] ?? _configuration["ServiceBus:QueueName"];
+            var client = new ServiceBusClient(connectionString, clientOptions);
+            var processor = client.CreateProcessor(queueName, new ServiceBusProcessorOptions());
             processor.ProcessMessageAsync += MessageHandler;
             processor.ProcessErrorAsync += ErrorHandler;
             await processor.StartProcessingAsync(stoppingToken);

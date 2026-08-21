@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Storage.Providers;
 using Storage.Repositories;
 
@@ -28,11 +28,11 @@ namespace Storage.Controllers
         }
 
         /// <summary>
-        /// Retrieves seat allocation information for a specific case within a meeting.
+        /// Retrieves seat allocation information grouped by voting number for a specific case within a meeting.
         /// </summary>
         /// <param name="meetingId">The unique identifier of the meeting.</param>
         /// <param name="caseNumber">The case number within the meeting.</param>
-        /// <returns>Returns 200 OK with seat allocation data, or 500 Internal Server Error if the operation fails.</returns>
+        /// <returns>Returns 200 OK with seat allocation data grouped by voting number, or 500 Internal Server Error if the operation fails.</returns>
         [HttpGet("{meetingId}/{caseNumber}")]
         public async Task<IActionResult> GetSeats(string meetingId, string caseNumber)
         {

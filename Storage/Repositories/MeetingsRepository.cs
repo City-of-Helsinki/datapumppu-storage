@@ -133,13 +133,13 @@ namespace Storage.Repositories
         public async Task<Meeting?> FetchMeetingByYearAndSeuquenceNumber(string year, string sequenceNumber)
         {
             using var connection = await _connectionFactory.CreateOpenConnection();
-            var firstDayOfYear = $"{year}-01-01";
-            var lastDayOfYear = $"{year}-12-31T23:59:59";
-            var sqlQuery = @$"
+            var startDate = new DateTime(int.Parse(year), 1, 1);
+            var endDate = new DateTime(int.Parse(year), 12, 31, 23, 59, 59);
+            var sqlQuery = @"
                 SELECT * FROM meetings
-                WHERE meeting_date >= '{firstDayOfYear}'::date AND meeting_date <= '{lastDayOfYear}'::date AND meeting_sequence_number = {sequenceNumber};
+                WHERE meeting_date >= @startDate AND meeting_date <= @endDate AND meeting_sequence_number = @sequenceNumber;
             "; 
-            var result = (await connection.QueryAsync<Meeting>(sqlQuery)).ToList();
+            var result = (await connection.QueryAsync<Meeting>(sqlQuery, new { startDate, endDate, sequenceNumber = int.Parse(sequenceNumber) })).ToList();
 
             return result.FirstOrDefault();
         }

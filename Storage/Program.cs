@@ -32,7 +32,7 @@ namespace Storage
             builder.Services.AddControllers();
 
             builder.Services.AddHealthChecks()
-                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
+                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"] ?? builder.Configuration["Database:ConnectionString"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
             builder.Services.AddSingleton<IKafkaClientFactory, KafkaClientFactory>();
@@ -91,7 +91,7 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]))
+            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]) || !string.IsNullOrEmpty(builder.Configuration["ServiceBus:ConnectionString"]))
             {
                 builder.Services.AddHostedService<EventObserver>();
             }

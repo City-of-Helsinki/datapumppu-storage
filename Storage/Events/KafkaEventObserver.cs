@@ -54,9 +54,9 @@ namespace Storage.Events
         /// </summary>
         /// <param name="stoppingToken">Cancellation token for graceful shutdown.</param>
         /// <returns>A task representing the background processing operation.</returns>
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return Task.Run(() => MessageHandler(stoppingToken), stoppingToken);
+            await MessageHandler(stoppingToken);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Storage.Events
         /// Handles errors by rolling back transactions and recreating Kafka clients as needed.
         /// </summary>
         /// <param name="stoppingToken">Cancellation token for shutting down the processing loop.</param>
-        private async void MessageHandler(CancellationToken stoppingToken)
+        private async Task MessageHandler(CancellationToken stoppingToken)
         {
             var consumerTopic = _configuration["KAFKA_CONSUMER_TOPIC"];
             var consumer = _clientFactory.CreateConsumer();
@@ -87,6 +87,7 @@ namespace Storage.Events
                     if (recreatedKafkaClients)
                     {
                         consumer = _clientFactory.CreateConsumer();
+                        consumer.Subscribe(consumerTopic);
                         producer = _clientFactory.CreateProducer();
                         recreatedKafkaClients = false;
                     }
@@ -113,7 +114,7 @@ namespace Storage.Events
                     _logger.LogInformation("Consumer Event successfully stored.");
 
                     // send MeetingID to WebApi
-                    var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(new { body.MeetingID, body.CaseNumber });
+                    var jsonBody = JsonSerializer.Serialize(new { body.MeetingID, body.CaseNumber });
                     await producer.ProduceAsync(producerTopic, new Message<Null, string> { Value = jsonBody });
                 }
                 catch (OperationCanceledException)
