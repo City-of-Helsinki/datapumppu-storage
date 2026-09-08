@@ -13,3 +13,6 @@ jobs:
     uses: City-of-Helsinki/.github/.github/workflows/ci-dotnet.yml@dotnet_PLATTA-7760
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    with:
+      extra-commands: |
+        echo "TF_BUILD=true" >> $GITHUB_ENV
