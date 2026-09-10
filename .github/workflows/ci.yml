@@ -7,14 +7,17 @@ on:
     branches: [develop]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
   common:
-    # uses: City-of-Helsinki/.github/.github/workflows/ci-dotnet.yml@main
-    uses: City-of-Helsinki/.github/.github/workflows/ci-dotnet.yml@dotnet_PLATTA-7760
+    uses: City-of-Helsinki/.github/.github/workflows/ci-dotnet.yml@main
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     with:
