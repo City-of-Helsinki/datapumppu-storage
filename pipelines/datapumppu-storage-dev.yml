@@ -4,7 +4,7 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+      - develop
   paths:
     exclude:
     - '*release-please*'
@@ -25,14 +25,12 @@ trigger:
 # Opt out of pull request validation
 pr: none
 
-# By default, use self-hosted agents
-pool: Default
-
 resources:
   repositories:
     # Azure DevOps repository
     - repository: datapumppu-pipelines
       type: git
+      ref: ansible_automation_update
       # Azure DevOps project/repository
       name: datapumppu/datapumppu-pipelines
 

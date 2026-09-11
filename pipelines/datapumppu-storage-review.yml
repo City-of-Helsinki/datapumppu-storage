@@ -20,7 +20,7 @@ pr:
   # PR target branch
   branches:
     include:
-    - master
+    - develop
   paths:
     exclude:
     - '*release-please*'
@@ -30,14 +30,12 @@ pr:
     - 'pipelines/datapumppu-storage-dev.yml'
     - '*compose*'
 
-# By default, use self-hosted agents
-pool: Default
-
 resources:
   repositories:
     # Azure DevOps repository
     - repository: datapumppu-pipelines
       type: git
+      ref: ansible_automation_update
       # Azure DevOps project/repository
       name: datapumppu/datapumppu-pipelines
 
