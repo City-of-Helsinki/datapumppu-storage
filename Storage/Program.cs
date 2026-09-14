@@ -32,7 +32,7 @@ namespace Storage
             builder.Services.AddControllers();
 
             builder.Services.AddHealthChecks()
-                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"] ?? builder.Configuration["Database:ConnectionString"]);
+                .AddNpgSql(DatabaseConnectionStringProvider.GetConnectionString(builder.Configuration));
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
             builder.Services.AddSingleton<IKafkaClientFactory, KafkaClientFactory>();
