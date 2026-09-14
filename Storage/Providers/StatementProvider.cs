@@ -7,15 +7,47 @@ using System.Collections.Generic;
 
 namespace Storage.Providers
 {
+    /// <summary>
+    /// Provides business logic for retrieving statement information with video synchronization.
+    /// Coordinates between statement, video sync, and meeting repositories to produce enriched statement DTOs.
+    /// Filters out test data from 2010.
+    /// </summary>
     public interface IStatementProvider
     {
+        /// <summary>
+        /// Retrieves all statements for a specific meeting and case with video positions.
+        /// </summary>
+        /// <param name="meetingId">The unique meeting identifier.</param>
+        /// <param name="caseNumber">The case number within the meeting.</param>
+        /// <returns>A list of WebApiStatementsDTO containing statement details and video positions.</returns>
         Task<List<WebApiStatementsDTO>> GetStatements(string meetingId, string caseNumber);
 
+        /// <summary>
+        /// Retrieves statements made by a specific person within a given year.
+        /// Filters out statements without video positions and test data from 2010.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <param name="year">The year to search within.</param>
+        /// <param name="lang">The language code for localized content ("fi" for Finnish, "sv" for Swedish).</param>
+        /// <returns>A list of WebApiStatementsDTO containing statement details and video positions.</returns>
         Task<List<WebApiStatementsDTO>> GetStatementsByPerson(string name, int year, string lang);
 
+        /// <summary>
+        /// Retrieves statements filtered by person names and/or date range.
+        /// Filters out statements without video positions and test data from 2010.
+        /// </summary>
+        /// <param name="names">A list of person names to filter by.</param>
+        /// <param name="startDate">The optional start date of the search range.</param>
+        /// <param name="endDate">The optional end date of the search range.</param>
+        /// <param name="lang">The language code for localized content.</param>
+        /// <returns>A list of WebApiStatementsDTO containing statement details and video positions.</returns>
         Task<List<WebApiStatementsDTO>> GetStatementsByPersonOrDate(List<string> names, DateTime? startDate, DateTime? endDate, string lang);
     }
 
+    /// <summary>
+    /// Implementation of IStatementProvider that retrieves statement data and synchronizes with video positions.
+    /// Excludes test meetings from 2010 and statements without valid video positions.
+    /// </summary>
     public class StatementProvider : IStatementProvider
     {
         private readonly ILogger<StatementProvider> _logger;
@@ -23,6 +55,13 @@ namespace Storage.Providers
         private readonly IVideoSyncRepository _videoSyncRepository;
         private readonly IMeetingsRepository _meetingRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the StatementProvider class.
+        /// </summary>
+        /// <param name="logger">The logger for diagnostic information.</param>
+        /// <param name="statementsRepository">The repository for accessing statement data.</param>
+        /// <param name="videoSyncRepository">The repository for accessing video synchronization data.</param>
+        /// <param name="meetingRepository">The repository for accessing meeting data.</param>
         public StatementProvider(ILogger<StatementProvider> logger,
             IStatementsRepository statementsRepository,
             IVideoSyncRepository videoSyncRepository,
