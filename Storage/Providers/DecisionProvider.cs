@@ -7,8 +7,18 @@ using Storage.Repositories.Models;
 
 namespace Storage.Providers
 {
+    /// <summary>
+    /// Provides business logic for retrieving decision information.
+    /// Coordinates between the decisions repository and decision mapper to produce API-ready DTOs.
+    /// </summary>
     public interface IDecisionProvider
     {
+        /// <summary>
+        /// Retrieves a decision by its case ID label and language.
+        /// </summary>
+        /// <param name="caseIdLabel">The case identifier label (e.g., "029-2023-1234").</param>
+        /// <param name="language">The language code for localized content ("fi" for Finnish, "sv" for Swedish).</param>
+        /// <returns>A WebApiDecisionDTO containing the decision details, or null if not found.</returns>
         Task<WebApiDecisionDTO?> GetDecisision(string caseIdLabel, string language);
     }
 

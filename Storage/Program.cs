@@ -11,8 +11,18 @@ using Storage.Repositories.Statistics;
 
 namespace Storage
 {
+    /// <summary>
+    /// Application entry point that configures services, middleware, and starts the web API host.
+    /// Registers all repositories, providers, actions, and event observers for dependency injection.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Configures and starts the web application.
+        /// Sets up dependency injection, health checks, event processing (Kafka),
+        /// database migration, automatic cleanup, logging, and HTTP request pipeline.
+        /// </summary>
+        /// <param name="args">Command-line arguments passed to the application.</param>
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +32,7 @@ namespace Storage
             builder.Services.AddControllers();
 
             builder.Services.AddHealthChecks()
-                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"]);
+                .AddNpgSql(builder.Configuration["STORAGE_DB_CONNECTION_STRING"] ?? builder.Configuration["Database:ConnectionString"]);
 
             builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
             builder.Services.AddSingleton<IKafkaClientFactory, KafkaClientFactory>();
@@ -81,7 +91,7 @@ namespace Storage
             builder.Services.AddScoped<IEventAction, InsertPropositionsEventAction>();
             builder.Services.AddScoped<IEventAction, InsertReplyReservationAction>();
 
-            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]))
+            if (!string.IsNullOrEmpty(builder.Configuration["SB_CONNECTION_STRING"]) || !string.IsNullOrEmpty(builder.Configuration["ServiceBus:ConnectionString"]))
             {
                 builder.Services.AddHostedService<EventObserver>();
             }

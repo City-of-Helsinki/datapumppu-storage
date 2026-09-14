@@ -5,8 +5,19 @@ using Storage.Repositories.Models;
 
 namespace Storage.Providers
 {
+    /// <summary>
+    /// Provides business logic for retrieving statement and reply reservations.
+    /// Aggregates reservation data, identifies active speakers, and removes duplicates.
+    /// </summary>
     public interface IReservationsProvider
     {
+        /// <summary>
+        /// Retrieves all reservations (statement and reply) for a specific meeting and case.
+        /// Includes the currently active speaker and filters out duplicate entries.
+        /// </summary>
+        /// <param name="meetingId">The unique meeting identifier.</param>
+        /// <param name="caseNumber">The case number within the meeting.</param>
+        /// <returns>A list of WebApiReservationDTO containing reservation details.</returns>
         Task<List<WebApiReservationDTO>> GetReservations(string meetingId, string caseNumber);
     }
 

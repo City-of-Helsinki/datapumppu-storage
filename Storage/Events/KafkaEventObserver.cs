@@ -7,6 +7,12 @@ using System.Text.Json;
 
 namespace Storage.Events
 {
+    /// <summary>
+    /// Background service that continuously processes incoming events from Kafka.
+    /// Consumes messages from a Kafka topic, dispatches them to appropriate action handlers,
+    /// manages database transactions, and publishes notifications to a producer topic.
+    /// This is the primary event processing mechanism, replacing Azure Service Bus.
+    /// </summary>
     public class KafkaEventObserver : BackgroundService
     {
         private readonly ILogger<KafkaEventObserver> _logger;
@@ -17,6 +23,15 @@ namespace Storage.Events
         private readonly IKafkaClientFactory _clientFactory;
 
 
+        /// <summary>
+        /// Initializes a new instance of the KafkaEventObserver with required dependencies.
+        /// </summary>
+        /// <param name="logger">Logger for recording processing status and errors.</param>
+        /// <param name="serviceProvider">Service provider for creating scoped dependencies per message.</param>
+        /// <param name="configuration">Application configuration containing Kafka topics and connection details.</param>
+        /// <param name="connectionFactory">Factory for creating database connections.</param>
+        /// <param name="hostEnvironment">Host environment information.</param>
+        /// <param name="clientFactory">Factory for creating Kafka consumers and producers.</param>
         public KafkaEventObserver(
             ILogger<KafkaEventObserver> logger,
             IServiceProvider serviceProvider,
@@ -34,12 +49,24 @@ namespace Storage.Events
             _clientFactory = clientFactory;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        /// <summary>
+        /// Starts the Kafka event processing loop in a background thread.
+        /// </summary>
+        /// <param name="stoppingToken">Cancellation token for graceful shutdown.</param>
+        /// <returns>A task representing the background processing operation.</returns>
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return Task.Run(() => MessageHandler(stoppingToken), stoppingToken);
+            await MessageHandler(stoppingToken);
         }
 
-        private async void MessageHandler(CancellationToken stoppingToken)
+        /// <summary>
+        /// Main Kafka message processing loop.
+        /// Subscribes to the consumer topic, consumes messages, deserializes events, dispatches to action handlers,
+        /// commits the database transaction and Kafka offset, and publishes a notification to the producer topic.
+        /// Handles errors by rolling back transactions and recreating Kafka clients as needed.
+        /// </summary>
+        /// <param name="stoppingToken">Cancellation token for shutting down the processing loop.</param>
+        private async Task MessageHandler(CancellationToken stoppingToken)
         {
             var consumerTopic = _configuration["KAFKA_CONSUMER_TOPIC"];
             var consumer = _clientFactory.CreateConsumer();
@@ -60,6 +87,7 @@ namespace Storage.Events
                     if (recreatedKafkaClients)
                     {
                         consumer = _clientFactory.CreateConsumer();
+                        consumer.Subscribe(consumerTopic);
                         producer = _clientFactory.CreateProducer();
                         recreatedKafkaClients = false;
                     }
@@ -86,7 +114,7 @@ namespace Storage.Events
                     _logger.LogInformation("Consumer Event successfully stored.");
 
                     // send MeetingID to WebApi
-                    var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(new { body.MeetingID, body.CaseNumber });
+                    var jsonBody = JsonSerializer.Serialize(new { body.MeetingID, body.CaseNumber });
                     await producer.ProduceAsync(producerTopic, new Message<Null, string> { Value = jsonBody });
                 }
                 catch (OperationCanceledException)

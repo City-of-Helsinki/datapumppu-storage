@@ -1,28 +1,38 @@
-﻿using Dapper;
+using Dapper;
 using Storage.Repositories.Providers;
 
 namespace Storage
 {
-    public class DatabaseCleaner : IHostedService
+    /// <summary>
+    /// Background service that periodically removes test meeting data from the database.
+    /// Runs at 1:00 AM daily to clean up meetings marked with test identifiers.
+    /// </summary>
+    public class DatabaseCleaner : BackgroundService
     {
         private readonly ILogger<DatabaseCleaner> _logger;
         private readonly IDatabaseConnectionFactory _connectionFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the DatabaseCleaner with required dependencies.
+        /// </summary>
+        /// <param name="logger">Logger for recording cleanup operations and errors.</param>
+        /// <param name="connectionFactory">Factory for creating database connections.</param>
         public DatabaseCleaner(ILogger<DatabaseCleaner> logger, IDatabaseConnectionFactory connectionFactory)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            return Task.Run(() => DoCleaningLoop(cancellationToken), cancellationToken);
-        }
-
-        private async void DoCleaningLoop(CancellationToken cancellationToken)
+        /// <summary>
+        /// Main cleanup loop that runs continuously until cancellation is requested.
+        /// Checks the current hour every 60 minutes and performs cleanup at 1:00 AM.
+        /// Deletes meetings with names containing 'TESTIKOKOUS' or titles containing '*TESTI*'.
+        /// </summary>
+        /// <param name="stoppingToken">Cancellation token for shutting down the loop.</param>
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             const int LoopDelayMS = 1000 * 60 * 60; // 60 minutes
-            while (!cancellationToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 var hours = DateTime.Now.Hour;
                 _logger.LogInformation("DoCleaning {0}", hours);
@@ -43,13 +53,8 @@ namespace Storage
                     }
                 }
 
-                await Task.Delay(LoopDelayMS);
+                await Task.Delay(LoopDelayMS, stoppingToken);
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
     }
 }
