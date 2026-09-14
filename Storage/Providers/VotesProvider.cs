@@ -8,16 +8,35 @@ using System.Collections.Generic;
 
 namespace Storage.Providers
 {
+    /// <summary>
+    /// Provides business logic for retrieving voting information and individual votes.
+    /// Aggregates voting events with their associated vote details.
+    /// </summary>
     public interface IVotesProvider
     {
+        /// <summary>
+        /// Retrieves all voting events and their individual votes for a specific meeting and case.
+        /// </summary>
+        /// <param name="meetingId">The unique meeting identifier.</param>
+        /// <param name="caseNumber">The case number within the meeting.</param>
+        /// <returns>A list of WebApiVotingDTO containing voting details and individual vote breakdowns.</returns>
         Task<List<WebApiVotingDTO>> GetVoting(string meetingId, string caseNumber);
     }
 
+    /// <summary>
+    /// Implementation of IVotesProvider that retrieves voting events and aggregates individual votes.
+    /// Maps bilingual voting information (Finnish and Swedish) to API DTOs.
+    /// </summary>
     public class VotesProvider : IVotesProvider
     {
         private readonly ILogger<VotesProvider> _logger;
         private readonly IVotingsRepository _votingsRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the VotesProvider class.
+        /// </summary>
+        /// <param name="logger">The logger for diagnostic information.</param>
+        /// <param name="votingsRepository">The repository for accessing voting data.</param>
         public VotesProvider(
             ILogger<VotesProvider> logger,
             IVotingsRepository votingsRepository)
