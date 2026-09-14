@@ -35,7 +35,7 @@ resources:
     # Azure DevOps repository
     - repository: datapumppu-pipelines
       type: git
-      ref: ansible_automation_update 
+      ref: ansible_automation_update
       # Azure DevOps project/repository
       name: datapumppu/datapumppu-pipelines
 
