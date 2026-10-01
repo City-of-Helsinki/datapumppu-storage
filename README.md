@@ -228,6 +228,7 @@ If you do need to customize settings, configure the application using environmen
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `STORAGE_DB_CONNECTION_STRING` | PostgreSQL connection string | `Host=localhost:5432;User Id=root;Password=root;Database=datapumppu` |
+| `DATABASE_PASSWORD` | Optional password overriding the one in `STORAGE_DB_CONNECTION_STRING` | `root` |
 | `KAFKA_BOOTSTRAP_SERVER` | Kafka broker address | `localhost:9092` |
 | `KAFKA_CONSUMER_TOPIC` | Topic to consume events from | `meeting-room-observer-topic` |
 | `KAFKA_PRODUCER_TOPIC` | Topic to publish events to | `webapi-topic` |
